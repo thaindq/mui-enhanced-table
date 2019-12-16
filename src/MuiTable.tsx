@@ -66,13 +66,13 @@ const styles = (theme: Theme) => createStyles({
 });
 
 class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, TableState> {
-    static defaultProps: TableProps = {
+    static defaultProps: Omit<TableProps, 'data' | 'columns'> = {
         className: undefined,
         headClasses: undefined,
         bodyClasses: undefined,
-        data: [],
+        // data: [],
         dataId: 'id',
-        columns: [],
+        // columns: [],
         options: {
             sortBy: '',
             sortDirection: 'asc',

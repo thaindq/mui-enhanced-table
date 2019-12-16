@@ -53,7 +53,7 @@ export interface TableProps {
     className: string | undefined;
     headClasses: Partial<ClassNameMap> | undefined;
     bodyClasses: Partial<ClassNameMap> | undefined;
-    data: Exclude<TableRowItem, '_id'>[];
+    data: Omit<TableRowItem, '_id'>[];
     dataId: string;
     columns: TableColumn[];
     options: TableOptions;
@@ -62,7 +62,7 @@ export interface TableProps {
 export interface TableState {
     columns: TableColumn[];
     data: TableRowItem[];
-    originalData: Exclude<TableRowItem, '_id'>[];
+    originalData: Omit<TableRowItem, '_id'>[];
     displayData: TableRowItem[];
     filteredData: (TableRowId[] | null)[];
     columnHidings: TableColumnId[];
