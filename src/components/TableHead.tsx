@@ -25,7 +25,9 @@ interface Props {
     columns: TableColumn[];
     options: TableOptions;
     selectionCount?: number;
-    rowCount?: number;
+    rowCount?: number;    
+    sortBy?: TableColumnId;
+    sortDirection?: SortDirection;
     onToggleSelectAll: (select?: boolean) => void;
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
@@ -39,6 +41,8 @@ class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles
             options,
             selectionCount,
             rowCount,
+            sortBy,
+            sortDirection,
             onToggleSelectAll,
             onSortData,
         } = this.props;
@@ -48,8 +52,6 @@ class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles
             selectable,
             expandable,
             multiSelect,
-            sortBy,
-            sortDirection,
             onRowActions,
         } = options;
 
@@ -78,7 +80,7 @@ class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles
 
                             {column.sortable &&
                                 <TableSortLabel
-                                    active={sortable && sortBy === column.id}
+                                    active={sortable && sortBy === column.id && !!sortDirection}
                                     direction={sortDirection !== false ? sortDirection : undefined}
                                     onClick={!sortable ? undefined : () => onSortData(column.id)}>
 

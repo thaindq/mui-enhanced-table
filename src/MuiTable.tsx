@@ -265,28 +265,29 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
         return {
             ...mergedState,
             searchMatchers,
-            currentPage: props.options.pagination ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage)) : 0,
-            displayData: _.orderBy(displayData, obj => sortColumn && sortColumn.dateTime && Date.parse(_.get(obj, sortBy)) || _.get(obj, sortBy) || '', [sortDirection]),
+            currentPage: props.options.pagination 
+                ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage)) 
+                : 0,
+            displayData: sortDirection 
+                ? _.orderBy(displayData, obj => sortColumn && sortColumn.dateTime && Date.parse(_.get(obj, sortBy)) || _.get(obj, sortBy) || '', [sortDirection]) 
+                : displayData,
         };
     }
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
-        if (nextProps.data !== prevState.originalData) {
+        if (prevState && prevState.originalData !== nextProps.data) {
             return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState, nextProps);
         }
 
         return null;
     }
 
-    state: TableState = {
-        ...MuiTable.defaultState,
-        ...this.props
-    };
+    state: TableState = MuiTable.defaultState;
 
     componentDidMount = () => {
         this.updateTableState(MuiTable.getInitialState(this.props));
-    }
-
+    }    
+    
     updateTableState = (newValues: Partial<TableState>, callback?: (newState: TableState) => void) => {
         const onStateChange = this.props.options.onStateChange;
         const prevState = this.state;
@@ -607,6 +608,8 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
                                             options={options}
                                             selectionCount={rowSelections.length}
                                             rowCount={data.length}
+                                            sortBy={sortBy}
+                                            sortDirection={sortDirection}
                                             onToggleSelectAll={this.toggleSelectAllRows}
                                             onSortData={this.sortData}/>
                                     }

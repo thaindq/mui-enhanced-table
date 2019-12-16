@@ -197,7 +197,7 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
         const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
 
         return (
-            <TableBody className={cx(className, classes.root)} style={{ display: hasMessage ? 'table-row-group' : 'table-footer-group' }}>
+            <TableBody className={cx(className, classes.root)}>
                 {hasMessage &&
                     <TableRow className={cx(classes.row, classes.rowMessage)}>
                         <TableCell colSpan={colSpan} className={classes.cellEmpty}>
