@@ -74,6 +74,7 @@ export interface TableState {
     rowsPerPage: number;
     searchText: string;
     searchMatchers: SearchMatchers | null;
+    options: TableOptions;
 }
 
 export interface TableOptions {

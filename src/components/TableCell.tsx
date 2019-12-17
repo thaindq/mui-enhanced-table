@@ -4,7 +4,7 @@ export default withStyles((theme: Theme) => ({
     root: {
         padding: '4px 16px',
     }
-}))(TableCell);
+}), { name: 'MuiTableCell' })(TableCell);
 
 const HeaderCell = withStyles((theme: Theme) => ({
     root: {
@@ -17,6 +17,6 @@ const HeaderCell = withStyles((theme: Theme) => ({
     body: {
         fontSize: 14,        
     },
-}), { name: "MuiTableCell" })(TableCell);
+}), { name: "MuiHeaderCell" })(TableCell);
 
 export { HeaderCell };
