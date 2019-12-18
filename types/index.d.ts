@@ -4,9 +4,9 @@ import { SortDirection } from "@material-ui/core";
 export type TableRowId = string | number;
 export type TableColumnId = string;
 
-export interface TableRowItem {
-    _id: TableRowId;
-    [key: string]: any;
+export interface TableRow<T> {
+    id: TableRowId;
+    data: T;
 }
 
 export interface TableRowStatus {
@@ -49,21 +49,21 @@ export interface TableAction {
     callback: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-export interface TableProps {
-    className: string | undefined;
-    headClasses: Partial<ClassNameMap> | undefined;
-    bodyClasses: Partial<ClassNameMap> | undefined;
-    data: Omit<TableRowItem, '_id'>[];
-    dataId: string;
+export interface TableProps<T = any> {
+    className?: string | undefined;
+    headClasses?: Partial<ClassNameMap> | undefined;
+    bodyClasses?: Partial<ClassNameMap> | undefined;
+    data: T[];
+    dataId?: string;
     columns: TableColumn[];
-    options: TableOptions;
+    options: TableOptions<T>;
 }
 
-export interface TableState {
+export interface TableState<T = any> {
     columns: TableColumn[];
-    data: TableRowItem[];
-    originalData: Omit<TableRowItem, '_id'>[];
-    displayData: TableRowItem[];
+    data: TableRow<T>[];
+    originalData: T[];
+    displayData: TableRow<T>[];
     filteredData: (TableRowId[] | null)[];
     columnHidings: TableColumnId[];
     rowExpansions: TableRowId[];
@@ -74,10 +74,10 @@ export interface TableState {
     rowsPerPage: number;
     searchText: string;
     searchMatchers: SearchMatchers | null;
-    options: TableOptions;
+    options: TableOptions<T>;
 }
 
-export interface TableOptions {
+export interface TableOptions<T = any> {
     title?: string;
     sortBy?: TableColumnId;
     sortDirection?: SortDirection;
@@ -104,20 +104,20 @@ export interface TableOptions {
     rowExpansions?: TableRowId[];
     rowSelections?: TableRowId[];
     customActions?: TableAction[];
-    onRowActions?: (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => TableAction[];
-    onRowClick?: (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => void;
-    onRowSelect?: (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => void;
-    onRowExpand?: (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => void;
+    onRowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableAction[];
+    onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
+    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
+    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
     onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
     onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
-    onRowStatus?: (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => TableRowStatus;
-    onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowItem: TableRowItem, rowIndex: number, columnIndex: number) => void;
-    onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowItem: TableRowItem, rowIndex: number, columnIndex: number) => TableCellStatus;
-    onStateChange?: (newState: TableState, prevState: TableState) => void;
+    onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
+    onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
+    onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
+    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
     dependencies?: any[];
     ToolbarComponent?: React.ComponentType<any>;
     RowExpandComponent?: React.ComponentType<any>;
-    FilterComponents?: React.ElementType<TableFilterComponentProps>[];
+    FilterComponents?: React.ElementType<TableFilterComponentProps<T>>[];
     CustomComponents?: React.ElementType<any>[];
 }
 
@@ -133,10 +133,10 @@ export interface SearchMatchers {
     }
 }
 
-export interface TableFilterComponentProps {
+export interface TableFilterComponentProps<T = any> {
     column?: string,
-    columnData?: (item: TableRowItem) => string;
-    data: TableRowItem[];
-    displayData: TableRowItem[];
+    columnData?: (item: TableRow<T>) => string;
+    data: TableRow<T>[];
+    displayData: TableRow<T>[];
     onUpdateFilter: (ids: TableRowId[] | null) => void;
 }

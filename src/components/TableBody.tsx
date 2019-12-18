@@ -7,7 +7,8 @@ import React from 'react';
 import TableCell from './TableCell';
 import TableCheckbox from './TableCheckbox';
 import TableRadio from './TableRadio';
-import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRowItem, SearchMatchers } from '../../types';
+import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRow as MuiTableRow, SearchMatchers } from '../../types';
+import { PropsFor } from '@material-ui/system';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -79,22 +80,23 @@ const styles = (theme: Theme) => createStyles({
         whiteSpace: 'nowrap'
     },
     cellLastRow: {
+        borderBottom: 'none'
     },    
 });
 
-interface Props {
+interface Props<T> {
     theme: Theme;
     className?: string;
     columns: TableColumn[];
-    data: TableRowItem[];
-    options: TableOptions;
+    data: MuiTableRow<T>[];
+    options: TableOptions<T>;
     isLoading?: boolean;
     hasError?: boolean;
     rowCount?: number;
     searchMatchers?: SearchMatchers | null;
 }
 
-class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles>> {
+class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles>> {
 
     renderRowActions = (actions: TableAction[]) => {
         if (!_.isArray(actions)) {
@@ -120,25 +122,25 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
         );
     }
 
-    handleRowSelect = (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => {
+    handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
             selectable,
             onRowSelect,
         } = this.props.options;
 
-        selectable && onRowSelect && onRowSelect(rowId, rowItem, rowIndex);
+        selectable && onRowSelect && onRowSelect(rowId, rowData, rowIndex);
     };
 
-    handleRowExpand = (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => {
+    handleRowExpand = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
             expandable,
             onRowExpand,
         } = this.props.options;
 
-        expandable && onRowExpand && onRowExpand(rowId, rowItem, rowIndex);
+        expandable && onRowExpand && onRowExpand(rowId, rowData, rowIndex);
     };
 
-    handleRowClick = (rowId: TableRowId, rowItem: TableRowItem, rowIndex: number) => {
+    handleRowClick = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
             expandable,
             selectable,            
@@ -148,11 +150,11 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
         } = this.props.options;
 
         if (onRowClick) {
-            onRowClick(rowId, rowItem, rowIndex);
+            onRowClick(rowId, rowData, rowIndex);
         } else if (expandable) {
-            onRowExpand && onRowExpand(rowId, rowItem, rowIndex);
+            onRowExpand && onRowExpand(rowId, rowData, rowIndex);
         } else if (selectable) {
-            onRowSelect && onRowSelect(rowId, rowItem, rowIndex);
+            onRowSelect && onRowSelect(rowId, rowData, rowIndex);
         }
     };
 
@@ -207,16 +209,16 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
                         </TableCell>
                     </TableRow>                   
                 
-                || data.map((item, rowIndex) => {
+                || data.map((row, rowIndex) => {
                     const {
                         style,
                         tooltip,
                         disabled,
                         className,
                         highlighted,                        
-                        selected = rowSelections.includes(item._id),
-                        expanded = rowExpansions.includes(item._id),
-                    } = onRowStatus && onRowStatus(item._id, item, rowIndex) || {};
+                        selected = rowSelections.includes(row.id),
+                        expanded = rowExpansions.includes(row.id),
+                    } = onRowStatus && onRowStatus(row.id, row.data, rowIndex) || {};
 
                     const rowClassName = cx(classes.row, {
                         [classes.rowNoHeaders]: showHeaders,
@@ -230,20 +232,20 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
                         [classes.cellLastRow]: rowIndex === data.length - 1,
                     });
 
-                    const actions = onRowActions && onRowActions(item._id, item, rowIndex) || [];
+                    const actions = onRowActions && onRowActions(row.id, row.data, rowIndex) || [];
 
-                    const row = (
+                    const rowJsx = (
                         <>
                             <TableRow
                                 style={style}
                                 className={rowClassName}
                                 selected={selected}
                                 hover={highlightRow}
-                                onClick={(event) => +event.stopPropagation() || disabled || this.handleRowClick(item._id, item, rowIndex)}>
+                                onClick={(event) => +event.stopPropagation() || disabled || this.handleRowClick(row.id, row.data, rowIndex)}>
 
                                 {expandable &&
                                     <TableCell className={cx(cellClassName, classes.cellExpandButton)}>
-                                        <IconButton onClick={(event) => +event.stopPropagation() || this.handleRowExpand(item._id, item, rowIndex)}>
+                                        <IconButton onClick={(event) => +event.stopPropagation() || this.handleRowExpand(row.id, row.data, rowIndex)}>
                                             {expanded && 
                                                 <ExpandLess fontSize="inherit" style={{ position: 'absolute' }}/>
                                             ||
@@ -259,25 +261,25 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
                                             <TableCheckbox
                                                 checked={selected}
                                                 disabled={disabled}
-                                                onClick={() => this.handleRowSelect(item._id, item, rowIndex)} />
+                                                onClick={() => this.handleRowSelect(row.id, row.data, rowIndex)} />
                                         ||
                                             <TableRadio
                                                 checked={selected}
                                                 disabled={disabled}
-                                                onClick={() => this.handleRowSelect(item._id, item, rowIndex)} />
+                                                onClick={() => this.handleRowSelect(row.id, row.data, rowIndex)} />
                                         }                                    
                                     </TableCell>
                                 }
 
                                 {columns.map((column, cellIndex) => {
-                                    let value = _.get(item, column.id);
+                                    let value = _.get(row.data, column.id);
                                     
                                     if (value === undefined) {
                                         value = column.defaultValue;
                                     }
 
                                     // const stringValue = column.formatter.getValueString(value);
-                                    const searchMatcher = searchMatchers && searchMatchers[item._id] && searchMatchers[item._id][column.id];
+                                    const searchMatcher = searchMatchers && searchMatchers[row.id] && searchMatchers[row.id][column.id];
 
                                     // TODO: add formatter
                                     const formattedValue = value;
@@ -285,14 +287,14 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
                                     const { 
                                         style,
                                         className,
-                                    } = onCellStatus && onCellStatus(item._id, column.id, item, rowIndex, cellIndex) || {};
+                                    } = onCellStatus && onCellStatus(row.id, column.id, row.data, rowIndex, cellIndex) || {};
 
                                     return (
                                         <TableCell
                                             key={column.id}                                        
                                             className={cx(cellClassName, className)}
                                             align={column.align}
-                                            onClick={() => onCellClick && +onCellClick(item._id, column.id, item, rowIndex, cellIndex) || undefined}
+                                            onClick={() => onCellClick && +onCellClick(row.id, column.id, row.data, rowIndex, cellIndex) || undefined}
                                             style={{
                                                 ...style,
                                                 ...column.bodyStyle
@@ -313,7 +315,7 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
                             {expanded && RowExpandComponent &&
                                 <TableRow>
                                     <TableCell colSpan={100} className={classes.cellExpanded}>
-                                        <RowExpandComponent id={item._id}/>
+                                        <RowExpandComponent id={row.id}/>
                                     </TableCell>
                                 </TableRow>
                             }
@@ -322,15 +324,15 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
 
                     if (tooltip) {
                         return (
-                            <Tooltip title={tooltip} key={item._id}>
-                                {row}
+                            <Tooltip title={tooltip} key={row.id}>
+                                {rowJsx}
                             </Tooltip>
                         );
                     }
 
                     return (
-                        <React.Fragment key={item._id}>
-                            {row}
+                        <React.Fragment key={row.id}>
+                            {rowJsx}
                         </React.Fragment>
                     );
                 })}
@@ -339,4 +341,15 @@ class EnhancedTableBody extends React.Component<Props & WithStyles<typeof styles
     }
 }
 
-export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(EnhancedTableBody);
+// export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(EnhancedTableBody);
+
+// https://stackoverflow.com/a/52573647
+export default class WrappedEnhancedTableBody<T> extends React.Component<PropsFor<WrappedEnhancedTableBody<T>["Component"]>, {}> {
+    private readonly Component = withStyles(styles, { name: 'MuiTableBody', withTheme: true })(
+        (props: JSX.LibraryManagedAttributes<typeof EnhancedTableBody, EnhancedTableBody<T>["props"]>) => <EnhancedTableBody<T> {...props} />
+    );
+
+    render() {
+        return <this.Component {...this.props} />;
+    }
+}

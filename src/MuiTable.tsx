@@ -1,6 +1,6 @@
 import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, withStyles } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
-import { WithStyles } from '@material-ui/styles';
+import { WithStyles, PropsOfStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
@@ -11,6 +11,7 @@ import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
 import Utils from './utils';
+import { PropsFor } from '@material-ui/system';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -24,11 +25,10 @@ const styles = (theme: Theme) => createStyles({
         height: '100%'
     },
     border: {
-        border: '1px solid rgb(174, 174, 174)'
+        border: `1px solid ${theme.palette.text.hint}`
     },
     table: {
         display: 'table',
-        height: 'calc(100% - 1px)',
     },
     search: {
         marginTop: 12,
@@ -66,7 +66,7 @@ const styles = (theme: Theme) => createStyles({
     }
 });
 
-class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, TableState> {
+class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
     static defaultProps: Omit<TableProps, 'data' | 'columns'> = {
         className: undefined,
         headClasses: undefined,
@@ -160,8 +160,8 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
             originalData: data,
             data: data.map((item, index) => {
                 return {
-                    ...item,
-                    _id: !!dataId ? item[dataId] : index,
+                    id: !!dataId ? item[dataId] : index,
+                    data: item,
                 };
             }),
             columns: columns.map(column => {
@@ -225,14 +225,14 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
                 searchMatchers = {};
                 const searchColumns = columns.filter(column => column.searchable);
 
-                displayData = displayData.filter(item => {
+                displayData = displayData.filter(row => {
                     let match = false;
                     const matchers: {
                         [columnId: string]: SearchMatcher
                     } = {};
 
                     searchColumns.forEach(column => {
-                        const stringValue = _.toString(item[column.id]); //column.formatter.getValueString(item[column.id]);
+                        const stringValue = _.toString(row.data[column.id]); //column.formatter.getValueString(item[column.id]);
                         const matcher = Utils.getMatcher(stringValue, searchText);
 
                         // const matcher = SmartTableV2.getSearchMatcher(searchText, column, item);
@@ -248,22 +248,22 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
                             searchMatchers = {};
                         }
 
-                        searchMatchers[item._id] = matchers;
+                        searchMatchers[row.id] = matchers;
                     }
 
                     return match;
                 });
             } else if (searchMatchers) {
                 const rowIds = Object.keys(searchMatchers);
-                displayData = displayData.filter(item => rowIds.includes(_.toString(item._id)));
+                displayData = displayData.filter(row => rowIds.includes(_.toString(row.id)));
             }
         } else {
             searchMatchers = null;
         }
 
         if (filteredData.length) {
-            const filteredIds = _.intersection(displayData.map(item => item._id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
-            displayData = displayData.filter(item => filteredIds.includes(item._id));
+            const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
+            displayData = displayData.filter(row => filteredIds.includes(row.id));
         }
 
         const sortColumn = _.find(columns, column => column.id === sortBy);
@@ -288,13 +288,13 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
         return null;
     }
 
-    state: TableState = MuiTable.defaultState;
+    state: TableState<T> = MuiTable.defaultState;
 
     componentDidMount = () => {
         this.updateTableState(MuiTable.getInitialState(this.props));
     }
 
-    updateTableState = (newValues: Partial<TableState>, callback?: (newState: TableState) => void) => {
+    updateTableState = (newValues: Partial<TableState<T>>, callback?: (newState: TableState<T>) => void) => {
         const onStateChange = this.state.options.onStateChange;
         const prevState = this.state;
         const nextState = MuiTable.getNextState(newValues, prevState);
@@ -309,7 +309,7 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
         const index = _.findIndex(this.state.columns, column => column.id === columnId);
 
         if (index !== -1) {
-            const columns = [ ...this.state.columns ];
+            const columns = [...this.state.columns];
 
             columns[index] = {
                 ...columns[index],
@@ -368,21 +368,21 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
             onRowSelectionsChange,
         } = options;
 
-        const enabledItems = displayData.filter((item, index) => {
+        const enabledRows = displayData.filter((row, index) => {
             if (!onRowStatus) {
                 return true;
             }
 
-            const status = onRowStatus(item._id, item, index);
+            const status = onRowStatus(row.id, row.data, index);
             return status ? !status.disabled : true;
         });
 
         const shouldSelectAll = !_.isBoolean(select)
-            ? rowSelections.length !== enabledItems.length
+            ? rowSelections.length !== enabledRows.length
             : !!select;
 
         const nextRowSelections = shouldSelectAll
-            ? _.union(rowSelections, enabledItems.map(item => item._id))
+            ? _.union(rowSelections, enabledRows.map(row => row.id))
             : [];
 
         this.updateTableState({
@@ -431,7 +431,7 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
     }
 
     updateFilter = (index: number, ids: TableRowId[] | null) => {
-        const filteredData = [ ...this.state.filteredData ];
+        const filteredData = [...this.state.filteredData];
         filteredData[index] = ids;
 
         this.updateTableState({
@@ -541,7 +541,7 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
             FilterComponents,
             CustomComponents,
             RowExpandComponent,
-        } = options as Required<TableOptions>;
+        } = options as Required<TableOptions<T>>;
 
         const displayColumns = columns.filter(column => column.display || !column.name);
         const currentPageData = pagination ? displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage) : displayData;
@@ -607,7 +607,7 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
                                             onSortData={this.sortData} />
                                     }
 
-                                    <TableBody
+                                    <TableBody<T>
                                         className={cx({ [classes.noWrap]: noWrap })}
                                         classes={bodyClasses}
                                         columns={displayColumns}
@@ -627,4 +627,15 @@ class MuiTable extends React.Component<TableProps & WithStyles<typeof styles>, T
     }
 }
 
-export default withStyles(styles, { name: 'MuiTable' })(MuiTable);
+// export default withStyles(styles, { name: 'MuiTable' })(MuiTable)
+
+// https://stackoverflow.com/a/52573647
+export default class WrappedMuiTable<T> extends React.Component<PropsFor<WrappedMuiTable<T>["Component"]>, {}> {
+    private readonly Component = withStyles(styles, { name: 'MuiTable' })(
+        (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>) => <MuiTable<T> {...props} />
+    );
+
+    render() {
+        return <this.Component {...this.props} />;
+    }
+}
