@@ -21,7 +21,7 @@ const styles = (theme: Theme) => createStyles({
     },    
     rowNoHeaders: {
         '&:nth-of-type(even)': {
-            backgroundColor: 'unset',
+            backgroundColor: 'inherit',
         },
         '&:nth-of-type(odd)': {
             backgroundColor: theme.palette.background.default,
@@ -29,16 +29,22 @@ const styles = (theme: Theme) => createStyles({
     },
     rowNoAlternativeColor: {
         '&:nth-of-type(even)': {
-            backgroundColor: 'unset',
+            backgroundColor: 'inherit',
         },
         '&:nth-of-type(odd)': {
-            backgroundColor: 'unset',
+            backgroundColor: 'inherit',
         },
     },    
     rowClickable: {
         cursor: 'pointer'
     },
     rowAction: {
+        right: 0,
+        width: 1,
+        position: 'sticky',
+        backgroundColor: theme.palette.grey[100],
+    },
+    rowActionButton: {
         width: 20,
         height: 20,
         fontSize: '16px',
@@ -85,7 +91,6 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface Props<T> {
-    theme: Theme;
     className?: string;
     columns: TableColumn[];
     data: MuiTableRow<T>[];
@@ -96,7 +101,7 @@ interface Props<T> {
     searchMatchers?: SearchMatchers | null;
 }
 
-class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles>> {
+class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
 
     renderRowActions = (actions: TableAction[]) => {
         if (!_.isArray(actions)) {
@@ -114,7 +119,11 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
         return (
             <Tooltip key={index} title={name}>
                 <div style={{ display: 'inline' }} className={className}>
-                    <IconButton className={this.props.classes.rowAction} onClick={callback} disabled={disabled}>
+                    <IconButton 
+                        className={this.props.classes.rowActionButton} 
+                        onClick={(event) => +event.stopPropagation() || callback(event)} 
+                        disabled={disabled}>
+
                         {!!icon ? icon : <Icon className={className} />}
                     </IconButton>
                 </div>
@@ -223,7 +232,7 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
                     const rowClassName = cx(classes.row, {
                         [classes.rowNoHeaders]: showHeaders,
                         [classes.rowClickable]: !!onRowClick || selectable || expandable,
-                        [classes.rowNoAlternativeColor]: !alternativeRowColor,                        
+                        [classes.rowNoAlternativeColor]: !alternativeRowColor,
                     }, className);
 
                     const cellClassName = cx(classes.cell, {
@@ -306,7 +315,13 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
                                 })}
 
                                 {onRowActions &&
-                                    <TableCell className={cellClassName} align="right" style={{ padding: !actions.length ? 0 : undefined }}>
+                                    <TableCell 
+                                        className={cx(cellClassName, classes.rowAction, classes.cellNoWrap)} 
+                                        align="right" 
+                                        style={{ 
+                                            padding: !actions.length ? 0 : undefined,
+                                        }}>
+                                            
                                         {this.renderRowActions(actions)}
                                     </TableCell>
                                 }

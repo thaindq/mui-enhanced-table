@@ -32,10 +32,11 @@ interface Props {
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
 
-class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles>> {
+class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles, true>> {
     render() {
         const {
             classes,
+            theme,
             className,
             columns,
             options,
@@ -90,11 +91,17 @@ class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles
                         </HeaderCell>
                     ))}
 
-                    {onRowActions && <HeaderCell className={classes.cell} style={{ padding: 0 }}/>}
+                    {onRowActions && 
+                        <HeaderCell 
+                            className={classes.cell} 
+                            style={{ 
+                                right: 0,
+                                position: 'sticky',
+                            }}/>}
                 </TableRow>
             </TableHead>
         );
     }
 }
 
-export default withStyles(styles, { name: "MuiTableHead" })(EnhancedTableHead);
+export default withStyles(styles, { name: 'MuiTableHead', withTheme: true })(EnhancedTableHead);
