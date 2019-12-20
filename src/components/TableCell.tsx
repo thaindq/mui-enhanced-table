@@ -17,6 +17,6 @@ const HeaderCell = withStyles((theme: Theme) => ({
     body: {
         fontSize: 14,        
     },
-}), { name: "MuiHeaderCell" })(TableCell);
+}), { name: 'MuiHeaderCell' })(TableCell);
 
 export { HeaderCell };

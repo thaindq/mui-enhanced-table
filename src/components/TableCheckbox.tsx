@@ -5,4 +5,4 @@ export default withStyles((theme: Theme) => ({
         width: 40,
         height: 39,
     }
-}), { name: "MuiTableCheckbox" })(Checkbox);
+}), { name: 'MuiTableCheckbox' })(Checkbox);
