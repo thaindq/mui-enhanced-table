@@ -9,6 +9,7 @@ import TableCheckbox from './TableCheckbox';
 import TableRadio from './TableRadio';
 import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRow as MuiTableRow, SearchMatchers } from '../../types';
 import { PropsFor } from '@material-ui/system';
+import BaseFormatter from '../formatters/BaseFormatter';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -287,11 +288,11 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
                                         value = column.defaultValue;
                                     }
 
-                                    // const stringValue = column.formatter.getValueString(value);
-                                    const searchMatcher = searchMatchers && searchMatchers[row.id] && searchMatchers[row.id][column.id];
-
-                                    // TODO: add formatter
-                                    const formattedValue = value;
+                                    const searchMatcher = searchMatchers && searchMatchers[row.id] && searchMatchers[row.id][column.id] || null;
+                                    const formatter = column.formatter || new BaseFormatter();
+                                    const formattedValue = _.isFunction(formatter)
+                                        ? formatter(value, searchMatcher, theme, selected, expanded, row.data)
+                                        : formatter.format(value, searchMatcher, theme, selected, expanded, row.data);
 
                                     const { 
                                         style,
@@ -309,7 +310,7 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
                                                 ...column.bodyStyle
                                             }}>
                                             
-                                            <span>{formattedValue}</span>
+                                            {formattedValue}
                                         </TableCell>
                                     );
                                 })}

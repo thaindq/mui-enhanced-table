@@ -1,22 +1,21 @@
 import { Theme } from '@material-ui/core';
 import _ from 'lodash';
-import React, { Fragment } from 'react';
+import React from 'react';
 import { SearchMatcher } from '../../types';
 
-interface FormatterProps {
-    value: any;
-    matcher?: SearchMatcher;
-    theme?: Theme;
-    isSelected?: boolean;
-    item?: any;
+export type FormatFunction<T = any> = (value: any, matcher: SearchMatcher | null, theme: Theme, isSelected: boolean, isExpanded: boolean, item: T) => React.ReactNode;
+
+export interface Formatter<T = any> {
+    format: FormatFunction<T>;
+    getValueString: (value: any) => string;
 }
 
-class BaseFormatter<Props extends FormatterProps> extends React.Component<Props> {    
-    format(value: any, matcher?: SearchMatcher, theme?: Theme, isSelected?: boolean, item?: any) {
+class BaseFormatter<T = any> implements Formatter<T> {
+    format(value: any, matcher: SearchMatcher | null, theme: Theme, isSelected: boolean, isExpanded: boolean, item: T): React.ReactNode {
         if (!matcher) {
             return this.getValueString(value);
         }
-
+ 
         const {
             pre,
             post,
@@ -24,29 +23,17 @@ class BaseFormatter<Props extends FormatterProps> extends React.Component<Props>
         } = matcher;
 
         return (
-            <Fragment>
+            <>
                 {pre}<span style={{
-                    backgroundColor: 'yellow',
-                    color: 'inherit',
+                    backgroundColor: theme.palette.secondary.light,
+                    color: theme.palette.secondary.contrastText,
                 }}>{match}</span>{post}
-            </Fragment>
+            </>
         );
     }
 
     getValueString(value: any) {
         return _.toString(value);
-    }
-
-    render() {
-        const {
-            value,
-            matcher,
-            theme,
-            isSelected,
-            item,
-        } = this.props;
-
-        return this.format(value, matcher, theme, isSelected, item);
     }
 }
 

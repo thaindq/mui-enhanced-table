@@ -12,6 +12,7 @@ import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
 import Utils from './utils';
 import { PropsFor } from '@material-ui/system';
+import BaseFormatter from './formatters/BaseFormatter';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -172,7 +173,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                     sortable = true,
                     filterable = true,
                     searchable = true,
-                    // formatter = Formatter,
+                    formatter = new BaseFormatter(),
                     ...rest
                 } = column;
 
@@ -193,7 +194,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                     sortable,
                     filterable,
                     searchable,
-                    // formatter,
+                    formatter,
                     ...rest,
                 };
             }),
@@ -232,10 +233,11 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                     } = {};
 
                     searchColumns.forEach(column => {
-                        const stringValue = _.toString(row.data[column.id]); //column.formatter.getValueString(item[column.id]);
-                        const matcher = Utils.getMatcher(stringValue, searchText);
-
-                        // const matcher = SmartTableV2.getSearchMatcher(searchText, column, item);
+                        const value = row.data[column.id];
+                        const valueString = column.formatter && !_.isFunction(column.formatter)
+                            ? column.formatter.getValueString(value)
+                            : _.toString(value);
+                        const matcher = Utils.getMatcher(valueString, searchText);
 
                         if (matcher) {
                             match = true;

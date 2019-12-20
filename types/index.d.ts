@@ -1,5 +1,6 @@
-import { CSSProperties, ClassNameMap } from "@material-ui/styles";
-import { SortDirection } from "@material-ui/core";
+import { SortDirection, TableCellProps } from "@material-ui/core";
+import { ClassNameMap, CSSProperties } from "@material-ui/styles";
+import { Formatter, FormatFunction } from "../src/formatters/BaseFormatter";
 
 export type TableRowId = string | number;
 export type TableColumnId = string;
@@ -19,7 +20,7 @@ export interface TableRowStatus {
     expanded?: boolean;
 }
 
-export interface TableColumn {
+export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     id: TableColumnId;
     name: string;
     defaultValue?: any;
@@ -28,11 +29,9 @@ export interface TableColumn {
     filterable?: boolean;
     searchable?: boolean;
     dateTime?: boolean;
-    align?: 'inherit' | 'left' | 'center' | 'right' | 'justify';
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
-    customHead?: () => React.ReactNode;
-    customBody?: () => React.ReactNode;
+    formatter?: Formatter<T> | FormatFunction<T>;
 }
 
 export interface TableCellStatus {
