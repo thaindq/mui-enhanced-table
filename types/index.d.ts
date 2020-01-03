@@ -105,8 +105,8 @@ export interface TableOptions<T = any> {
     customActions?: TableAction[];
     onRowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableAction[];
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
-    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
-    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
+    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
+    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
     onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
     onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
     onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;

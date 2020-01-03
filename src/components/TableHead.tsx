@@ -28,11 +28,11 @@ interface Props {
     rowCount?: number;    
     sortBy?: TableColumnId;
     sortDirection?: SortDirection;
-    onToggleSelectAll: (select?: boolean) => void;
+    onToggleSelectAll: () => void;
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
 
-class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles, true>> {
+class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, true>> {
     render() {
         const {
             classes,
@@ -62,7 +62,7 @@ class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles
                     {expandable && <HeaderCell className={classes.cell}/>}
                     {selectable &&
                         <HeaderCell className={classes.cell}>
-                            {multiSelect && !!selectionCount && !!rowCount &&
+                            {multiSelect && selectionCount !== undefined && rowCount !== undefined &&
                                 <TableCheckbox
                                     indeterminate={selectionCount > 0 && selectionCount < rowCount}
                                     checked={selectionCount > 0 && selectionCount === rowCount}
@@ -104,4 +104,4 @@ class EnhancedTableHead extends React.Component<Props & WithStyles<typeof styles
     }
 }
 
-export default withStyles(styles, { name: 'MuiTableHead', withTheme: true })(EnhancedTableHead);
+export default withStyles(styles, { name: 'MuiTableHead', withTheme: true })(MuiTableHead);

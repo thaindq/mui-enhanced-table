@@ -613,11 +613,14 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                                         classes={bodyClasses}
                                         columns={displayColumns}
                                         data={currentPageData}
-                                        options={options}
+                                        options={options}                                        
                                         // isLoading={status === asyncStatuses.PENDING}
                                         // hasError={status === asyncStatuses.ERROR}
                                         searchMatchers={searchMatchers}
-                                        rowCount={pagination ? rowsPerPage : displayData.length} />
+                                        rowCount={pagination ? rowsPerPage : displayData.length}
+                                        rowSelections={rowSelections}
+                                        rowExpansions={rowExpansions}
+                                        onToggleRowSelection={this.toggleRowSelection} />
                                 </Table>
                             </div>
                         )}

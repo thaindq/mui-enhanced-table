@@ -63,7 +63,7 @@ const styles = (theme: Theme) => createStyles({
         fontSize: '1rem',
     },
     cellHighlighted: {
-        // backgroundColor: `${chroma(theme.palette.common.blue).alpha(0.1)}`
+        backgroundColor: theme.palette.action.selected
     },
     cellDisabled: {
         cursor: 'not-allowed',
@@ -99,10 +99,13 @@ interface Props<T> {
     isLoading?: boolean;
     hasError?: boolean;
     rowCount?: number;
+    rowSelections: TableRowId[];
+    rowExpansions: TableRowId[];
     searchMatchers?: SearchMatchers | null;
+    onToggleRowSelection: (rowId: TableRowId) => void;
 }
 
-class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
+class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
 
     renderRowActions = (actions: TableAction[]) => {
         if (!_.isArray(actions)) {
@@ -134,37 +137,55 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
 
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
+            rowSelections,
+            options,
+            onToggleRowSelection,
+        } = this.props;
+
+        const {
             selectable,
             onRowSelect,
-        } = this.props.options;
+        } = options;
 
-        selectable && onRowSelect && onRowSelect(rowId, rowData, rowIndex);
+        onToggleRowSelection(rowId);
+        selectable && onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
     };
 
     handleRowExpand = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
+            rowExpansions,
+            options,
+        } = this.props;
+
+        const {
             expandable,
             onRowExpand,
-        } = this.props.options;
+        } = options;
 
-        expandable && onRowExpand && onRowExpand(rowId, rowData, rowIndex);
+        expandable && onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
     };
 
     handleRowClick = (rowId: TableRowId, rowData: T, rowIndex: number) => {
+        const {
+            rowSelections,
+            rowExpansions,
+            options,
+        } = this.props;
+
         const {
             expandable,
             selectable,            
             onRowClick,
             onRowExpand,
             onRowSelect,
-        } = this.props.options;
+        } = options;
 
         if (onRowClick) {
             onRowClick(rowId, rowData, rowIndex);
         } else if (expandable) {
-            onRowExpand && onRowExpand(rowId, rowData, rowIndex);
+            onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
         } else if (selectable) {
-            onRowSelect && onRowSelect(rowId, rowData, rowIndex);
+            onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
         }
     };
 
@@ -180,6 +201,8 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
             searchMatchers,
             rowCount,
             options,
+            rowSelections,
+            rowExpansions,
         } = this.props;
 
         const {
@@ -187,9 +210,7 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
             expandable,
             multiSelect,
             highlightRow,
-            alternativeRowColor,
-            rowSelections = [],
-            rowExpansions = [],
+            alternativeRowColor,            
             showHeaders,
             onRowActions,
             onRowStatus,
@@ -271,12 +292,12 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
                                             <TableCheckbox
                                                 checked={selected}
                                                 disabled={disabled}
-                                                onClick={() => this.handleRowSelect(row.id, row.data, rowIndex)} />
+                                                onClick={(event) => +event.stopPropagation() || this.handleRowSelect(row.id, row.data, rowIndex)} />
                                         ||
                                             <TableRadio
                                                 checked={selected}
                                                 disabled={disabled}
-                                                onClick={() => this.handleRowSelect(row.id, row.data, rowIndex)} />
+                                                onClick={(event) => +event.stopPropagation() || this.handleRowSelect(row.id, row.data, rowIndex)} />
                                         }                                    
                                     </TableCell>
                                 }
@@ -357,12 +378,12 @@ class EnhancedTableBody<T> extends React.Component<Props<T> & WithStyles<typeof 
     }
 }
 
-// export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(EnhancedTableBody);
+// export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(MuiTableBody);
 
 // https://stackoverflow.com/a/52573647
-export default class WrappedEnhancedTableBody<T> extends React.Component<PropsFor<WrappedEnhancedTableBody<T>["Component"]>, {}> {
+export default class WrappedMuiTableBody<T> extends React.Component<PropsFor<WrappedMuiTableBody<T>["Component"]>, {}> {
     private readonly Component = withStyles(styles, { name: 'MuiTableBody', withTheme: true })(
-        (props: JSX.LibraryManagedAttributes<typeof EnhancedTableBody, EnhancedTableBody<T>["props"]>) => <EnhancedTableBody<T> {...props} />
+        (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
     );
 
     render() {
