@@ -146,6 +146,12 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
         } = mergedOptions;
 
         const seenColumnIds: string[] = [];
+        const tableData = data.map((item, index) => {
+            return {
+                id: String(!!dataId ? item[dataId] : index),
+                data: item,
+            };
+        });
 
         return {
             ...MuiTable.defaultState,
@@ -159,12 +165,8 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             // tableHeight: pagination && (rowsPerPage * 40 + (showHeaders ? 56 : 0) + 1),
             options: mergedOptions,
             originalData: data,
-            data: data.map((item, index) => {
-                return {
-                    id: !!dataId ? item[dataId] : index,
-                    data: item,
-                };
-            }),
+            data: tableData,
+            displayData: tableData,
             columns: columns.map(column => {
                 const {
                     id,
@@ -218,10 +220,17 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             rowsPerPage,
         } = mergedState;
 
-        let displayData = data;
-        let searchMatchers: SearchMatchers | null = searchText && prevState.searchMatchers || null;
+        let displayData = (newValues.searchText !== undefined || newValues.filteredData !== undefined || newValues.sortBy !== undefined || newValues.sortDirection !== undefined)
+            ? data
+            : prevState.displayData;
+        let searchMatchers: SearchMatchers | null = !!prevState.searchText ? prevState.searchMatchers : null;
 
-        if (searchText) {
+        if (newValues.filteredData !== undefined && filteredData.length) {
+            const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
+            displayData = displayData.filter(row => filteredIds.includes(row.id));
+        }
+
+        if (newValues.searchText !== undefined && searchText) {
             if (prevState.searchText !== searchText) {
                 searchMatchers = {};
                 const searchColumns = columns.filter(column => column.searchable);
@@ -259,26 +268,24 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                 const rowIds = Object.keys(searchMatchers);
                 displayData = displayData.filter(row => rowIds.includes(_.toString(row.id)));
             }
-        } else {
-            searchMatchers = null;
         }
 
-        if (filteredData.length) {
-            const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
-            displayData = displayData.filter(row => filteredIds.includes(row.id));
+        if ((newValues.sortBy !== undefined || newValues.sortDirection !== undefined) && sortDirection) {
+            const sortColumn = _.find(columns, column => column.id === sortBy);
+            displayData = _.orderBy(displayData, item => !!sortColumn
+                ? (sortColumn.dateTime 
+                    ? Date.parse(_.get(item.data, sortBy)) 
+                    : _.get(item.data, sortBy))
+                : '', [sortDirection]);
         }
-
-        const sortColumn = _.find(columns, column => column.id === sortBy);
 
         return {
             ...mergedState,
             searchMatchers,
+            displayData,
             currentPage: mergedState.options.pagination
                 ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
                 : 0,
-            displayData: sortDirection
-                ? _.orderBy(displayData, obj => sortColumn && sortColumn.dateTime && Date.parse(_.get(obj, sortBy)) || _.get(obj, sortBy) || '', [sortDirection])
-                : displayData,
         };
     }
 
@@ -328,13 +335,9 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
         const onRowSelectionsChange = this.state.options.onRowSelectionsChange;
         const ids = _.isArray(rowId) ? rowId : [rowId];
         const prevRowSelections = this.state.rowSelections;
-        const nextRowSelections = !this.state.options.multiSelect
-            ? ids
-            : !_.isBoolean(select)
-                ? _.xor(prevRowSelections, ids)
-                : select
-                    ? _.union(prevRowSelections, ids)
-                    : prevRowSelections.filter(id => !ids.includes(id));
+        const nextRowSelections = this.state.options.multiSelect
+            ? Utils.toggleArrayItem(prevRowSelections, ids, select)
+            : ids;
 
         this.updateTableState({
             rowSelections: nextRowSelections
@@ -345,13 +348,9 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
         const onRowExpansionsChange = this.state.options.onRowExpansionsChange;
         const ids = _.isArray(rowId) ? rowId : [rowId];
         const prevRowExpansions = this.state.rowExpansions;
-        const nextRowExpansions = !this.state.options.multiExpand
-            ? ids
-            : !_.isBoolean(expand)
-                ? _.xor(prevRowExpansions, ids)
-                : expand
-                    ? _.union(prevRowExpansions, ids)
-                    : prevRowExpansions.filter(id => !ids.includes(id));
+        const nextRowExpansions = this.state.options.multiExpand
+            ? Utils.toggleArrayItem(prevRowExpansions, ids, expand)
+            : ids;
 
         this.updateTableState({
             rowExpansions: nextRowExpansions

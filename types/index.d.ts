@@ -2,7 +2,7 @@ import { SortDirection, TableCellProps } from "@material-ui/core";
 import { ClassNameMap, CSSProperties } from "@material-ui/styles";
 import { Formatter, FormatFunction } from "../src/formatters/BaseFormatter";
 
-export type TableRowId = string | number;
+export type TableRowId = string;
 export type TableColumnId = string;
 
 export interface TableRow<T> {
