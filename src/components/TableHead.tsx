@@ -61,7 +61,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
             expandable,
             allCapsHeader,
             multiSelect,
-            onRowActions,
+            rowActions,
         } = options;
 
         return (
@@ -100,7 +100,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
                         </HeaderCell>
                     ))}
 
-                    {onRowActions && <HeaderCell className={cx(classes.cell, classes.cellRowActions)} />}
+                    {rowActions && <HeaderCell className={cx(classes.cell, classes.cellRowActions)} />}
                 </TableRow>
             </TableHead>
         );

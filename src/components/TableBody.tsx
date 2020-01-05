@@ -200,7 +200,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
             highlightRow,
             alternativeRowColor,            
             showHeader,
-            onRowActions,
+            rowActions,
             onRowStatus,
             onRowSelect,
             onRowExpand, 
@@ -251,7 +251,11 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                         [classes.cellLastRow]: rowIndex === data.length - 1,
                     });
 
-                    const actions = onRowActions && onRowActions(row.id, row.data, rowIndex) || [];
+                    const actions = _.isFunction(rowActions)
+                        ? rowActions(row.id, row.data, rowIndex) 
+                        : _.isArray(rowActions)
+                            ? rowActions
+                            : [];
 
                     const rowJsx = (
                         <>
@@ -324,14 +328,8 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                                     );
                                 })}
 
-                                {onRowActions &&
-                                    <TableCell 
-                                        className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} 
-                                        align="right" 
-                                        style={{ 
-                                            padding: !actions.length ? 0 : undefined,
-                                        }}>
-                                            
+                                {rowActions &&
+                                    <TableCell align="right" className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} >                                            
                                         {this.renderRowActions(actions)}
                                     </TableCell>
                                 }
