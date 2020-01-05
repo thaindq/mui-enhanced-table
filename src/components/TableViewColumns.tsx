@@ -21,7 +21,7 @@ export const styles = (theme: Theme) => createStyles({
         marginTop: "8px",
     },
     formControl: {
-        height: 32
+        // height: 36
     },
     checkbox: {
         // width: "32px",
@@ -42,7 +42,6 @@ export const styles = (theme: Theme) => createStyles({
         display: 'inline-block',
         color: theme.palette.text.primary,
         verticalAlign: 'middle',
-        marginTop: 2,
         marginRight: 8,
     }
 });

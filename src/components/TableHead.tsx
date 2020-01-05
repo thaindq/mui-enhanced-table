@@ -18,6 +18,13 @@ const styles = (theme: Theme) => createStyles({
             flexDirection: 'inherit'
         },
     },
+    allCaps: {
+        textTransform: 'uppercase'
+    },
+    cellRowActions: { 
+        right: 0,
+        position: 'sticky',
+    }
 });
 
 interface Props {
@@ -52,6 +59,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
             sortable,
             selectable,
             expandable,
+            allCapsHeader,
             multiSelect,
             onRowActions,
         } = options;
@@ -60,6 +68,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
             <TableHead className={cx(className, classes.root)}>
                 <TableRow className={classes.row}>
                     {expandable && <HeaderCell className={classes.cell}/>}
+
                     {selectable &&
                         <HeaderCell className={classes.cell}>
                             {multiSelect && selectionCount !== undefined && rowCount !== undefined &&
@@ -75,7 +84,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
                         <HeaderCell
                             key={column.id}
                             style={column.headStyle}
-                            className={classes.cell}
+                            className={cx(classes.cell, { [classes.allCaps]: allCapsHeader })}
                             align={column.align}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}>
 
@@ -91,13 +100,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
                         </HeaderCell>
                     ))}
 
-                    {onRowActions && 
-                        <HeaderCell 
-                            className={classes.cell} 
-                            style={{ 
-                                right: 0,
-                                position: 'sticky',
-                            }}/>}
+                    {onRowActions && <HeaderCell className={cx(classes.cell, classes.cellRowActions)} />}
                 </TableRow>
             </TableHead>
         );

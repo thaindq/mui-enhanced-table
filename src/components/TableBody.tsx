@@ -39,20 +39,6 @@ const styles = (theme: Theme) => createStyles({
     rowClickable: {
         cursor: 'pointer'
     },
-    rowAction: {
-        right: 0,
-        width: 1,
-        position: 'sticky',
-        backgroundColor: theme.palette.grey[100],
-    },
-    rowActionButton: {
-        width: 20,
-        height: 20,
-        fontSize: '16px',
-        '& > span': {
-            position: 'absolute'
-        }
-    },
     rowMessage: {
         height: 64
     },
@@ -83,12 +69,25 @@ const styles = (theme: Theme) => createStyles({
             fontSize: '16px'
         }
     },
+    cellRowActions: {
+        right: 0,
+        width: 1,
+        position: 'sticky',
+        backgroundColor: theme.palette.grey[100],
+        '& > *': {
+            display: 'inline-block'
+        }
+    },
     cellNoWrap: {
         whiteSpace: 'nowrap'
     },
     cellLastRow: {
         borderBottom: 'none'
-    },    
+    },
+    cellSelectionControl: {
+        paddingTop: 0,
+        paddingBottom: 0
+    }
 });
 
 interface Props<T> {
@@ -122,15 +121,14 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
 
         return (
             <Tooltip key={index} title={name}>
-                <div style={{ display: 'inline' }} className={className}>
-                    <IconButton 
-                        className={this.props.classes.rowActionButton} 
-                        onClick={(event) => +event.stopPropagation() || callback(event)} 
-                        disabled={disabled}>
+                <IconButton
+                    size="small"
+                    className={className}
+                    onClick={(event) => +event.stopPropagation() || callback(event)} 
+                    disabled={disabled}>
 
-                        {!!icon ? icon : <Icon className={className} />}
-                    </IconButton>
-                </div>
+                    {_.isString(icon) ? <Icon className={icon} /> : icon}
+                </IconButton>
             </Tooltip>
         );
     }
@@ -143,12 +141,11 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
         } = this.props;
 
         const {
-            selectable,
             onRowSelect,
         } = options;
 
         onToggleRowSelection(rowId);
-        selectable && onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
+        onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
     };
 
     handleRowExpand = (rowId: TableRowId, rowData: T, rowIndex: number) => {
@@ -158,34 +155,25 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
         } = this.props;
 
         const {
-            expandable,
             onRowExpand,
         } = options;
 
-        expandable && onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
+        onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
     };
 
     handleRowClick = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
-            rowSelections,
-            rowExpansions,
-            options,
-        } = this.props;
-
-        const {
             expandable,
             selectable,            
             onRowClick,
-            onRowExpand,
-            onRowSelect,
-        } = options;
+        } = this.props.options;
 
         if (onRowClick) {
             onRowClick(rowId, rowData, rowIndex);
         } else if (expandable) {
-            onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
+            this.handleRowExpand(rowId, rowData, rowIndex);
         } else if (selectable) {
-            onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
+            this.handleRowSelect(rowId, rowData, rowIndex);
         }
     };
 
@@ -211,7 +199,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
             multiSelect,
             highlightRow,
             alternativeRowColor,            
-            showHeaders,
+            showHeader,
             onRowActions,
             onRowStatus,
             onRowSelect,
@@ -252,7 +240,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                     } = onRowStatus && onRowStatus(row.id, row.data, rowIndex) || {};
 
                     const rowClassName = cx(classes.row, {
-                        [classes.rowNoHeaders]: showHeaders,
+                        [classes.rowNoHeaders]: showHeader,
                         [classes.rowClickable]: !!onRowClick || selectable || expandable,
                         [classes.rowNoAlternativeColor]: !alternativeRowColor,
                     }, className);
@@ -287,7 +275,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                                 }
 
                                 {selectable &&
-                                    <TableCell className={cellClassName}>
+                                    <TableCell className={cx(cellClassName, classes.cellSelectionControl)}>
                                         {multiSelect &&
                                             <TableCheckbox
                                                 checked={selected}
@@ -338,7 +326,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
 
                                 {onRowActions &&
                                     <TableCell 
-                                        className={cx(cellClassName, classes.rowAction, classes.cellNoWrap)} 
+                                        className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} 
                                         align="right" 
                                         style={{ 
                                             padding: !actions.length ? 0 : undefined,

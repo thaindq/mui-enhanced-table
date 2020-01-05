@@ -91,7 +91,9 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             currentPage: 0,
             showBorder: false,
             showToolbar: true,
-            showHeaders: true,
+            showHeader: true,            
+            stickyHeader: false,
+            allCapsHeader: true,
             highlightRow: true,
             highlightColumn: false,
             alternativeRowColor: true,
@@ -272,10 +274,10 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
 
         if ((newValues.sortBy !== undefined || newValues.sortDirection !== undefined) && sortDirection) {
             const sortColumn = _.find(columns, column => column.id === sortBy);
-            displayData = _.orderBy(displayData, item => !!sortColumn
-                ? (sortColumn.dateTime 
-                    ? Date.parse(_.get(item.data, sortBy)) 
-                    : _.get(item.data, sortBy))
+            displayData = _.orderBy(displayData, row => !!sortColumn
+                ? sortColumn.dateTime
+                    ? Date.parse(_.get(row.data, sortBy))
+                    : _.get(row.data, sortBy)
                 : '', [sortDirection]);
         }
 
@@ -533,7 +535,8 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             title,
             showBorder,
             showToolbar,
-            showHeaders,
+            showHeader,
+            stickyHeader,
             pagination,
             noWrap,
             elevation,
@@ -593,8 +596,12 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}>
 
-                                <Table className={classes.table}>
-                                    {showHeaders &&
+                                <Table 
+                                    className={classes.table} 
+                                    size="small" 
+                                    stickyHeader={stickyHeader}>
+
+                                    {showHeader &&
                                         <TableHead
                                             className={cx({ [classes.noWrap]: noWrap })}
                                             classes={headClasses}

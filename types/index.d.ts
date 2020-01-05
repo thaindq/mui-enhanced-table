@@ -41,8 +41,8 @@ export interface TableCellStatus {
 
 export interface TableAction {
     name: string;
-    className?: string;
-    icon?: React.ReactNode;
+    className?: string;    
+    icon?: React.ReactNode | string;
     button?: React.ReactNode;
     disabled?: boolean;
     callback: (event: React.MouseEvent<HTMLElement>) => void;
@@ -92,7 +92,9 @@ export interface TableOptions<T = any> {
     rowsPerPageOptions?: number[];
     showBorder?: boolean;
     showToolbar?: boolean;
-    showHeaders?: boolean;
+    showHeader?: boolean;
+    stickyHeader?: boolean;
+    allCapsHeader?: boolean;
     pagination?: boolean;
     noWrap?: boolean;
     highlightRow?: boolean;
