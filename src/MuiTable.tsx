@@ -305,14 +305,16 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
         this.updateTableState(MuiTable.getInitialState(this.props));
     }
 
-    updateTableState = (newValues: Partial<TableState<T>>, callback?: (newState: TableState<T>) => void) => {
+    updateTableState = (newValues: Partial<TableState<T>>, callback?: (newState: TableState<T>, prevState: TableState<T>) => void) => {
         const onStateChange = this.state.options.onStateChange;
-        const prevState = this.state;
-        const nextState = MuiTable.getNextState(newValues, prevState);
+        let prevState: TableState<T>;
 
-        this.setState(nextState, () => {
-            callback && callback(nextState);
-            onStateChange && onStateChange(nextState, prevState);
+        this.setState(currState => {
+            prevState = currState;
+            return MuiTable.getNextState(newValues, prevState);
+        }, () => {
+            callback && callback(this.state, prevState);
+            onStateChange && onStateChange(this.state, prevState);
         });
     }
 

@@ -39,7 +39,7 @@ interface Props {
 }
 
 interface State {
-    viewColumnsAnchor: any,
+    viewColumnsAnchor: Element | null,
 }
 
 class TableToolbar extends React.Component<Props & WithStyles<typeof styles>, State> {
@@ -48,9 +48,10 @@ class TableToolbar extends React.Component<Props & WithStyles<typeof styles>, St
     }
 
     toggleViewColumns = (event: React.MouseEvent<HTMLElement>) => {
-        this.setState({
-            viewColumnsAnchor: !!this.state.viewColumnsAnchor ? null : event.target,
-        });
+        const target = event.target as HTMLElement;
+        this.setState(prevState => ({
+            viewColumnsAnchor: !!prevState.viewColumnsAnchor ? null : target,
+        }));
     }
 
     renderAction = (action: TableAction) => {
