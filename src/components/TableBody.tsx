@@ -9,7 +9,8 @@ import TableCheckbox from './TableCheckbox';
 import TableRadio from './TableRadio';
 import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRow as MuiTableRow, SearchMatchers } from '../../types';
 import { PropsFor } from '@material-ui/system';
-import BaseFormatter from '../formatters/BaseFormatter';
+import SearchHighlightedFormatter from '../formatters/SearchHighlightedFormatter';
+import { FormatProps } from '../formatters/BaseFormatter';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -302,10 +303,22 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                                     }
 
                                     const searchMatcher = searchMatchers && searchMatchers[row.id] && searchMatchers[row.id][column.id] || null;
-                                    const formatter = column.formatter || new BaseFormatter();
-                                    const formattedValue = _.isFunction(formatter)
-                                        ? formatter(value, searchMatcher, theme, selected, expanded, row.data)
-                                        : formatter.format(value, searchMatcher, theme, selected, expanded, row.data);
+                                    const formatter = column.formatter;
+
+                                    const formatProps: FormatProps<T> = {
+                                        value,
+                                        matcher: searchMatcher,
+                                        theme,
+                                        selected,
+                                        expanded,
+                                        item: row.data
+                                    };
+
+                                    const formattedValue = formatter                                        
+                                        ? _.isFunction(formatter)
+                                            ? formatter(formatProps)
+                                            : formatter.format(formatProps)
+                                        : '';
 
                                     const { 
                                         style,

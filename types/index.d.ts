@@ -1,6 +1,6 @@
 import { SortDirection, TableCellProps } from "@material-ui/core";
 import { ClassNameMap, CSSProperties } from "@material-ui/styles";
-import { Formatter, FormatFunction } from "../src/formatters/BaseFormatter";
+import BaseFormatter, { FormatFunction } from "../src/formatters/BaseFormatter";
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -31,7 +31,7 @@ export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     dateTime?: boolean;
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
-    formatter?: Formatter<T> | FormatFunction<T>;
+    formatter?: BaseFormatter<T> | FormatFunction<T>;
 }
 
 export interface TableCellStatus {
@@ -135,8 +135,7 @@ export interface SearchMatchers {
 }
 
 export interface TableFilterComponentProps<T = any> {
-    column?: string,
-    columnData?: (item: TableRow<T>) => string;
+    filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId),
     data: TableRow<T>[];
     displayData: TableRow<T>[];
     onUpdateFilter: (ids: TableRowId[] | null) => void;

@@ -12,7 +12,7 @@ import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
 import Utils from './utils';
 import { PropsFor } from '@material-ui/system';
-import BaseFormatter from './formatters/BaseFormatter';
+import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -177,7 +177,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                     sortable = true,
                     filterable = true,
                     searchable = true,
-                    formatter = new BaseFormatter(),
+                    formatter = new SearchHighlightedFormatter(),
                     ...rest
                 } = column;
 
