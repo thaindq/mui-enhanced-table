@@ -1,11 +1,11 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, withStyles } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, withStyles, CircularProgress, Typography } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles, PropsOfStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { SearchMatcher, SearchMatchers, TableColumnId, TableOptions, TableProps, TableRowId, TableState } from '../types';
+import { SearchMatcher, SearchMatchers, TableColumnId, TableOptions, TableProps, TableRowId, TableState, TableStatus } from '../types';
 import TableBody from './components/TableBody';
 import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
@@ -29,6 +29,7 @@ const styles = (theme: Theme) => createStyles({
         border: `1px solid ${theme.palette.text.hint}`
     },
     table: {
+        position: 'relative',
         display: 'table',
     },
     search: {
@@ -62,6 +63,20 @@ const styles = (theme: Theme) => createStyles({
         overflow: 'hidden',
         textOverflow: 'ellipsis',
     },
+    loader: {
+        top: 0,
+        left: 0,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: theme.palette.action.disabledBackground,
+        '& ~ *': {
+            opacity: 0.25,
+        }
+    },
     customComponentsContainer: {
 
     }
@@ -89,6 +104,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             rowsPerPage: 10,
             rowsPerPageOptions: [10, 20, 40],
             currentPage: 0,
+            status: 'Idle',
             showBorder: false,
             showToolbar: true,
             showHeader: true,            
@@ -535,6 +551,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
 
         const {
             title,
+            status,
             showBorder,
             showToolbar,
             showHeader,
@@ -559,6 +576,9 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                     [classes.border]: showBorder
                 })}>
 
+                {/* <div className={classes.loader}>
+                    <CircularProgress size={40}/>
+                </div> */}
 
                 {showToolbar &&
                     <ToolbarComponent
@@ -623,8 +643,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                                         columns={displayColumns}
                                         data={currentPageData}
                                         options={options}                                        
-                                        // isLoading={status === asyncStatuses.PENDING}
-                                        // hasError={status === asyncStatuses.ERROR}
+                                        status={status}
                                         searchMatchers={searchMatchers}
                                         rowCount={pagination ? rowsPerPage : displayData.length}
                                         rowSelections={rowSelections}

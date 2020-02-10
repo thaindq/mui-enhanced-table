@@ -1,4 +1,4 @@
-import { CircularProgress, createStyles, Icon, IconButton, TableBody, TableRow, Theme, Tooltip, withStyles } from '@material-ui/core';
+import { CircularProgress, createStyles, Icon, IconButton, TableBody, TableRow, Theme, Tooltip, withStyles, Typography } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -7,13 +7,14 @@ import React from 'react';
 import TableCell from './TableCell';
 import TableCheckbox from './TableCheckbox';
 import TableRadio from './TableRadio';
-import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRow as MuiTableRow, SearchMatchers } from '../../types';
+import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRow as MuiTableRow, SearchMatchers, TableStatus } from '../../types';
 import { PropsFor } from '@material-ui/system';
 import SearchHighlightedFormatter from '../formatters/SearchHighlightedFormatter';
 import { FormatProps } from '../formatters/BaseFormatter';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
+        position: 'relative'
     },
     row: {
         transition: 'all ease .2s',
@@ -88,6 +89,16 @@ const styles = (theme: Theme) => createStyles({
     cellSelectionControl: {
         paddingTop: 0,
         paddingBottom: 0
+    },
+    message: {
+        top: 0,
+        left: 0,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 });
 
@@ -96,8 +107,7 @@ interface Props<T> {
     columns: TableColumn[];
     data: MuiTableRow<T>[];
     options: TableOptions<T>;
-    isLoading?: boolean;
-    hasError?: boolean;
+    status: TableStatus;
     rowCount?: number;
     rowSelections: TableRowId[];
     rowExpansions: TableRowId[];
@@ -185,11 +195,10 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
             className,
             columns,
             data,
-            isLoading,
-            hasError,            
             searchMatchers,
             rowCount,
             options,
+            status,
             rowSelections,
             rowExpansions,
         } = this.props;
@@ -213,6 +222,8 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
 
         const emptyRows = data.length === 0 ? 1 : ((rowCount || 0) - data.length);
         const colSpan = columns.length + (selectable ? 1 : 0);
+        const isLoading = status === 'Pending';
+        const hasError = status === 'Error';
         const shouldShowLoading = isLoading && !data.length;
         const shouldShowError = hasError && !data.length;
         const shouldShowNoData = !isLoading && !hasError && !data.length;
@@ -220,16 +231,13 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
 
         return (
             <TableBody className={cx(className, classes.root)}>
-                {hasMessage &&
-                    <TableRow className={cx(classes.row, classes.rowMessage)}>
-                        <TableCell colSpan={colSpan} className={classes.cellEmpty}>
-                            {shouldShowLoading && <CircularProgress size={40} />}
-                            {shouldShowError && 'Error loading data'}
-                            {shouldShowNoData && 'No data'}
-                        </TableCell>
-                    </TableRow>                   
-                
-                || data.map((row, rowIndex) => {
+                {hasMessage && (
+                    <div className={classes.message}>
+                        {shouldShowLoading && <CircularProgress size={40}/>}
+                        {shouldShowError && <Typography>Error loading data</Typography>}
+                        {shouldShowNoData && <Typography>No data</Typography>}
+                    </div>
+                ) || data.map((row, rowIndex) => {
                     const {
                         style,
                         tooltip,

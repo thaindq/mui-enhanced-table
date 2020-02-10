@@ -20,6 +20,8 @@ export interface TableRowStatus {
     expanded?: boolean;
 }
 
+export type TableStatus = 'Idle' | 'Pending' | 'Completed' | 'Error';
+
 export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     id: TableColumnId;
     name: string;
@@ -88,6 +90,7 @@ export interface TableOptions<T = any> {
     multiSelect?: boolean;
     multiExpand?: boolean;
     searchable?: boolean;
+    status?: TableStatus;
     rowsPerPage?: number;
     rowsPerPageOptions?: number[];
     showBorder?: boolean;
