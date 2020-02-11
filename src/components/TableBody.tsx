@@ -115,33 +115,6 @@ interface Props<T> {
 
 class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
 
-    renderRowActions = (actions: TableAction[]) => {
-        if (!_.isArray(actions)) {
-            throw new Error('rowActions must return an array of action object');
-        }
-
-        return actions.map(this.renderAction);
-    }
-
-    renderAction = ({ name, icon, button, callback, disabled, className }: TableAction, index: number) => {
-        if (button) {
-            return <React.Fragment key={index}>{button}</React.Fragment>;
-        }
-
-        return (
-            <Tooltip key={index} title={name}>
-                <IconButton
-                    size="small"
-                    className={className}
-                    onClick={(event) => +event.stopPropagation() || callback(event)} 
-                    disabled={disabled}>
-
-                    {_.isString(icon) ? <Icon className={icon} /> : icon}
-                </IconButton>
-            </Tooltip>
-        );
-    }
-
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
             rowSelections,
@@ -258,12 +231,6 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                         [classes.cellLastRow]: rowIndex === data.length - 1,
                     });
 
-                    const actions = _.isFunction(rowActions)
-                        ? rowActions(row.id, row.data, rowIndex) 
-                        : _.isArray(rowActions)
-                            ? rowActions
-                            : [];
-
                     const rowJsx = (
                         <>
                             <TableRow
@@ -349,7 +316,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
 
                                 {rowActions &&
                                     <TableCell align="right" className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} >                                            
-                                        {this.renderRowActions(actions)}
+                                        {rowActions(row.id, row.data, rowIndex)}
                                     </TableCell>
                                 }
                             </TableRow>
