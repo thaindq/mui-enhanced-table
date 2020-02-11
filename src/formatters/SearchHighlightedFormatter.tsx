@@ -1,7 +1,19 @@
 import React from 'react';
-import BaseFormatter, { FormatProps } from './BaseFormatter';
+import BaseFormatter from './BaseFormatter';
+import { FormatterProps } from '../../types';
 
 class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
+
+    static instance: SearchHighlightedFormatter;
+    
+    static getInstance() {
+        if (!this.instance) {
+            this.instance = new SearchHighlightedFormatter();
+        }
+
+        return this.instance;
+    }
+
     highlightColor?: string;
     backgroundColor?: string;
 
@@ -15,7 +27,7 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
         value,
         matcher,
         theme,
-    }: FormatProps<T>) {
+    }: FormatterProps<T>) {
         if (!matcher) {
             return this.getValueString(value);
         }

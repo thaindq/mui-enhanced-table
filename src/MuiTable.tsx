@@ -197,7 +197,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                     sortable = true,
                     filterable = true,
                     searchable = true,
-                    formatter = new SearchHighlightedFormatter(),
+                    formatter = SearchHighlightedFormatter.getInstance(),
                     ...rest
                 } = column;
 

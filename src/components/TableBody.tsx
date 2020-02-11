@@ -1,16 +1,14 @@
-import { CircularProgress, createStyles, Icon, IconButton, TableBody, TableRow, Theme, Tooltip, withStyles, Typography } from '@material-ui/core';
+import { CircularProgress, createStyles, Icon, IconButton, TableBody, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
+import { PropsFor } from '@material-ui/system';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
+import { SearchMatchers, TableAction, TableColumn, TableOptions, TableRow as MuiTableRow, TableRowId, TableStatus, FormatterProps } from '../../types';
 import TableCell from './TableCell';
 import TableCheckbox from './TableCheckbox';
 import TableRadio from './TableRadio';
-import { SearchMatcher, TableAction, TableColumn, TableOptions, TableRowId, TableRow as MuiTableRow, SearchMatchers, TableStatus } from '../../types';
-import { PropsFor } from '@material-ui/system';
-import SearchHighlightedFormatter from '../formatters/SearchHighlightedFormatter';
-import { FormatProps } from '../formatters/BaseFormatter';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -313,7 +311,7 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
                                     const searchMatcher = searchMatchers && searchMatchers[row.id] && searchMatchers[row.id][column.id] || null;
                                     const formatter = column.formatter;
 
-                                    const formatProps: FormatProps<T> = {
+                                    const formatterProps: FormatterProps<T> = {
                                         value,
                                         matcher: searchMatcher,
                                         theme,
@@ -324,8 +322,8 @@ class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof style
 
                                     const formattedValue = formatter                                        
                                         ? _.isFunction(formatter)
-                                            ? formatter(formatProps)
-                                            : formatter.format(formatProps)
+                                            ? formatter(formatterProps)
+                                            : formatter.format(formatterProps)
                                         : '';
 
                                     const { 
