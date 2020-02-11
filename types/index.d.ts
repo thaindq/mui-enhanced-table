@@ -121,7 +121,11 @@ export interface TableOptions<T = any> {
     dependencies?: any[];
     ToolbarComponent?: React.ComponentType<any>;
     RowExpandComponent?: React.ComponentType<any>;
-    FilterComponents?: React.ElementType<TableFilterComponentProps<T>>[];
+    filters?: {
+        filterName: string,
+        filterBy: string,
+        filterComponent: React.ComponentType<FilterProps<T>>
+    }[];
     CustomComponents?: React.ElementType<any>[];
 }
 
@@ -137,9 +141,10 @@ export interface SearchMatchers {
     }
 }
 
-export interface TableFilterComponentProps<T = any> {
+
+export interface FilterProps<T = any> {
+    filterId: number;
     filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId),
     data: TableRow<T>[];
-    displayData: TableRow<T>[];
-    onUpdateFilter: (ids: TableRowId[] | null) => void;
+    onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
 }

@@ -1,4 +1,4 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, withStyles, CircularProgress, Typography } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, withStyles, CircularProgress, Typography, FormLabel } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles, PropsOfStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -79,7 +79,11 @@ const styles = (theme: Theme) => createStyles({
     },
     customComponentsContainer: {
 
-    }
+    },
+    filtersContainer: {
+        paddingLeft: 16,
+        paddingRight: 8
+    },    
 });
 
 class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
@@ -107,7 +111,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             status: 'Idle',
             showBorder: false,
             showToolbar: true,
-            showHeader: true,            
+            showHeader: true,
             stickyHeader: false,
             allCapsHeader: true,
             highlightRow: true,
@@ -117,7 +121,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             columnHidings: [],
             rowSelections: [],
             rowExpansions: [],
-            FilterComponents: [],
+            filters: [],
             CustomComponents: [],
             ToolbarComponent: TableToolbar,
         }
@@ -243,49 +247,42 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             : prevState.displayData;
         let searchMatchers: SearchMatchers | null = !!prevState.searchText ? prevState.searchMatchers : null;
 
-        if (newValues.filteredData !== undefined && filteredData.length) {
+        if (prevState.filteredData !== filteredData || prevState.searchText !== searchText) {
             const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
             displayData = displayData.filter(row => filteredIds.includes(row.id));
-        }
+            
+            searchMatchers = {};
+            const searchColumns = columns.filter(column => column.searchable);
 
-        if (newValues.searchText !== undefined && searchText) {
-            if (prevState.searchText !== searchText) {
-                searchMatchers = {};
-                const searchColumns = columns.filter(column => column.searchable);
+            displayData = displayData.filter(row => {
+                let match = false;
+                const matchers: {
+                    [columnId: string]: SearchMatcher
+                } = {};
 
-                displayData = displayData.filter(row => {
-                    let match = false;
-                    const matchers: {
-                        [columnId: string]: SearchMatcher
-                    } = {};
+                searchColumns.forEach(column => {
+                    const value = row.data[column.id];
+                    const valueString = column.formatter && !_.isFunction(column.formatter)
+                        ? column.formatter.getValueString(value)
+                        : _.toString(value);
+                    const matcher = Utils.getMatcher(valueString, searchText);
 
-                    searchColumns.forEach(column => {
-                        const value = row.data[column.id];
-                        const valueString = column.formatter && !_.isFunction(column.formatter)
-                            ? column.formatter.getValueString(value)
-                            : _.toString(value);
-                        const matcher = Utils.getMatcher(valueString, searchText);
+                    if (matcher) {
+                        match = true;
+                        matchers[column.id] = matcher;
+                    }
+                });
 
-                        if (matcher) {
-                            match = true;
-                            matchers[column.id] = matcher;
-                        }
-                    });
-
-                    if (match) {
-                        if (!searchMatchers) {
-                            searchMatchers = {};
-                        }
-
-                        searchMatchers[row.id] = matchers;
+                if (match) {
+                    if (!searchMatchers) {
+                        searchMatchers = {};
                     }
 
-                    return match;
-                });
-            } else if (searchMatchers) {
-                const rowIds = Object.keys(searchMatchers);
-                displayData = displayData.filter(row => rowIds.includes(_.toString(row.id)));
-            }
+                    searchMatchers[row.id] = matchers;
+                }
+
+                return match;
+            });            
         }
 
         if ((newValues.sortBy !== undefined || newValues.sortDirection !== undefined) && sortDirection) {
@@ -560,8 +557,8 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
             noWrap,
             elevation,
             customActions,
+            filters,
             ToolbarComponent,
-            FilterComponents,
             CustomComponents,
             RowExpandComponent,
         } = options as Required<TableOptions<T>>;
@@ -590,17 +587,24 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                         onDragColumn={this.reorderColumns} />
                 }
 
-                {(CustomComponents.length > 0 || FilterComponents.length > 0) &&
-                    <div style={{ marginTop: !title ? -44 : undefined }} className={classes.customComponentsContainer}>
+                {CustomComponents.length > 0 &&
+                    <div className={classes.customComponentsContainer}>
                         {CustomComponents.map((Component, index) => <Component key={index} />)}
+                    </div>
+                }
 
-                        {FilterComponents.map((Component, index) =>
-                            <Component
-                                key={index}
-                                data={data}
-                                displayData={displayData}
-                                onUpdateFilter={(ids) => this.updateFilter(index, ids)} />)
-                        }
+                {filters.length > 0 &&
+                    <div className={classes.filtersContainer}>
+                        {filters.map(({ filterName, filterBy, filterComponent: Component }, index) => (
+                            <div key={index}>
+                                <Typography variant="overline">{filterName}</Typography>
+                                <Component                                    
+                                    filterId={index}
+                                    filterBy={filterBy}
+                                    data={data}
+                                    onUpdateFilter={this.updateFilter} />
+                            </div>
+                        ))}
                     </div>
                 }
 
@@ -618,9 +622,9 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}>
 
-                                <Table 
-                                    className={classes.table} 
-                                    size="small" 
+                                <Table
+                                    className={classes.table}
+                                    size="small"
                                     stickyHeader={stickyHeader}>
 
                                     {showHeader &&
@@ -642,7 +646,7 @@ class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styl
                                         classes={bodyClasses}
                                         columns={displayColumns}
                                         data={currentPageData}
-                                        options={options}                                        
+                                        options={options}
                                         status={status}
                                         searchMatchers={searchMatchers}
                                         rowCount={pagination ? rowsPerPage : displayData.length}

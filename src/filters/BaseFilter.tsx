@@ -1,24 +1,18 @@
 import React from 'react';
-import { TableFilterComponentProps } from '../../types';
+import { FilterProps } from '../../types';
 
-class BaseFilter<Props extends TableFilterComponentProps, State = {}> extends React.Component<Props, State> {
-    constructor(props: Props) {
+export abstract class BaseFilter<Props = {}, State = {}, T = any> extends React.PureComponent<Props & FilterProps<T>, State> {
+    constructor(props: Props & FilterProps<T>) {
         super(props);
-
-        if (!props.column && !props.columnData) {
-            throw new Error('Either `column` or `columnData` must be provided')
-        }
     }
 
-    componentDidUpdate = (prevProps: Props) => {
+    componentDidUpdate = (prevProps: Props & FilterProps<T>) => {
         if (prevProps.data !== this.props.data) {
             this.updateFilter();
         }
     }
 
-    updateFilter = (): void => {
-        throw new Error('Not Implemented');
-    }
+    abstract updateFilter(): void;
 }
 
 export default BaseFilter;
