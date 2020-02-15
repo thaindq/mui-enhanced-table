@@ -14,9 +14,9 @@ export default {
     input: 'src/index.ts',
     output: {
         file: pkg.main,
-        format: 'cjs',
+        format: 'esm',
         exports: 'named',
-        sourcemap: true
+        sourcemap: false,
     },
     plugins: [
         external(),
