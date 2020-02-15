@@ -57,12 +57,12 @@ export interface TableProps<T = any> {
     bodyClasses?: Partial<ClassNameMap> | undefined;
     data: T[];
     dataId?: string;
-    columns: TableColumn[];
+    columns: TableColumn<T>[];
     options: TableOptions<T>;
 }
 
 export interface TableState<T = any> {
-    columns: TableColumn[];
+    columns: TableColumn<T>[];
     data: TableRow<T>[];
     originalData: T[];
     displayData: TableRow<T>[];
@@ -127,7 +127,7 @@ export interface TableOptions<T = any> {
         filterBy: string,
         filterComponent: React.ComponentType<FilterProps<T>>
     }[];
-    CustomComponents?: React.ElementType<any>[];
+    CustomComponents?: React.ComponentType<any>[];
 }
 
 export interface SearchMatcher {
@@ -138,7 +138,7 @@ export interface SearchMatcher {
 
 export interface SearchMatchers {
     [rowId: string]: {
-        [columnId: string]: SearchMatcher | null
+        [columnId: string]: SearchMatcher | null;
     }
 }
 
@@ -153,7 +153,7 @@ export type FormatterProps<T = any> = {
 
 export interface FilterProps<T = any> {
     filterId: number;
-    filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId),
+    filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: TableRow<T>[];
     onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
 }

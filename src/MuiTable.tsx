@@ -86,7 +86,7 @@ const styles = (theme: Theme) => createStyles({
     },    
 });
 
-class MuiTable<T> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
+class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
     static defaultProps: Omit<TableProps, 'data' | 'columns'> = {
         className: undefined,
         headClasses: undefined,

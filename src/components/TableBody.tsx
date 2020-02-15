@@ -102,7 +102,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props<T> {
     className?: string;
-    columns: TableColumn[];
+    columns: TableColumn<T>[];
     data: MuiTableRow<T>[];
     options: TableOptions<T>;
     status: TableStatus;
@@ -113,7 +113,7 @@ interface Props<T> {
     onToggleRowSelection: (rowId: TableRowId) => void;
 }
 
-class MuiTableBody<T> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
+class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
 
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
