@@ -1,1 +1,1 @@
-# material-ui-table
+# mui-enhanced-table

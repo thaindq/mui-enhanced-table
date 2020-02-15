@@ -1,6 +1,6 @@
 {
-  "name": "mui-table",
-  "version": "1.0.0",
+  "name": "mui-enhanced-table",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
