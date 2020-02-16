@@ -58,7 +58,7 @@ export interface TableProps<T = any> {
     data: T[];
     dataId?: string;
     columns: TableColumn<T>[];
-    options: TableOptions<T>;
+    options?: TableOptions<T>;
 }
 
 export interface TableState<T = any> {

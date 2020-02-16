@@ -666,7 +666,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 // export default withStyles(styles, { name: 'MuiTable' })(MuiTable)
 
 // https://stackoverflow.com/a/52573647
-export default class WrappedMuiTable<T> extends React.Component<PropsFor<WrappedMuiTable<T>["Component"]>, {}> {
+export default class<T = any> extends React.Component<TableProps<T>> {
     private readonly Component = withStyles(styles, { name: 'MuiTable' })(
         (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>) => <MuiTable<T> {...props} />
     );

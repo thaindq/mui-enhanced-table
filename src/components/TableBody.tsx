@@ -353,7 +353,7 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
 // export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(MuiTableBody);
 
 // https://stackoverflow.com/a/52573647
-export default class WrappedMuiTableBody<T> extends React.Component<PropsFor<WrappedMuiTableBody<T>["Component"]>, {}> {
+export default class<T = any> extends React.Component<Props<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
     private readonly Component = withStyles(styles, { name: 'MuiTableBody', withTheme: true })(
         (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
     );
