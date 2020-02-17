@@ -156,4 +156,4 @@ class TableToolbar extends React.Component<Props & WithStyles<typeof styles>, St
     }
 }
 
-export default withStyles(styles, { name: 'MuiTableToolbar' })(TableToolbar);
+export default withStyles(styles, { name: 'MuiEnhancedTableToolbar' })(TableToolbar);

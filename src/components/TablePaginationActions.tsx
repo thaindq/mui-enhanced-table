@@ -63,4 +63,4 @@ class TablePaginationActions extends React.Component<TablePaginationActionsProps
     }
 }
 
-export default withStyles(styles, { name: 'MuiTablePaginationActions' })(TablePaginationActions);
+export default withStyles(styles, { name: 'MuiEnhancedTablePaginationActions' })(TablePaginationActions);

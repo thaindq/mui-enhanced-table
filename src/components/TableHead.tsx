@@ -1,13 +1,11 @@
-import { SortDirection, TableHead, TableRow, TableSortLabel, Theme, withStyles } from '@material-ui/core';
+import { SortDirection, TableHead, TableRow, TableSortLabel, Theme, withStyles, TableCell, Checkbox } from '@material-ui/core';
 import { createStyles, WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
-import { HeaderCell } from './TableCell';
-import TableCheckbox from './TableCheckbox';
 import { TableColumn, TableOptions, TableColumnId } from '../../types';
 
 
-const styles = (theme: Theme) => createStyles({
+const styles = createStyles({
     root: {
     },
     row: {
@@ -67,21 +65,21 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
         return (
             <TableHead className={cx(className, classes.root)}>
                 <TableRow className={classes.row}>
-                    {expandable && <HeaderCell className={classes.cell}/>}
+                    {expandable && <TableCell className={classes.cell}/>}
 
                     {selectable &&
-                        <HeaderCell className={classes.cell}>
+                        <TableCell className={classes.cell}>
                             {multiSelect && selectionCount !== undefined && rowCount !== undefined &&
-                                <TableCheckbox
+                                <Checkbox
                                     indeterminate={selectionCount > 0 && selectionCount < rowCount}
                                     checked={selectionCount > 0 && selectionCount === rowCount}
                                     onClick={() => onToggleSelectAll()} />
                             }
-                        </HeaderCell>
+                        </TableCell>
                     }
 
                     {columns.map((column) => (
-                        <HeaderCell
+                        <TableCell
                             key={column.id}
                             style={column.headStyle}
                             className={cx(classes.cell, { [classes.allCaps]: allCapsHeader })}
@@ -97,14 +95,14 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
                                     {column.name}
                                 </TableSortLabel>
                             || column.name }
-                        </HeaderCell>
+                        </TableCell>
                     ))}
 
-                    {rowActions && <HeaderCell className={cx(classes.cell, classes.cellRowActions)} />}
+                    {rowActions && <TableCell className={cx(classes.cell, classes.cellRowActions)} />}
                 </TableRow>
             </TableHead>
         );
     }
 }
 
-export default withStyles(styles, { name: 'MuiTableHead', withTheme: true })(MuiTableHead);
+export default withStyles(styles, { name: 'MuiEnhancedTableHead', withTheme: true })(MuiTableHead);

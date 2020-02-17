@@ -134,4 +134,4 @@ class TableViewColumns extends React.Component<Props & WithStyles<typeof styles>
     }
 }
 
-export default withStyles(styles, { name: 'MuiTableViewColumn' })(TableViewColumns);
+export default withStyles(styles, { name: 'MuiEnhancedTableViewColumn' })(TableViewColumns);

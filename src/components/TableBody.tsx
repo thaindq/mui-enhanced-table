@@ -1,14 +1,10 @@
-import { CircularProgress, createStyles, Icon, IconButton, TableBody, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
+import { Checkbox, CircularProgress, createStyles, IconButton, Radio, TableBody, TableCell, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
-import { PropsFor } from '@material-ui/system';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
-import { SearchMatchers, TableAction, TableColumn, TableOptions, TableRow as MuiTableRow, TableRowId, TableStatus, FormatterProps } from '../../types';
-import TableCell from './TableCell';
-import TableCheckbox from './TableCheckbox';
-import TableRadio from './TableRadio';
+import { FormatterProps, SearchMatchers, TableColumn, TableOptions, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -255,12 +251,12 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
                                 {selectable &&
                                     <TableCell className={cx(cellClassName, classes.cellSelectionControl)}>
                                         {multiSelect &&
-                                            <TableCheckbox
+                                            <Checkbox
                                                 checked={selected}
                                                 disabled={disabled}
                                                 onClick={(event) => +event.stopPropagation() || this.handleRowSelect(row.id, row.data, rowIndex)} />
                                         ||
-                                            <TableRadio
+                                            <Radio
                                                 checked={selected}
                                                 disabled={disabled}
                                                 onClick={(event) => +event.stopPropagation() || this.handleRowSelect(row.id, row.data, rowIndex)} />
@@ -354,7 +350,7 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
 
 // https://stackoverflow.com/a/52573647
 export default class<T = any> extends React.Component<Props<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
-    private readonly Component = withStyles(styles, { name: 'MuiTableBody', withTheme: true })(
+    private readonly Component = withStyles(styles, { name: 'MuiEnhancedTableBody', withTheme: true })(
         (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
     );
 

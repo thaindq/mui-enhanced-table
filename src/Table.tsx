@@ -1,18 +1,17 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, withStyles, CircularProgress, Typography, FormLabel } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
-import { WithStyles, PropsOfStyles } from '@material-ui/styles';
+import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { SearchMatcher, SearchMatchers, TableColumnId, TableOptions, TableProps, TableRowId, TableState, TableStatus } from '../types';
+import { SearchMatcher, SearchMatchers, TableColumnId, TableOptions, TableProps, TableRowId, TableState } from '../types';
 import TableBody from './components/TableBody';
 import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
-import Utils from './utils';
-import { PropsFor } from '@material-ui/system';
 import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
+import Utils from './utils';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -87,10 +86,10 @@ const styles = (theme: Theme) => createStyles({
 });
 
 class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
-    static defaultProps: Omit<TableProps, 'data' | 'columns'> = {
-        className: undefined,
-        headClasses: undefined,
-        bodyClasses: undefined,
+    static defaultProps: Omit<Required<TableProps>, 'data' | 'columns'> = {
+        className: '',
+        headClasses: {},
+        bodyClasses: {},
         // data: [],
         dataId: '',
         // columns: [],
@@ -667,7 +666,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 
 // https://stackoverflow.com/a/52573647
 export default class<T = any> extends React.Component<TableProps<T>> {
-    private readonly Component = withStyles(styles, { name: 'MuiTable' })(
+    private readonly Component = withStyles(styles, { name: 'MuiEnhancedTable' })(
         (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>) => <MuiTable<T> {...props} />
     );
 

@@ -34,7 +34,7 @@ export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     dateTime?: boolean;
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
-    formatter?: BaseFormatter<T> | React.FunctionComponent<FormatterProps<T>>;
+    formatter?: React.FunctionComponent<FormatterProps<T>> | Formatter<T>;
 }
 
 export interface TableCellStatus {
@@ -52,9 +52,9 @@ export interface TableAction {
 }
 
 export interface TableProps<T = any> {
-    className?: string | undefined;
-    headClasses?: Partial<ClassNameMap> | undefined;
-    bodyClasses?: Partial<ClassNameMap> | undefined;
+    className?: string;
+    headClasses?: Partial<ClassNameMap>;
+    bodyClasses?: Partial<ClassNameMap>;
     data: T[];
     dataId?: string;
     columns: TableColumn<T>[];
@@ -140,6 +140,11 @@ export interface SearchMatchers {
     [rowId: string]: {
         [columnId: string]: SearchMatcher | null;
     }
+}
+
+export interface Formatter<T = any> {
+    format(props: FormatterProps<T>): React.ReactNode;
+    getValueString(value: any): string;
 }
 
 export type FormatterProps<T = any> = {
