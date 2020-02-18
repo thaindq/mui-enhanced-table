@@ -16,6 +16,11 @@ const styles = createStyles({
             flexDirection: 'inherit'
         },
     },
+    cellNoWrap: {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
     allCaps: {
         textTransform: 'uppercase'
     },
@@ -54,6 +59,7 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
         } = this.props;
 
         const {
+            noWrap,
             sortable,
             selectable,
             expandable,
@@ -82,11 +88,14 @@ class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, tru
                         <TableCell
                             key={column.id}
                             style={column.headStyle}
-                            className={cx(classes.cell, { [classes.allCaps]: allCapsHeader })}
+                            className={cx(classes.cell, { 
+                                [classes.allCaps]: allCapsHeader,
+                                [classes.cellNoWrap]: noWrap,
+                            })}
                             align={column.align}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}>
 
-                            {column.sortable &&
+                            {sortable && column.sortable &&
                                 <TableSortLabel
                                     active={sortable && sortBy === column.id && !!sortDirection}
                                     direction={sortDirection !== false ? sortDirection : undefined}

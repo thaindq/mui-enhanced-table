@@ -69,13 +69,15 @@ const styles = (theme: Theme) => createStyles({
         right: 0,
         width: 1,
         position: 'sticky',
-        backgroundColor: theme.palette.grey[100],
+        backgroundColor: theme.palette.background.paper,
         '& > *': {
             display: 'inline-block'
         }
     },
     cellNoWrap: {
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
     },
     cellLastRow: {
         borderBottom: 'none'
@@ -83,6 +85,10 @@ const styles = (theme: Theme) => createStyles({
     cellSelectionControl: {
         paddingTop: 0,
         paddingBottom: 0
+    },
+    messageWrapper: {
+        position: 'relative',
+        height: 64,
     },
     message: {
         top: 0,
@@ -171,6 +177,7 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
         } = this.props;
 
         const {
+            noWrap,
             selectable,
             expandable,
             multiSelect,
@@ -199,11 +206,17 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
         return (
             <TableBody className={cx(className, classes.root)}>
                 {hasMessage && (
-                    <div className={classes.message}>
-                        {shouldShowLoading && <CircularProgress size={40}/>}
-                        {shouldShowError && <Typography>Error loading data</Typography>}
-                        {shouldShowNoData && <Typography>No data</Typography>}
-                    </div>
+                    <TableRow>
+                        <TableCell colSpan={1000}>
+                            <div className={classes.messageWrapper}>
+                                <div className={classes.message}>
+                                    {shouldShowLoading && <CircularProgress size={40}/>}
+                                    {shouldShowError && <Typography>Error loading data</Typography>}
+                                    {shouldShowNoData && <Typography>No data</Typography>}
+                                </div>
+                            </div>
+                        </TableCell>
+                    </TableRow>
                 ) || data.map((row, rowIndex) => {
                     const {
                         style,
@@ -297,7 +310,9 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
                                     return (
                                         <TableCell
                                             key={column.id}                                        
-                                            className={cx(cellClassName, className)}
+                                            className={cx(cellClassName, className, {
+                                                [classes.cellNoWrap]: noWrap
+                                            })}
                                             align={column.align}
                                             onClick={() => onCellClick && +onCellClick(row.id, column.id, row.data, rowIndex, cellIndex) || undefined}
                                             style={{

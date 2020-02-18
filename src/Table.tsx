@@ -1,4 +1,4 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, TableProps as MuiTableProps, Theme, Typography, withStyles } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -16,16 +16,16 @@ import Utils from './utils';
 const styles = (theme: Theme) => createStyles({
     root: {
         width: '100%',
-        height: '100%',
+        // height: '100%',
         display: 'flex',
         flexDirection: 'column',
     },
     container: {
         overflowX: 'auto',
-        height: '100%'
+        // height: '100%'
     },
     border: {
-        border: `1px solid ${theme.palette.text.hint}`
+        border: `1px solid rgb(110, 110, 110)`
     },
     table: {
         position: 'relative',
@@ -56,11 +56,6 @@ const styles = (theme: Theme) => createStyles({
         '& > *': {
             flexGrow: 1,
         }
-    },
-    noWrap: {
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
     },
     loader: {
         top: 0,
@@ -528,7 +523,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             classes,
             // status,
             headClasses,
-            bodyClasses,
+            bodyClasses,            
         } = this.props;
 
         const {
@@ -553,7 +548,6 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             showHeader,
             stickyHeader,
             pagination,
-            noWrap,
             elevation,
             customActions,
             filters,
@@ -628,7 +622,6 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 
                                     {showHeader &&
                                         <TableHead
-                                            className={cx({ [classes.noWrap]: noWrap })}
                                             classes={headClasses}
                                             columns={displayColumns}
                                             options={options}
@@ -641,7 +634,6 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                     }
 
                                     <TableBody<T>
-                                        className={cx({ [classes.noWrap]: noWrap })}
                                         classes={bodyClasses}
                                         columns={displayColumns}
                                         data={currentPageData}
