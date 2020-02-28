@@ -4,7 +4,8 @@ import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
 import TableViewColumns from './TableViewColumns';
-import { TableAction, TableColumn } from '../../types';
+import { TableAction, TableColumn, TableColumnId } from '../../types';
+import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -29,20 +30,20 @@ const styles = (theme: Theme) => createStyles({
     },
 });
 
-interface Props {
+interface TableToolbarProps {
     title?: string;
-    columns: TableColumn[];
+    columns: readonly TableColumn[];
     selectionCount: number;
     customActions: TableAction[];
-    onToggleColumn: () => void;
-    onDragColumn: () => void;
+    onToggleColumn: (columnId: TableColumnId, display?: boolean) => void;
+    onDragColumn: (result: DropResult, provided: ResponderProvided) => void;
 }
 
 interface State {
     viewColumnsAnchor: Element | null,
 }
 
-class TableToolbar extends React.Component<Props & WithStyles<typeof styles>, State> {
+class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof styles>, State> {
     state: State = {
         viewColumnsAnchor: null,
     }

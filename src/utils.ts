@@ -17,7 +17,7 @@ export function getMatcher(input: string, query: string): SearchMatcher | null {
     return null;
 }
 
-export function reorder<T = any>(input: T[], sourceIndex: number, destinationIndex: number): T[] {
+export function reorder<T = any>(input: readonly T[], sourceIndex: number, destinationIndex: number): T[] {
     const output = [ ...input ];
     const item = output[sourceIndex];
     output.splice(sourceIndex, 1);

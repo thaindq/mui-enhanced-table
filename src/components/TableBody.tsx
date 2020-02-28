@@ -4,7 +4,8 @@ import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
-import { FormatterProps, SearchMatchers, TableColumn, TableOptions, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
+import { FormatterProps, SearchMatchers, TableColumn, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
+import { TableOptions } from '../Table';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -102,7 +103,9 @@ const styles = (theme: Theme) => createStyles({
     }
 });
 
-interface Props<T> {
+export type TableBodyClassKey = keyof typeof styles;
+
+interface TableBodyProps<T> {
     className?: string;
     columns: TableColumn<T>[];
     data: MuiTableRow<T>[];
@@ -115,7 +118,7 @@ interface Props<T> {
     onToggleRowSelection: (rowId: TableRowId) => void;
 }
 
-class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof styles, true>> {
+class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyles<typeof styles, true>> {
 
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
@@ -191,7 +194,7 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
             onRowClick,
             onCellClick,
             onCellStatus,
-            RowExpandComponent,
+            rowExpandComponent: RowExpandComponent,
         } = options;
 
         const emptyRows = data.length === 0 ? 1 : ((rowCount || 0) - data.length);
@@ -335,7 +338,10 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
                             {expanded && RowExpandComponent &&
                                 <TableRow>
                                     <TableCell colSpan={100} className={classes.cellExpanded}>
-                                        <RowExpandComponent id={row.id}/>
+                                        <RowExpandComponent 
+                                            id={row.id}
+                                            data={row.data}
+                                            index={rowIndex}/>
                                     </TableCell>
                                 </TableRow>
                             }
@@ -364,7 +370,7 @@ class MuiTableBody<T = any> extends React.Component<Props<T> & WithStyles<typeof
 // export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(MuiTableBody);
 
 // https://stackoverflow.com/a/52573647
-export default class<T = any> extends React.Component<Props<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
+export default class<T = any> extends React.Component<TableBodyProps<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
     private readonly Component = withStyles(styles, { name: 'MuiEnhancedTableBody', withTheme: true })(
         (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
     );

@@ -2,7 +2,8 @@ import { SortDirection, TableHead, TableRow, TableSortLabel, Theme, withStyles, 
 import { createStyles, WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
-import { TableColumn, TableOptions, TableColumnId } from '../../types';
+import { TableColumn, TableColumnId } from '../../types';
+import { TableOptions } from '../Table';
 
 
 const styles = createStyles({
@@ -30,7 +31,9 @@ const styles = createStyles({
     }
 });
 
-interface Props {
+export type TableHeadClassKey = keyof typeof styles;
+
+interface TableHeadProps {
     className?: string;
     columns: TableColumn[];
     options: TableOptions;
@@ -42,7 +45,7 @@ interface Props {
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
 
-class MuiTableHead extends React.Component<Props & WithStyles<typeof styles, true>> {
+class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof styles, true>> {
     render() {
         const {
             classes,

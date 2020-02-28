@@ -2,8 +2,8 @@ import { Checkbox, createStyles, FormControl, FormControlLabel, FormGroup, Theme
 import { DragHandle } from "@material-ui/icons";
 import { WithStyles } from "@material-ui/styles";
 import React from "react";
-import { DragDropContext, Draggable, Droppable, DroppableProvided, DroppableStateSnapshot } from 'react-beautiful-dnd';
-import { TableColumn } from "../../types";
+import { DragDropContext, Draggable, Droppable, DroppableProvided, DroppableStateSnapshot, DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import { TableColumn, TableColumnId } from "../../types";
 
 export const styles = (theme: Theme) => createStyles({
     root: {
@@ -46,13 +46,13 @@ export const styles = (theme: Theme) => createStyles({
     }
 });
 
-interface Props {
-    columns: TableColumn[];
-    onToggleColumn: (id: string) => void;
-    onDragColumn: () => void;
+interface TableViewColumnProps {
+    columns: readonly TableColumn[];
+    onToggleColumn: (columnId: TableColumnId, display?: boolean) => void;
+    onDragColumn: (result: DropResult, provided: ResponderProvided) => void;
 }
 
-class TableViewColumns extends React.Component<Props & WithStyles<typeof styles>> {
+class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles<typeof styles>> {
 
     renderCheckbox = (column: TableColumn) => {
         const {

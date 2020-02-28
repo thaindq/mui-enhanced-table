@@ -1,13 +1,13 @@
 import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, TableProps as MuiTableProps, Theme, Typography, withStyles } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
-import { WithStyles } from '@material-ui/styles';
+import { WithStyles, StyledComponentProps, ClassNameMap } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { SearchMatcher, SearchMatchers, TableColumnId, TableOptions, TableProps, TableRowId, TableState } from '../types';
-import TableBody from './components/TableBody';
-import TableHead from './components/TableHead';
+import { SearchMatcher, SearchMatchers, TableColumnId, TableRow, TableRowId, TableColumn, TableAction, TableRowStatus, FilterProps, TableStatus, TableCellStatus } from '../types';
+import TableBody, { TableBodyClassKey } from './components/TableBody';
+import TableHead, { TableHeadClassKey } from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
 import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
@@ -80,14 +80,95 @@ const styles = (theme: Theme) => createStyles({
     },    
 });
 
+export interface TableOptions<T = any> {    
+    sortBy?: TableColumnId;
+    sortDirection?: SortDirection;
+    sortable?: boolean;
+    elevation?: number;
+    filterable?: boolean;
+    selectable?: boolean;
+    expandable?: boolean;
+    multiSelect?: boolean;
+    multiExpand?: boolean;
+    searchable?: boolean;
+    status?: TableStatus;
+    rowsPerPage?: number;
+    rowsPerPageOptions?: number[];
+    showBorder?: boolean;
+    showToolbar?: boolean;
+    showHeader?: boolean;
+    stickyHeader?: boolean;
+    allCapsHeader?: boolean;
+    pagination?: boolean;
+    noWrap?: boolean;
+    highlightRow?: boolean;
+    highlightColumn?: boolean;
+    alternativeRowColor?: boolean;    
+    currentPage?: number;
+    columnHidings?: TableColumnId[];
+    rowExpansions?: TableRowId[];
+    rowSelections?: TableRowId[];
+    customActions?: TableAction[];
+    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
+    onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
+    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
+    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
+    onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
+    onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
+    onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
+    onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
+    onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
+    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
+    dependencies?: any[];
+    rowExpandComponent?: React.ComponentType<{
+        id: TableRowId;
+        data: T;
+        index: number;
+    }>;
+    filterComponents?: {
+        name: string,
+        field: string,
+        component: React.ComponentType<FilterProps<T>>
+    }[];
+    customComponents?: React.ComponentType<TableProps<T>>[];
+}
+
+export interface TableProps<T = any> {
+    className?: string;
+    headClasses?: Partial<ClassNameMap<TableHeadClassKey>>;
+    bodyClasses?: Partial<ClassNameMap<TableBodyClassKey>>;
+    title?: string;
+    data: readonly T[];
+    dataId?: keyof T;
+    columns: readonly TableColumn<T>[];
+    options?: TableOptions<T>;
+}
+
+interface TableState<T = any> {
+    columns: readonly TableColumn<T>[];
+    data: TableRow<T>[];
+    originalData: readonly T[];
+    displayData: TableRow<T>[];
+    filteredData: (TableRowId[] | null)[];
+    columnHidings: TableColumnId[];
+    rowExpansions: TableRowId[];
+    rowSelections: TableRowId[];
+    sortBy: TableColumnId;
+    sortDirection: SortDirection;
+    currentPage: number;
+    rowsPerPage: number;
+    searchText: string;
+    searchMatchers: SearchMatchers | null;
+    options: TableOptions<T>;
+}
+
 class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
     static defaultProps: Omit<Required<TableProps>, 'data' | 'columns'> = {
         className: '',
+        title: '',
         headClasses: {},
         bodyClasses: {},
-        // data: [],
         dataId: '',
-        // columns: [],
         options: {
             sortBy: '',
             sortDirection: 'asc',
@@ -115,9 +196,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             columnHidings: [],
             rowSelections: [],
             rowExpansions: [],
-            filters: [],
-            CustomComponents: [],
-            ToolbarComponent: TableToolbar,
+            filterComponents: [],
+            customComponents: [],
         }
     }
 
@@ -520,7 +600,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
     render() {
         const {
             className,
-            classes,
+            classes,            
+            title,
             // status,
             headClasses,
             bodyClasses,            
@@ -541,7 +622,6 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
         } = this.state;
 
         const {
-            title,
             status,
             showBorder,
             showToolbar,
@@ -550,10 +630,9 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             pagination,
             elevation,
             customActions,
-            filters,
-            ToolbarComponent,
-            CustomComponents,
-            RowExpandComponent,
+            filterComponents,
+            customComponents,
+            rowExpandComponent,
         } = options as Required<TableOptions<T>>;
 
         const displayColumns = columns.filter(column => column.display || !column.name);
@@ -571,7 +650,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                 </div> */}
 
                 {showToolbar &&
-                    <ToolbarComponent
+                    <TableToolbar
                         title={title}
                         columns={columns}
                         selectionCount={rowSelections.length}
@@ -580,20 +659,20 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                         onDragColumn={this.reorderColumns} />
                 }
 
-                {CustomComponents.length > 0 &&
+                {customComponents.length > 0 &&
                     <div className={classes.customComponentsContainer}>
-                        {CustomComponents.map((Component, index) => <Component key={index} />)}
+                        {customComponents.map((Component, index) => <Component key={index} {...this.props}/>)}
                     </div>
                 }
 
-                {filters.length > 0 &&
+                {filterComponents.length > 0 &&
                     <div className={classes.filtersContainer}>
-                        {filters.map(({ filterName, filterBy, filterComponent: Component }, index) => (
+                        {filterComponents.map(({ name, field, component: Component }, index) => (
                             <div key={index}>
-                                <Typography variant="overline">{filterName}</Typography>
+                                <Typography variant="overline">{name}</Typography>
                                 <Component                                    
                                     filterId={index}
-                                    filterBy={filterBy}
+                                    filterBy={field}
                                     data={data}
                                     onUpdateFilter={this.updateFilter} />
                             </div>

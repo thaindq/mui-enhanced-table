@@ -16,7 +16,7 @@ export default {
         file: pkg.main,
         format: 'esm',
         exports: 'named',
-        sourcemap: false,
+        sourcemap: true,
     },
     plugins: [
         external(),
@@ -60,6 +60,6 @@ export default {
                 ]
             }
         }),
-        terser(),
+        // terser(),
     ],
 }

@@ -1,7 +1,5 @@
 import { SortDirection, TableCellProps, Theme } from "@material-ui/core";
-import { ClassNameMap, CSSProperties } from "@material-ui/styles";
-import BaseFormatter from "../src/formatters";
-import BaseFilter from "../src/filters";
+import { CSSProperties } from "@material-ui/styles";
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -49,85 +47,6 @@ export interface TableAction {
     button?: React.ReactNode;
     disabled?: boolean;
     callback: (event: React.MouseEvent<HTMLElement>) => void;
-}
-
-export interface TableProps<T = any> {
-    className?: string;
-    headClasses?: Partial<ClassNameMap>;
-    bodyClasses?: Partial<ClassNameMap>;
-    data: T[];
-    dataId?: string;
-    columns: TableColumn<T>[];
-    options?: TableOptions<T>;
-}
-
-export interface TableState<T = any> {
-    columns: TableColumn<T>[];
-    data: TableRow<T>[];
-    originalData: T[];
-    displayData: TableRow<T>[];
-    filteredData: (TableRowId[] | null)[];
-    columnHidings: TableColumnId[];
-    rowExpansions: TableRowId[];
-    rowSelections: TableRowId[];
-    sortBy: TableColumnId;
-    sortDirection: SortDirection;
-    currentPage: number;
-    rowsPerPage: number;
-    searchText: string;
-    searchMatchers: SearchMatchers | null;
-    options: TableOptions<T>;
-}
-
-export interface TableOptions<T = any> {
-    title?: string;
-    sortBy?: TableColumnId;
-    sortDirection?: SortDirection;
-    sortable?: boolean;
-    elevation?: number;
-    filterable?: boolean;
-    selectable?: boolean;
-    expandable?: boolean;
-    multiSelect?: boolean;
-    multiExpand?: boolean;
-    searchable?: boolean;
-    status?: TableStatus;
-    rowsPerPage?: number;
-    rowsPerPageOptions?: number[];
-    showBorder?: boolean;
-    showToolbar?: boolean;
-    showHeader?: boolean;
-    stickyHeader?: boolean;
-    allCapsHeader?: boolean;
-    pagination?: boolean;
-    noWrap?: boolean;
-    highlightRow?: boolean;
-    highlightColumn?: boolean;
-    alternativeRowColor?: boolean;    
-    currentPage?: number;
-    columnHidings?: TableColumnId[];
-    rowExpansions?: TableRowId[];
-    rowSelections?: TableRowId[];
-    customActions?: TableAction[];
-    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
-    onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
-    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
-    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
-    onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
-    onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
-    onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
-    onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
-    onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
-    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
-    dependencies?: any[];
-    ToolbarComponent?: React.ComponentType<any>;
-    RowExpandComponent?: React.ComponentType<any>;
-    filters?: {
-        filterName: string,
-        filterBy: string,
-        filterComponent: React.ComponentType<FilterProps<T>>
-    }[];
-    CustomComponents?: React.ComponentType<any>[];
 }
 
 export interface SearchMatcher {
