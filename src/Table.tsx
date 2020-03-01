@@ -32,11 +32,9 @@ const styles = (theme: Theme) => createStyles({
         display: 'table',
     },
     search: {
-        marginTop: 12,
-        marginBottom: 12,
-        marginLeft: 16,
-        maxWidth: 300,
-        flexWrap: 'nowrap'
+        flexGrow: 1,
+        flexWrap: 'nowrap',
+        margin: '12px 16px',
     },
     clearSearchButton: {
         width: 20,
@@ -46,15 +44,13 @@ const styles = (theme: Theme) => createStyles({
             position: 'absolute'
         }
     },
-    pagination: {
+    paginationContainer: {
         display: 'flex',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        // borderTop: '1px solid rgba(224, 224, 224, 1)',
-        // flexBasis: 56,
         flexShrink: 0,
-        '& > *': {
-            flexGrow: 1,
+        '& > *:last-child': {
+            flexGrow: 2,
         }
     },
     loader: {
@@ -97,9 +93,9 @@ export interface TableOptions<T = any> {
     showBorder?: boolean;
     showToolbar?: boolean;
     showHeader?: boolean;
+    showPagination?: boolean;
     stickyHeader?: boolean;
     allCapsHeader?: boolean;
-    pagination?: boolean;
     noWrap?: boolean;
     highlightRow?: boolean;
     highlightColumn?: boolean;
@@ -179,7 +175,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             multiSelect: true,
             multiExpand: true,
             searchable: true,
-            pagination: true,
+            showPagination: true,
             rowsPerPage: 10,
             rowsPerPageOptions: [10, 20, 40],
             currentPage: 0,
@@ -372,7 +368,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             ...mergedState,
             searchMatchers,
             displayData,
-            currentPage: mergedState.options.pagination
+            currentPage: mergedState.options.showPagination
                 ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
                 : 0,
         };
@@ -559,12 +555,12 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 
         const {
             searchable,
-            pagination,
+            showPagination,
             rowsPerPageOptions,
         } = options;
 
         return (
-            <>
+            <div className={classes.paginationContainer}>
                 {searchable &&
                     <FormControl className={classes.search}>
                         {/* <InputLabel>Search</InputLabel> */}
@@ -582,7 +578,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                     </FormControl>
                 }
 
-                {pagination &&
+                {showPagination &&
                     <TablePagination
                         component="div"
                         count={displayData.length}
@@ -593,7 +589,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                         onChangeRowsPerPage={this.changeRowsPerPage}
                         ActionsComponent={TablePaginationActions} />
                 }
-            </>
+            </div>
         );
     };
 
@@ -627,7 +623,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             showToolbar,
             showHeader,
             stickyHeader,
-            pagination,
+            showPagination,
             elevation,
             customActions,
             filterComponents,
@@ -636,7 +632,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
         } = options as Required<TableOptions<T>>;
 
         const displayColumns = columns.filter(column => column.display || !column.name);
-        const currentPageData = pagination ? displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage) : displayData;
+        const currentPageData = showPagination ? displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage) : displayData;
 
         return (
             <Paper
@@ -680,11 +676,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                     </div>
                 }
 
-                {pagination &&
-                    <div className={classes.pagination}>
-                        {this.renderPagination()}
-                    </div>
-                }
+                {showPagination && this.renderPagination()}
 
                 <DragDropContext onDragEnd={this.reorderColumns}>
                     <Droppable droppableId="droppable" direction="horizontal">
@@ -719,7 +711,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                         options={options}
                                         status={status}
                                         searchMatchers={searchMatchers}
-                                        rowCount={pagination ? rowsPerPage : displayData.length}
+                                        rowCount={showPagination ? rowsPerPage : displayData.length}
                                         rowSelections={rowSelections}
                                         rowExpansions={rowExpansions}
                                         onToggleRowSelection={this.toggleRowSelection} />

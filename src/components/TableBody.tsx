@@ -103,7 +103,7 @@ const styles = (theme: Theme) => createStyles({
     }
 });
 
-export type TableBodyClassKey = keyof typeof styles;
+export type TableBodyClassKey = keyof ReturnType<typeof styles>;
 
 interface TableBodyProps<T> {
     className?: string;
