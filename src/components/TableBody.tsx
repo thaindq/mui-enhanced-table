@@ -4,8 +4,8 @@ import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
-import { FormatterProps, SearchMatchers, TableColumn, TableRow as MuiTableRow, TableRowId, TableStatus, RowExpandComponent } from '../../types';
-import { TableOptions, TableProps } from '../Table';
+import { FormatterProps, RowExpandComponent, SearchMatchers, TableColumn, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
+import { TableOptions, TableProps } from '../../types';
 
 const styles = (theme: Theme) => createStyles({
     root: {        

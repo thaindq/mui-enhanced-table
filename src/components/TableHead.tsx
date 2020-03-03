@@ -2,8 +2,7 @@ import { SortDirection, TableHead, TableRow, TableSortLabel, Theme, withStyles, 
 import { createStyles, WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
-import { TableColumn, TableColumnId } from '../../types';
-import { TableOptions } from '../Table';
+import { TableOptions, TableColumn, TableColumnId } from '../../types';
 
 
 const styles = createStyles({

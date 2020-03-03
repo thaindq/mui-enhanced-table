@@ -1,5 +1,7 @@
 import { SortDirection, TableCellProps, Theme } from "@material-ui/core";
-import { CSSProperties } from "@material-ui/styles";
+import { CSSProperties, ClassNameMap } from "@material-ui/styles";
+import { TableHeadClassKey } from "../src/components/TableHead";
+import { TableBodyClassKey } from "../src/components/TableBody";
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -40,6 +42,72 @@ export interface TableCellStatus {
     className?: string;
 }
 
+export interface TableOptions<T = any> {
+    sortable?: boolean;
+    elevation?: number;
+    filterable?: boolean;
+    selectable?: boolean;
+    expandable?: boolean;
+    multiSelect?: boolean;
+    multiExpand?: boolean;
+    searchable?: boolean;
+    rowsPerPageOptions?: number[];
+    showBorder?: boolean;
+    showToolbar?: boolean;
+    showHeader?: boolean;
+    showPagination?: boolean;
+    stickyHeader?: boolean;
+    allCapsHeader?: boolean;
+    noWrap?: boolean;
+    highlightRow?: boolean;
+    highlightColumn?: boolean;
+    alternativeRowColor?: boolean;    
+    dependencies?: any[];        
+}
+
+export interface TableProps<T = any> {
+    className?: string;
+    headClasses?: Partial<ClassNameMap<TableHeadClassKey>>;
+    bodyClasses?: Partial<ClassNameMap<TableBodyClassKey>>;
+    title?: string;
+    data: readonly T[];
+    dataId?: keyof T;
+    columns: readonly TableColumn<T>[];
+    status?: TableStatus;
+    options?: TableOptions<T>;
+    init?: TableInitData<T>;
+    components?: TableComponents<T>;
+    onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
+    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
+    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
+    onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
+    onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
+    onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
+    onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
+    onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
+    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
+}
+
+export interface TableState<T = any> {
+    columns: readonly TableColumn<T>[];
+    data: TableRow<T>[];
+    originalData: readonly T[];
+    displayData: TableRow<T>[];
+    filteredData: (TableRowId[] | null)[];
+    columnHidings: TableColumnId[];
+    rowExpansions: TableRowId[];
+    rowSelections: TableRowId[];
+    sortBy: TableColumnId;
+    sortDirection: SortDirection;
+    currentPage: number;
+    rowsPerPage: number;
+    searchText: string;
+    searchMatchers: SearchMatchers | null;
+    options: TableOptions<T>;
+}
+
+export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'columnHidings' | 'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'>>;
+
 export interface TableAction {
     name: string;
     className?: string;    
@@ -53,6 +121,14 @@ export interface TableFilter<T = any> {
     name: string,
     field: string,
     component: React.ComponentType<FilterProps<T>>
+}
+
+export interface TableComponents<T = any> {
+    filters?: TableFilter<T>[];
+    actions?: TableAction[];
+    customs?: React.ComponentType<TableProps<T>>[];
+    rowExpand?: RowExpandComponent<T>;
+    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
 }
 
 export interface SearchMatcher {

@@ -1,13 +1,13 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, TableProps as MuiTableProps, Theme, Typography, withStyles } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
-import { WithStyles, StyledComponentProps, ClassNameMap } from '@material-ui/styles';
+import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { SearchMatcher, SearchMatchers, TableColumnId, TableRow, TableRowId, TableColumn, TableAction, TableRowStatus, FilterProps, TableStatus, TableCellStatus, RowExpandComponent, TableFilter } from '../types';
-import TableBody, { TableBodyClassKey } from './components/TableBody';
-import TableHead, { TableHeadClassKey } from './components/TableHead';
+import { SearchMatcher, SearchMatchers, TableColumnId, TableProps, TableRowId, TableState, TableOptions, TableInitData } from '../types';
+import TableBody from './components/TableBody';
+import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
 import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
@@ -75,80 +75,6 @@ const styles = (theme: Theme) => createStyles({
         paddingRight: 8
     },
 });
-
-export interface TableOptions<T = any> {
-    sortable?: boolean;
-    elevation?: number;
-    filterable?: boolean;
-    selectable?: boolean;
-    expandable?: boolean;
-    multiSelect?: boolean;
-    multiExpand?: boolean;
-    searchable?: boolean;
-    rowsPerPageOptions?: number[];
-    showBorder?: boolean;
-    showToolbar?: boolean;
-    showHeader?: boolean;
-    showPagination?: boolean;
-    stickyHeader?: boolean;
-    allCapsHeader?: boolean;
-    noWrap?: boolean;
-    highlightRow?: boolean;
-    highlightColumn?: boolean;
-    alternativeRowColor?: boolean;    
-    dependencies?: any[];        
-}
-
-export interface TableComponents<T = any> {    
-    filters?: TableFilter<T>[];
-    actions?: TableAction[];
-    customs?: React.ComponentType<TableProps<T>>[];
-    rowExpand?: RowExpandComponent<T>;
-    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
-}
-
-export interface TableProps<T = any> {
-    className?: string;
-    headClasses?: Partial<ClassNameMap<TableHeadClassKey>>;
-    bodyClasses?: Partial<ClassNameMap<TableBodyClassKey>>;
-    title?: string;
-    data: readonly T[];
-    dataId?: keyof T;
-    columns: readonly TableColumn<T>[];
-    status?: TableStatus;
-    options?: TableOptions<T>;
-    init?: TableInitData<T>;
-    components?: TableComponents<T>;
-    onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
-    onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
-    onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
-    onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
-    onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
-    onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
-    onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
-    onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
-    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
-}
-
-interface TableState<T = any> {
-    columns: readonly TableColumn<T>[];
-    data: TableRow<T>[];
-    originalData: readonly T[];
-    displayData: TableRow<T>[];
-    filteredData: (TableRowId[] | null)[];
-    columnHidings: TableColumnId[];
-    rowExpansions: TableRowId[];
-    rowSelections: TableRowId[];
-    sortBy: TableColumnId;
-    sortDirection: SortDirection;
-    currentPage: number;
-    rowsPerPage: number;
-    searchText: string;
-    searchMatchers: SearchMatchers | null;
-    options: TableOptions<T>;
-}
-
-export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'columnHidings' | 'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'>>;
 
 class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
     static defaultProps: Partial<TableProps> = {
