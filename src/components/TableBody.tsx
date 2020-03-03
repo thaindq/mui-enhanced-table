@@ -4,8 +4,8 @@ import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
-import { FormatterProps, SearchMatchers, TableColumn, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
-import { TableOptions } from '../Table';
+import { FormatterProps, SearchMatchers, TableColumn, TableRow as MuiTableRow, TableRowId, TableStatus, RowExpandComponent } from '../../types';
+import { TableOptions, TableProps } from '../Table';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -105,17 +105,20 @@ const styles = (theme: Theme) => createStyles({
 
 export type TableBodyClassKey = keyof ReturnType<typeof styles>;
 
-interface TableBodyProps<T> {
+interface TableBodyProps<T> extends Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus'> {
     className?: string;
     columns: TableColumn<T>[];
     data: MuiTableRow<T>[];
     options: TableOptions<T>;
-    status: TableStatus;
+    status?: TableStatus;
     rowCount?: number;
     rowSelections: TableRowId[];
     rowExpansions: TableRowId[];
     searchMatchers?: SearchMatchers | null;
+    rowExpand?: RowExpandComponent;
+    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
     onToggleRowSelection: (rowId: TableRowId) => void;
+    
 }
 
 class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyles<typeof styles, true>> {
@@ -123,13 +126,9 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
             rowSelections,
-            options,
+            onRowSelect,
             onToggleRowSelection,
         } = this.props;
-
-        const {
-            onRowSelect,
-        } = options;
 
         onToggleRowSelection(rowId);
         onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
@@ -138,22 +137,22 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
     handleRowExpand = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
             rowExpansions,
-            options,
-        } = this.props;
-
-        const {
             onRowExpand,
-        } = options;
+        } = this.props;
 
         onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
     };
 
     handleRowClick = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const {
-            expandable,
-            selectable,            
+            options,
             onRowClick,
-        } = this.props.options;
+        } = this.props;
+
+        const {
+            expandable,
+            selectable,
+        } = options;
 
         if (onRowClick) {
             onRowClick(rowId, rowData, rowIndex);
@@ -176,7 +175,15 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             options,
             status,
             rowSelections,
-            rowExpansions,
+            rowExpansions,            
+            rowActions,
+            rowExpand: RowExpandComponent,
+            onRowStatus,
+            onRowSelect,
+            onRowExpand, 
+            onRowClick,
+            onCellClick,
+            onCellStatus,
         } = this.props;
 
         const {
@@ -187,14 +194,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             highlightRow,
             alternativeRowColor,            
             showHeader,
-            rowActions,
-            onRowStatus,
-            onRowSelect,
-            onRowExpand, 
-            onRowClick,
-            onCellClick,
-            onCellStatus,
-            rowExpandComponent: RowExpandComponent,
         } = options;
 
         const emptyRows = data.length === 0 ? 1 : ((rowCount || 0) - data.length);

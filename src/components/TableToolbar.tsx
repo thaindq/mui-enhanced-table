@@ -34,7 +34,7 @@ interface TableToolbarProps {
     title?: string;
     columns: readonly TableColumn[];
     selectionCount: number;
-    customActions: TableAction[];
+    actions?: TableAction[];
     onToggleColumn: (columnId: TableColumnId, display?: boolean) => void;
     onDragColumn: (result: DropResult, provided: ResponderProvided) => void;
 }
@@ -73,7 +73,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
             title,
             columns,
             selectionCount,
-            customActions,
+            actions,
             onToggleColumn,
             onDragColumn,
         } = this.props;
@@ -111,7 +111,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                             })
                         ) : ( */}
                             <>
-                                {customActions && customActions.map((action, index) => {
+                                {actions && actions.map((action, index) => {
                                     return (
                                         <React.Fragment key={index}>
                                             {this.renderAction(action)}

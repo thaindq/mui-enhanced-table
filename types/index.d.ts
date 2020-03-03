@@ -49,6 +49,12 @@ export interface TableAction {
     callback: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
+export interface TableFilter<T = any> {
+    name: string,
+    field: string,
+    component: React.ComponentType<FilterProps<T>>
+}
+
 export interface SearchMatcher {
     pre: string;
     post: string;
@@ -81,3 +87,9 @@ export interface FilterProps<T = any> {
     data: TableRow<T>[];
     onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
 }
+
+export type RowExpandComponent<T = any> = React.ComponentType<{
+    id: TableRowId;
+    data: T;
+    index: number;
+}>

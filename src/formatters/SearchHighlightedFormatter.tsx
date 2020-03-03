@@ -38,11 +38,13 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
             match,
         } = matcher;
 
+        const backgroundColor = this.backgroundColor ?? theme.palette.secondary.main;
+
         return (
             <>
                 {pre}<span style={{
-                    backgroundColor: this.backgroundColor ?? theme.palette.secondary.light,
-                    color: this.highlightColor ?? theme.palette.secondary.contrastText,
+                    backgroundColor,
+                    color: this.highlightColor ?? theme.palette.getContrastText(backgroundColor),
                 }}>{match}</span>{post}
             </>
         );

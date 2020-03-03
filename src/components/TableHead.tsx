@@ -41,6 +41,7 @@ interface TableHeadProps {
     rowCount?: number;    
     sortBy?: TableColumnId;
     sortDirection?: SortDirection;
+    hasRowActions?: boolean;
     onToggleSelectAll: () => void;
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
@@ -57,6 +58,7 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
             rowCount,
             sortBy,
             sortDirection,
+            hasRowActions,
             onToggleSelectAll,
             onSortData,
         } = this.props;
@@ -68,7 +70,6 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
             expandable,
             allCapsHeader,
             multiSelect,
-            rowActions,
         } = options;
 
         return (
@@ -110,7 +111,7 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
                         </TableCell>
                     ))}
 
-                    {rowActions && <TableCell className={cx(classes.cell, classes.cellRowActions)} />}
+                    {hasRowActions && <TableCell className={cx(classes.cell, classes.cellRowActions)} />}
                 </TableRow>
             </TableHead>
         );
