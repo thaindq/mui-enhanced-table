@@ -1,11 +1,10 @@
-import { Checkbox, CircularProgress, createStyles, IconButton, Radio, TableBody, TableCell, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
+import { Checkbox, CircularProgress, createStyles, Icon, IconButton, Radio, TableBody, TableCell, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
-import { FormatterProps, RowExpandComponent, SearchMatchers, TableColumn, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
-import { TableOptions, TableProps } from '../../types';
+import { FormatterProps, SearchMatchers, TableAction, TableColumn, TableComponents, TableOptions, TableProps, TableRow as MuiTableRow, TableRowId, TableStatus } from '../../types';
 
 const styles = (theme: Theme) => createStyles({
     root: {        
@@ -105,7 +104,10 @@ const styles = (theme: Theme) => createStyles({
 
 export type TableBodyClassKey = keyof ReturnType<typeof styles>;
 
-interface TableBodyProps<T> extends Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus'> {
+interface TableBodyProps<T> extends 
+    Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus'>, 
+    Pick<TableComponents<T>, 'rowActions' | 'rowExpand'> 
+{
     className?: string;
     columns: TableColumn<T>[];
     data: MuiTableRow<T>[];
@@ -115,10 +117,7 @@ interface TableBodyProps<T> extends Pick<TableProps<T>, 'onRowSelect' | 'onRowEx
     rowSelections: TableRowId[];
     rowExpansions: TableRowId[];
     searchMatchers?: SearchMatchers | null;
-    rowExpand?: RowExpandComponent;
-    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
-    onToggleRowSelection: (rowId: TableRowId) => void;
-    
+    onToggleRowSelection: (rowId: TableRowId) => void;    
 }
 
 class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyles<typeof styles, true>> {
@@ -140,7 +139,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             onRowExpand,
         } = this.props;
 
-        onRowExpand && onRowExpand(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
+        onRowExpand?.(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
     };
 
     handleRowClick = (rowId: TableRowId, rowData: T, rowIndex: number) => {
@@ -162,6 +161,25 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             this.handleRowSelect(rowId, rowData, rowIndex);
         }
     };
+
+    renderAction = ({ name, icon, button, callback, disabled, className }: TableAction, index: number) => {
+        if (button) {
+            return <React.Fragment key={index}>{button}</React.Fragment>;
+        }
+
+        return (
+            <Tooltip key={index} title={name}>
+                <IconButton
+                    size="small"
+                    className={className}
+                    onClick={(event) => +event.stopPropagation() || callback(event)} 
+                    disabled={disabled}>
+
+                    {_.isString(icon) ? <Icon className={icon} /> : icon}
+                </IconButton>
+            </Tooltip>
+        );
+    }
 
     render() {
         const { 
@@ -241,6 +259,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                         [classes.cellHighlighted]: selected || highlighted,
                         [classes.cellLastRow]: rowIndex === data.length - 1,
                     });
+
+                    const actions = _.isFunction(rowActions) ? rowActions?.(row.id, row.data, rowIndex) : rowActions;
 
                     const rowJsx = (
                         <>
@@ -327,9 +347,9 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                     );
                                 })}
 
-                                {rowActions &&
+                                {actions &&
                                     <TableCell align="right" className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} >                                            
-                                        {rowActions(row.id, row.data, rowIndex)}
+                                        {_.isArray(actions) ? actions.map(this.renderAction) : actions}
                                     </TableCell>
                                 }
                             </TableRow>

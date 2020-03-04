@@ -125,10 +125,14 @@ export interface TableFilter<T = any> {
 
 export interface TableComponents<T = any> {
     filters?: TableFilter<T>[];
-    actions?: TableAction[];
+    actions?: TableAction[] | (() => React.ReactElement);
     customs?: React.ComponentType<TableProps<T>>[];
-    rowExpand?: RowExpandComponent<T>;
-    rowActions?: (rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement;
+    rowExpand?: React.ComponentType<{
+        id: TableRowId;
+        data: T;
+        index: number;
+    }>;
+    rowActions?: ((rowId: TableRowId, rowData: T, rowIndex: number) => (React.ReactElement | TableAction[])) | TableAction[];
 }
 
 export interface SearchMatcher {
@@ -163,9 +167,3 @@ export interface FilterProps<T = any> {
     data: TableRow<T>[];
     onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
 }
-
-export type RowExpandComponent<T = any> = React.ComponentType<{
-    id: TableRowId;
-    data: T;
-    index: number;
-}>

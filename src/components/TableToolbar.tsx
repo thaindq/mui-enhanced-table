@@ -3,8 +3,9 @@ import { ViewColumn } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
+import _ from 'lodash';
 import TableViewColumns from './TableViewColumns';
-import { TableAction, TableColumn, TableColumnId } from '../../types';
+import { TableAction, TableColumn, TableColumnId, TableComponents } from '../../types';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
 
 const styles = (theme: Theme) => createStyles({
@@ -30,11 +31,10 @@ const styles = (theme: Theme) => createStyles({
     },
 });
 
-interface TableToolbarProps {
+interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     title?: string;
     columns: readonly TableColumn[];
     selectionCount: number;
-    actions?: TableAction[];
     onToggleColumn: (columnId: TableColumnId, display?: boolean) => void;
     onDragColumn: (result: DropResult, provided: ResponderProvided) => void;
 }
@@ -111,13 +111,15 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                             })
                         ) : ( */}
                             <>
-                                {actions && actions.map((action, index) => {
-                                    return (
-                                        <React.Fragment key={index}>
-                                            {this.renderAction(action)}
-                                        </React.Fragment>
-                                    );
-                                })}
+                                {actions && (_.isFunction(actions) 
+                                    ? actions() 
+                                    : actions.map((action, index) => {
+                                        return (
+                                            <React.Fragment key={index}>
+                                                {this.renderAction(action)}
+                                            </React.Fragment>
+                                        );
+                                }))}
 
                                 {this.renderAction({
                                     name: 'Columns',
