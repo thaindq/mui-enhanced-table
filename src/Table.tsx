@@ -132,12 +132,13 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             dataId,
             columns,
             init,
+            options,
         } = props;
 
-        const mergedInitData = {
-            ...MuiTable.defaultProps.init,
-            ...init
-        } as Required<TableInitData>;
+        const mergedOptions = {
+            ...MuiTable.defaultState.options,
+            ...options,
+        }
 
         const seenColumnIds: string[] = [];
         const tableData = data.map((item, index) => {
@@ -149,7 +150,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 
         return {
             ...MuiTable.defaultState,
-            ...mergedInitData,
+            ...init,
+            options: mergedOptions,
             originalData: data,
             data: tableData,
             displayData: tableData,
