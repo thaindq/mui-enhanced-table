@@ -104,7 +104,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
         rowsPerPage: 10,
         searchText: '',
         searchMatchers: null,
-        options: {
+        options: {            
+            noWrap: false,
             sortable: true,
             filterable: true,
             selectable: false,
@@ -282,7 +283,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
     state: TableState<T> = MuiTable.defaultState;
 
     componentDidMount = () => {
-        this.updateTableState(MuiTable.getInitialState(this.props));
+        this.updateTableState(MuiTable.getNextState(MuiTable.getInitialState(this.props), MuiTable.defaultState));
     }
 
     updateTableState = (newValues: Partial<TableState<T>>, callback?: (newState: TableState<T>, prevState: TableState<T>) => void) => {
@@ -593,7 +594,6 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 
                                 <Table
                                     className={classes.table}
-                                    size="small"
                                     stickyHeader={stickyHeader}>
 
                                     {showHeader &&
@@ -644,7 +644,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 // export default withStyles(styles, { name: 'MuiTable' })(MuiTable)
 
 // https://stackoverflow.com/a/52573647
-export default class <T = any> extends React.Component<TableProps<T>> {
+export default class <T = any> extends React.Component<TableProps<T> & Partial<WithStyles<typeof styles>>> {
     private readonly Component = withStyles(styles, { name: 'MuiEnhancedTable' })(
         (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>) => <MuiTable<T> {...props} />
     );

@@ -38,7 +38,8 @@ const styles = (theme: Theme) => createStyles({
     rowMessage: {
         height: 64
     },
-    cell: {        
+    cell: {
+        padding: '6px 16px'
     },    
     cellEmpty: {
         textAlign: 'center',
@@ -212,6 +213,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             highlightRow,
             alternativeRowColor,            
             showHeader,
+            stickyHeader,
         } = options;
 
         const emptyRows = data.length === 0 ? 1 : ((rowCount || 0) - data.length);
@@ -249,7 +251,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                     } = onRowStatus && onRowStatus(row.id, row.data, rowIndex) || {};
 
                     const rowClassName = cx(classes.row, {
-                        [classes.rowNoHeaders]: showHeader,
+                        [classes.rowNoHeaders]: showHeader || stickyHeader,
                         [classes.rowClickable]: !!onRowClick || selectable || expandable,
                         [classes.rowNoAlternativeColor]: !alternativeRowColor,
                     }, className);
