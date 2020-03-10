@@ -61,8 +61,7 @@ export interface TableOptions<T = any> {
     noWrap?: boolean;
     highlightRow?: boolean;
     highlightColumn?: boolean;
-    alternativeRowColor?: boolean;    
-    dependencies?: any[];        
+    alternativeRowColor?: boolean;        
 }
 
 export interface TableProps<T = any> {
@@ -76,6 +75,7 @@ export interface TableProps<T = any> {
     status?: TableStatus;
     options?: TableOptions<T>;
     init?: TableInitData<T>;
+    dependencies?: any[];
     components?: TableComponents<T>;
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
     onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
@@ -104,6 +104,7 @@ export interface TableState<T = any> {
     searchText: string;
     searchMatchers: SearchMatchers | null;
     options: TableOptions<T>;
+    dependencies?: any[];
 }
 
 export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'columnHidings' | 'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'>>;

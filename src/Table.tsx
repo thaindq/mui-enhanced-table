@@ -134,6 +134,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             columns,
             init,
             options,
+            dependencies
         } = props;
 
         const mergedOptions = {
@@ -152,6 +153,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
         return {
             ...MuiTable.defaultState,
             ...init,
+            dependencies,
             options: mergedOptions,
             originalData: data,
             data: tableData,
@@ -269,7 +271,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
     }
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
-        if (prevState && prevState.originalData !== nextProps.data) {
+        if (prevState && (prevState.originalData !== nextProps.data || !_.isEqual(prevState.dependencies, nextProps.dependencies))) {
             return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState);
         }
 
