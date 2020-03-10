@@ -1,4 +1,4 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -255,11 +255,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
 
         if ((newValues.sortBy !== undefined || newValues.sortDirection !== undefined) && sortDirection) {
             const sortColumn = _.find(columns, column => column.id === sortBy);
-            displayData = _.orderBy(displayData, row => !!sortColumn
-                ? sortColumn.dateTime
-                    ? Date.parse(_.get(row.data, sortBy))
-                    : _.get(row.data, sortBy)
-                : '', [sortDirection]);
+            displayData = _.orderBy(displayData, row => sortColumn?.dateTime ? Date.parse(_.get(row.data, sortBy)) : _.get(row.data, sortBy), sortDirection);
         }
 
         return {
@@ -593,8 +589,10 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                 {...provided.droppableProps}>
 
                                 <Table
+                                    size="small"
                                     className={classes.table}
-                                    stickyHeader={stickyHeader}>
+                                    stickyHeader={stickyHeader}                                    
+                                >
 
                                     {showHeader &&
                                         <TableHead

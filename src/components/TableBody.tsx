@@ -12,15 +12,15 @@ const styles = (theme: Theme) => createStyles({
     },
     row: {
         transition: 'all ease .2s',
-        '&:nth-of-type(even)': {
+        '&:nth-of-type(odd)': {
             backgroundColor: theme.palette.background.default,
         },
     },    
-    rowNoHeaders: {
-        '&:nth-of-type(even)': {
+    rowNoHeader: {
+        '&:nth-of-type(odd)': {
             backgroundColor: 'inherit',
         },
-        '&:nth-of-type(odd)': {
+        '&:nth-of-type(even)': {
             backgroundColor: theme.palette.background.default,
         },
     },
@@ -39,7 +39,6 @@ const styles = (theme: Theme) => createStyles({
         height: 64
     },
     cell: {
-        padding: '6px 16px'
     },    
     cellEmpty: {
         textAlign: 'center',
@@ -251,7 +250,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                     } = onRowStatus && onRowStatus(row.id, row.data, rowIndex) || {};
 
                     const rowClassName = cx(classes.row, {
-                        [classes.rowNoHeaders]: showHeader || stickyHeader,
+                        [classes.rowNoHeader]: !showHeader || stickyHeader,
                         [classes.rowClickable]: !!onRowClick || selectable || expandable,
                         [classes.rowNoAlternativeColor]: !alternativeRowColor,
                     }, className);
