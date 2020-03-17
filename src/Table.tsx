@@ -5,7 +5,7 @@ import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { SearchMatcher, SearchMatchers, TableColumnId, TableProps, TableRowId, TableState, TableOptions, TableInitData } from '../types';
+import { SearchMatcher, SearchMatchers, TableColumnId, TableProps, TableRowId, TableState, TableOptions, TableInitData, TableRow } from '../types';
 import TableBody from './components/TableBody';
 import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
@@ -68,12 +68,16 @@ const styles = (theme: Theme) => createStyles({
         }
     },
     customComponentsContainer: {
-
+        paddingLeft: 16,
+        paddingRight: 8,
     },
     filtersContainer: {
         paddingLeft: 16,
         paddingRight: 8
     },
+    noTitle: {
+        marginTop: -48
+    }
 });
 
 class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
@@ -143,12 +147,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
         }
 
         const seenColumnIds: string[] = [];
-        const tableData = data.map((item, index) => {
-            return {
-                id: String(!!dataId ? item[dataId] : index),
-                data: item,
-            };
-        });
+        const tableData = MuiTable.mapDataToTableRow(data, dataId);
 
         return {
             ...MuiTable.defaultState,
@@ -212,12 +211,18 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             options,
         } = mergedState;
 
-        let displayData = (newValues.searchText !== undefined || newValues.filteredData !== undefined || newValues.sortBy !== undefined || newValues.sortDirection !== undefined)
+        const hasNewData = newValues.data !== undefined;
+        const hasNewSearchText = newValues.searchText !== undefined;
+        const hasNewFilteredData = newValues.filteredData !== undefined;
+        const hasNewSortBy = newValues.sortBy !== undefined;
+        const hasNewSortDirection = newValues.sortDirection !== undefined;
+
+        let displayData = (hasNewData || hasNewSearchText || hasNewFilteredData || hasNewSortBy || hasNewSortDirection)
             ? data
             : prevState.displayData;
         let searchMatchers: SearchMatchers | null = !!prevState.searchText ? prevState.searchMatchers : null;
 
-        if (prevState.filteredData !== filteredData || prevState.searchText !== searchText) {
+        if (hasNewData || prevState.filteredData !== filteredData || prevState.searchText !== searchText) {
             const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
             displayData = displayData.filter(row => filteredIds.includes(row.id));
 
@@ -255,7 +260,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             });
         }
 
-        if ((newValues.sortBy !== undefined || newValues.sortDirection !== undefined) && sortDirection) {
+        if ((hasNewData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
             const sortColumn = _.find(columns, column => column.id === sortBy);
             displayData = _.orderBy(displayData, row => sortColumn?.dateTime ? Date.parse(_.get(row.data, sortBy)) : _.get(row.data, sortBy), sortDirection);
         }
@@ -271,11 +276,25 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
     }
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
-        if (prevState && (prevState.originalData !== nextProps.data || !_.isEqual(prevState.dependencies, nextProps.dependencies))) {
+        if (!_.isEqual(prevState.dependencies, nextProps.dependencies)) {
             return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState);
+        } else if (prevState && prevState.originalData !== nextProps.data) {
+            return MuiTable.getNextState({
+                data: MuiTable.mapDataToTableRow(nextProps.data, nextProps.dataId),
+                originalData: nextProps.data,
+            }, prevState);
         }
 
         return null;
+    }
+
+    static mapDataToTableRow = <T extends {}>(data: readonly T[], dataId?: string): TableRow<T>[] => {
+        return data.map((item, index) => {
+            return {
+                id: String(!!dataId ? _.get(item, dataId, index) : index),
+                data: item,
+            };
+        });
     }
 
     state: TableState<T> = MuiTable.defaultState;
@@ -560,13 +579,13 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                 }
 
                 {customs && customs.length > 0 &&
-                    <div className={classes.customComponentsContainer}>
+                    <div className={cx(classes.customComponentsContainer, { [classes.noTitle]: !title })}>
                         {customs.map((Component, index) => <Component key={index} {...this.props} />)}
                     </div>
                 }
 
                 {filters && filters.length > 0 &&
-                    <div className={classes.filtersContainer}>
+                    <div className={cx(classes.filtersContainer, { [classes.noTitle]: !title })}>
                         {filters.map(({ name, field, component: Component }, index) => (
                             <div key={index}>
                                 <Typography variant="overline">{name}</Typography>

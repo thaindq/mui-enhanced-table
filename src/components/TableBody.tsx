@@ -110,7 +110,7 @@ interface TableBodyProps<T> extends
 {
     className?: string;
     columns: TableColumn<T>[];
-    data: MuiTableRow<T>[];
+    data: readonly MuiTableRow<T>[];
     options: TableOptions<T>;
     status?: TableStatus;
     rowCount?: number;

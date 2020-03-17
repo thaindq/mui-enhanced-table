@@ -70,7 +70,7 @@ export interface TableProps<T = any> {
     bodyClasses?: Partial<ClassNameMap<TableBodyClassKey>>;
     title?: string;
     data: readonly T[];
-    dataId?: keyof T;
+    dataId?: string;
     columns: readonly TableColumn<T>[];
     status?: TableStatus;
     options?: TableOptions<T>;
@@ -90,9 +90,9 @@ export interface TableProps<T = any> {
 
 export interface TableState<T = any> {
     columns: readonly TableColumn<T>[];
-    data: TableRow<T>[];
+    data: readonly TableRow<T>[];
     originalData: readonly T[];
-    displayData: TableRow<T>[];
+    displayData: readonly TableRow<T>[];
     filteredData: (TableRowId[] | null)[];
     columnHidings: TableColumnId[];
     rowExpansions: TableRowId[];
@@ -165,6 +165,6 @@ export type FormatterProps<T = any> = {
 export interface FilterProps<T = any> {
     filterId: number;
     filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId);
-    data: TableRow<T>[];
+    data: readonly TableRow<T>[];
     onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
 }
