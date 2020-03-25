@@ -1,4 +1,4 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider, CircularProgress } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -22,6 +22,7 @@ const styles = (theme: Theme) => createStyles({
     },
     container: {
         overflowX: 'auto',
+        position: 'relative',
         // height: '100%'
     },
     border: {
@@ -30,6 +31,7 @@ const styles = (theme: Theme) => createStyles({
     table: {
         position: 'relative',
         display: 'table',
+        height: 'calc(100% - 1px)',
     },
     search: {
         flexGrow: 1,
@@ -56,6 +58,7 @@ const styles = (theme: Theme) => createStyles({
     loader: {
         top: 0,
         left: 0,
+        zIndex: 1000,
         position: 'absolute',
         width: '100%',
         height: '100%',
@@ -108,7 +111,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
         rowsPerPage: 10,
         searchText: '',
         searchMatchers: null,
-        options: {            
+        options: {
             noWrap: false,
             sortable: true,
             filterable: true,
@@ -127,7 +130,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             highlightRow: true,
             highlightColumn: false,
             alternativeRowColor: true,
-            elevation: 1,            
+            elevation: 1,
         }
     };
 
@@ -511,7 +514,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             title,
             status,
             headClasses,
-            bodyClasses,            
+            bodyClasses,
             components,
             onRowClick,
             onRowSelect,
@@ -543,7 +546,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             showHeader,
             stickyHeader,
             showPagination,
-            elevation,            
+            elevation,
         } = options as Required<TableOptions<T>>;
 
         const {
@@ -612,7 +615,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                 <Table
                                     size="small"
                                     className={classes.table}
-                                    stickyHeader={stickyHeader}                                    
+                                    stickyHeader={stickyHeader}
                                 >
 
                                     {showHeader &&
@@ -626,7 +629,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                             sortDirection={sortDirection}
                                             hasRowActions={!!rowActions}
                                             onToggleSelectAll={this.toggleSelectAllRows}
-                                            onSortData={this.sortData} 
+                                            onSortData={this.sortData}
                                         />
                                     }
 
@@ -642,7 +645,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                         rowExpansions={rowExpansions}
                                         rowActions={rowActions}
                                         rowExpand={rowExpand}
-                                        onToggleRowSelection={this.toggleRowSelection}                                        
+                                        onToggleRowSelection={this.toggleRowSelection}
                                         onRowClick={onRowClick}
                                         onRowStatus={onRowStatus}
                                         onRowExpand={onRowExpand}

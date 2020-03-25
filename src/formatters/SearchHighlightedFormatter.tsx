@@ -14,19 +14,18 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
         return this.instance;
     }
 
-    highlightColor?: string;
+    textColor?: string;
     backgroundColor?: string;
 
-    constructor(highlightColor?: string, backgroundColor?: string) {
+    constructor(textColor = 'black', backgroundColor = 'yellow') {
         super();
-        this.highlightColor = highlightColor;
+        this.textColor = textColor;
         this.backgroundColor = backgroundColor;
     }
 
     format({
         value,
         matcher,
-        theme,
     }: FormatterProps<T>) {
         if (!matcher) {
             return this.getValueString(value);
@@ -38,13 +37,11 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
             match,
         } = matcher;
 
-        const backgroundColor = this.backgroundColor ?? theme.palette.secondary.main;
-
         return (
             <>
                 {pre}<span style={{
-                    backgroundColor,
-                    color: this.highlightColor ?? theme.palette.getContrastText(backgroundColor),
+                    backgroundColor: this.backgroundColor,
+                    color: this.textColor,
                 }}>{match}</span>{post}
             </>
         );

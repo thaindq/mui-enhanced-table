@@ -69,7 +69,7 @@ const styles = (theme: Theme) => createStyles({
         right: 0,
         width: 1,
         position: 'sticky',
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.background.default,
         '& > *': {
             display: 'inline-block'
         }
@@ -225,7 +225,14 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
         const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
 
         return (
-            <TableBody className={cx(className, classes.root)}>
+            <TableBody 
+                className={cx(className, classes.root)} 
+                style={{
+                    display: hasMessage
+                        ? undefined
+                        : 'table-footer-group',
+                }}
+            >
                 {hasMessage && (
                     <TableRow>
                         <TableCell colSpan={1000}>
@@ -313,7 +320,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                     const formatterProps: FormatterProps<T> = {
                                         value,
                                         matcher: searchMatcher,
-                                        theme,
                                         selected,
                                         expanded,
                                         item: row.data

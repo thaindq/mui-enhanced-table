@@ -155,10 +155,9 @@ export interface Formatter<T = any> {
 
 export type FormatterProps<T = any> = {
     value: any, 
-    matcher: SearchMatcher | null, 
-    theme: Theme, 
-    selected: boolean, 
-    expanded: boolean, 
+    matcher?: SearchMatcher | null,
+    selected?: boolean, 
+    expanded?: boolean, 
     item: T 
 };
 

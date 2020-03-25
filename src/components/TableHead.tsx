@@ -5,7 +5,7 @@ import React from 'react';
 import { TableOptions, TableColumn, TableColumnId } from '../../types';
 
 
-const styles = createStyles({
+const styles = (theme: Theme) => createStyles({
     root: {
     },
     row: {
@@ -27,10 +27,11 @@ const styles = createStyles({
     cellRowActions: { 
         right: 0,
         position: 'sticky',
+        backgroundColor: theme.palette.background.default,
     }
 });
 
-export type TableHeadClassKey = keyof typeof styles;
+export type TableHeadClassKey = keyof ReturnType<typeof styles>;;
 
 interface TableHeadProps {
     className?: string;
