@@ -105,7 +105,7 @@ const styles = (theme: Theme) => createStyles({
 export type TableBodyClassKey = keyof ReturnType<typeof styles>;
 
 interface TableBodyProps<T> extends 
-    Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus'>, 
+    Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus' | 'onNoDataMessage' | 'onErrorMessage'>, 
     Pick<TableComponents<T>, 'rowActions' | 'rowExpand'> 
 {
     className?: string;
@@ -202,6 +202,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             onRowClick,
             onCellClick,
             onCellStatus,
+            onNoDataMessage,
+            onErrorMessage,
         } = this.props;
 
         const {
@@ -239,8 +241,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                             <div className={classes.messageWrapper}>
                                 <div className={classes.message}>
                                     {shouldShowLoading && <CircularProgress size={40}/>}
-                                    {shouldShowError && <Typography>Error loading data</Typography>}
-                                    {shouldShowNoData && <Typography>No data</Typography>}
+                                    {shouldShowError ? onErrorMessage?.() : <Typography>Error loading data</Typography>}
+                                    {shouldShowNoData ? onNoDataMessage?.() : <Typography>No data</Typography>}
                                 </div>
                             </div>
                         </TableCell>

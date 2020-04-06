@@ -23,7 +23,7 @@ const styles = (theme: Theme) => createStyles({
     container: {
         overflowX: 'auto',
         position: 'relative',
-        // height: '100%'
+        height: '100%'
     },
     border: {
         border: `1px solid rgb(110, 110, 110)`
@@ -582,7 +582,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                 }
 
                 {customs && customs.length > 0 &&
-                    <div className={cx(classes.customComponentsContainer, { [classes.noTitle]: !title })}>
+                    <div className={cx(classes.customComponentsContainer, { [classes.noTitle]: !title && showToolbar })}>
                         {customs.map((Component, index) => <Component key={index} {...this.props} />)}
                     </div>
                 }

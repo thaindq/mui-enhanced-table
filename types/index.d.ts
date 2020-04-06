@@ -86,6 +86,8 @@ export interface TableProps<T = any> {
     onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
     onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
     onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
+    onNoDataMessage?: () => React.ReactNode;
+    onErrorMessage?: () => React.ReactNode;
 }
 
 export interface TableState<T = any> {
@@ -112,7 +114,7 @@ export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'columnHidings'
 export interface TableAction {
     name: string;
     className?: string;    
-    icon?: React.ReactNode | string;
+    icon?: React.ReactNode;
     button?: React.ReactNode;
     disabled?: boolean;
     callback: (event: React.MouseEvent<HTMLElement>) => void;
