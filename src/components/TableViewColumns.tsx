@@ -3,7 +3,7 @@ import { DragHandle } from "@material-ui/icons";
 import { WithStyles } from "@material-ui/styles";
 import React from "react";
 import { DragDropContext, Draggable, Droppable, DroppableProvided, DroppableStateSnapshot, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { TableColumn, TableColumnId } from "../../types";
+import { TableColumn, TableColumnId } from "../types";
 
 export const styles = (theme: Theme) => createStyles({
     root: {

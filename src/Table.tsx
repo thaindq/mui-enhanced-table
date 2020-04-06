@@ -5,7 +5,7 @@ import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { SearchMatcher, SearchMatchers, TableColumnId, TableProps, TableRowId, TableState, TableOptions, TableInitData, TableRow } from '../types';
+import { SearchMatcher, SearchMatchers, TableColumnId, TableProps, TableRowId, TableState, TableOptions, TableInitData, TableRow } from './types';
 import TableBody from './components/TableBody';
 import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';

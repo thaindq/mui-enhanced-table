@@ -1,7 +1,7 @@
 import { SortDirection, TableCellProps } from "@material-ui/core";
 import { ClassNameMap, CSSProperties } from "@material-ui/styles";
-import { TableBodyClassKey } from "../src/components/TableBody";
-import { TableHeadClassKey } from "../src/components/TableHead";
+import { TableBodyClassKey } from "./components/TableBody";
+import { TableHeadClassKey } from "./components/TableHead";
 
 export type TableRowId = string;
 export type TableColumnId = string;

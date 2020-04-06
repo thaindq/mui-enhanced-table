@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilterProps } from '../../types';
+import { FilterProps } from '../types';
 
 export abstract class BaseFilter<Props = {}, State = {}, T = any> extends React.PureComponent<Props & FilterProps<T>, State> {
     componentDidUpdate = (prevProps: Props & FilterProps<T>) => {
