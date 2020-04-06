@@ -70,15 +70,22 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
             expandable,
             allCapsHeader,
             multiSelect,
+            component,
         } = options;
 
         return (
-            <TableHead className={cx(className, classes.root)}>
-                <TableRow className={classes.row}>
-                    {expandable && <TableCell className={classes.cell}/>}
+            <TableHead 
+                className={cx(className, classes.root)}
+                component={component}
+            >
+                <TableRow                     
+                    className={classes.row}
+                    component={component}
+                >
+                    {expandable && <TableCell className={classes.cell} component={component}/>}
 
                     {selectable &&
-                        <TableCell className={classes.cell}>
+                        <TableCell className={classes.cell} component={component}>
                             {multiSelect && selectionCount !== undefined && rowCount !== undefined &&
                                 <Checkbox
                                     indeterminate={selectionCount > 0 && selectionCount < rowCount}
@@ -97,6 +104,7 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
                                 [classes.cellNoWrap]: noWrap,
                             })}
                             align={column.align}
+                            component={component}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}>
 
                             {sortable && column.sortable &&
@@ -111,7 +119,7 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
                         </TableCell>
                     ))}
 
-                    {hasRowActions && <TableCell className={cx(classes.cell, classes.cellRowActions)} />}
+                    {hasRowActions && <TableCell className={cx(classes.cell, classes.cellRowActions)} component={component}/>}
                 </TableRow>
             </TableHead>
         );

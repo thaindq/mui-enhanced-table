@@ -1,7 +1,7 @@
-import { SortDirection, TableCellProps, Theme } from "@material-ui/core";
-import { CSSProperties, ClassNameMap } from "@material-ui/styles";
-import { TableHeadClassKey } from "../src/components/TableHead";
+import { SortDirection, TableCellProps } from "@material-ui/core";
+import { ClassNameMap, CSSProperties } from "@material-ui/styles";
 import { TableBodyClassKey } from "../src/components/TableBody";
+import { TableHeadClassKey } from "../src/components/TableHead";
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -42,7 +42,7 @@ export interface TableCellStatus {
     className?: string;
 }
 
-export interface TableOptions<T = any> {
+export interface TableOptions<T = any> {    
     sortable?: boolean;
     elevation?: number;
     filterable?: boolean;
@@ -61,7 +61,8 @@ export interface TableOptions<T = any> {
     noWrap?: boolean;
     highlightRow?: boolean;
     highlightColumn?: boolean;
-    alternativeRowColor?: boolean;        
+    alternativeRowColor?: boolean;
+    component?: 'div';
 }
 
 export interface TableProps<T = any> {
@@ -106,7 +107,7 @@ export interface TableState<T = any> {
     searchText: string;
     searchMatchers: SearchMatchers | null;
     options: TableOptions<T>;
-    dependencies?: any[];
+    dependencies?: any[];    
 }
 
 export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'columnHidings' | 'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'>>;

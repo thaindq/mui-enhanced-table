@@ -141,7 +141,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             columns,
             init,
             options,
-            dependencies
+            dependencies,
         } = props;
 
         const mergedOptions = {
@@ -547,6 +547,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             stickyHeader,
             showPagination,
             elevation,
+            component,
         } = options as Required<TableOptions<T>>;
 
         const {
@@ -616,6 +617,7 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                     size="small"
                                     className={classes.table}
                                     stickyHeader={stickyHeader}
+                                    component={component}
                                 >
 
                                     {showHeader &&

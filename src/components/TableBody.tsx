@@ -215,6 +215,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             alternativeRowColor,            
             showHeader,
             stickyHeader,
+            component,
         } = options;
 
         const emptyRows = data.length === 0 ? 1 : ((rowCount || 0) - data.length);
@@ -228,6 +229,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
         return (
             <TableBody 
+                component={component}
                 className={cx(className, classes.root)} 
                 style={{
                     display: hasMessage
@@ -236,8 +238,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                 }}
             >
                 {hasMessage && (
-                    <TableRow>
-                        <TableCell colSpan={1000}>
+                    <TableRow component={component}>
+                        <TableCell colSpan={1000} component={component}>
                             <div className={classes.messageWrapper}>
                                 <div className={classes.message}>
                                     {shouldShowLoading && <CircularProgress size={40}/>}
@@ -279,10 +281,11 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 className={rowClassName}
                                 selected={selected}
                                 hover={highlightRow}
+                                component={component}
                                 onClick={(event) => +event.stopPropagation() || disabled || this.handleRowClick(row.id, row.data, rowIndex)}>
 
                                 {expandable &&
-                                    <TableCell className={cx(cellClassName, classes.cellExpandButton)}>
+                                    <TableCell className={cx(cellClassName, classes.cellExpandButton)} component={component}>
                                         <IconButton onClick={(event) => +event.stopPropagation() || this.handleRowExpand(row.id, row.data, rowIndex)}>
                                             {expanded && 
                                                 <ExpandLess fontSize="inherit" style={{ position: 'absolute' }}/>
@@ -294,7 +297,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 }
 
                                 {selectable &&
-                                    <TableCell className={cx(cellClassName, classes.cellSelectionControl)}>
+                                    <TableCell className={cx(cellClassName, classes.cellSelectionControl)} component={component}>
                                         {multiSelect &&
                                             <Checkbox
                                                 checked={selected}
@@ -345,6 +348,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                                 [classes.cellNoWrap]: noWrap
                                             })}
                                             align={column.align}
+                                            component={component}
                                             onClick={() => onCellClick && +onCellClick(row.id, column.id, row.data, rowIndex, cellIndex) || undefined}
                                             style={{
                                                 ...style,
@@ -357,15 +361,15 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 })}
 
                                 {actions &&
-                                    <TableCell align="right" className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} >                                            
+                                    <TableCell align="right" className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} component={component}>
                                         {_.isArray(actions) ? actions.map(this.renderAction) : actions}
                                     </TableCell>
                                 }
                             </TableRow>
 
                             {expanded && RowExpandComponent &&
-                                <TableRow>
-                                    <TableCell colSpan={100} className={classes.cellExpanded}>
+                                <TableRow component={component}>
+                                    <TableCell colSpan={100} className={classes.cellExpanded} component={component}>
                                         <RowExpandComponent 
                                             id={row.id}
                                             data={row.data}
