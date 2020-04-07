@@ -229,7 +229,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
         return (
             <TableBody 
-                component={component}
+                component={component || 'tbody'}
                 className={cx(className, classes.root)} 
                 style={{
                     display: hasMessage
@@ -238,13 +238,13 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                 }}
             >
                 {hasMessage && (
-                    <TableRow component={component}>
+                    <TableRow component={component || 'tr'}>
                         <TableCell colSpan={1000} component={component}>
                             <div className={classes.messageWrapper}>
                                 <div className={classes.message}>
                                     {shouldShowLoading && <CircularProgress size={40}/>}
-                                    {shouldShowError ? onErrorMessage?.() : <Typography>Error loading data</Typography>}
-                                    {shouldShowNoData ? onNoDataMessage?.() : <Typography>No data</Typography>}
+                                    {shouldShowError && (onErrorMessage?.() || <Typography>Error loading data</Typography>)}
+                                    {shouldShowNoData && (onNoDataMessage?.() || <Typography>No data</Typography>)}
                                 </div>
                             </div>
                         </TableCell>
@@ -281,8 +281,10 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 className={rowClassName}
                                 selected={selected}
                                 hover={highlightRow}
-                                component={component}
-                                onClick={(event) => +event.stopPropagation() || disabled || this.handleRowClick(row.id, row.data, rowIndex)}>
+                                component={component || 'tr'}
+                                onClick={(event: any) => {
+                                    +event.stopPropagation() || disabled || this.handleRowClick(row.id, row.data, rowIndex)
+                                }}>
 
                                 {expandable &&
                                     <TableCell className={cx(cellClassName, classes.cellExpandButton)} component={component}>
@@ -368,7 +370,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                             </TableRow>
 
                             {expanded && RowExpandComponent &&
-                                <TableRow component={component}>
+                                <TableRow component={component || 'tr'}>
                                     <TableCell colSpan={100} className={classes.cellExpanded} component={component}>
                                         <RowExpandComponent 
                                             id={row.id}

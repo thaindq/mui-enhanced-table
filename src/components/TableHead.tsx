@@ -76,11 +76,11 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
         return (
             <TableHead 
                 className={cx(className, classes.root)}
-                component={component}
+                component={component || 'thead'}
             >
                 <TableRow                     
                     className={classes.row}
-                    component={component}
+                    component={component || 'tr'}
                 >
                     {expandable && <TableCell className={classes.cell} component={component}/>}
 

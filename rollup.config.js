@@ -57,6 +57,7 @@ export default {
                     'isValidElementType',
                     'isContextConsumer',
                     'ForwardRef',
+                    'Memo',
                 ]
             }
         }),
