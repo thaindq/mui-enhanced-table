@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FormatterProps, Formatter } from '../types';
+import { FormatterProps, Formatter } from '..';
 
 export abstract class BaseFormatter<T = any> implements Formatter<T> {
     abstract format(props: FormatterProps<T>): React.ReactNode;

@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseFormatter from './BaseFormatter';
-import { FormatterProps } from '../types';
+import { FormatterProps } from '..';
 
 class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
 

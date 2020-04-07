@@ -5,7 +5,7 @@ import cx from 'classnames';
 import React from 'react';
 import _ from 'lodash';
 import TableViewColumns from './TableViewColumns';
-import { TableAction, TableColumn, TableColumnId, TableComponents } from '../types';
+import { TableAction, TableColumn, TableColumnId, TableComponents } from '..';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
 
 const styles = (theme: Theme) => createStyles({

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { SearchMatcher } from "./types";
+import { SearchMatcher } from '.';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {
     const matchIndex = _.isString(input) && _.isString(query)
