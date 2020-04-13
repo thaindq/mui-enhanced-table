@@ -92,8 +92,8 @@ export interface TableProps<T = any> {
     onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
     onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
     onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
-    onNoDataMessage?: () => React.ReactNode;
-    onErrorMessage?: () => React.ReactNode;
+    onNoDataMessage?: (data: readonly TableRow<T>[]) => React.ReactNode;
+    onErrorMessage?: (data: readonly TableRow<T>[]) => React.ReactNode;
 }
 
 export interface TableState<T = any> {

@@ -524,6 +524,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
             onRowStatus,
             onCellClick,
             onCellStatus,
+            onNoDataMessage,
+            onErrorMessage,
         } = this.props;
 
         const {
@@ -638,7 +640,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                     <TableBody<T>
                                         classes={bodyClasses}
                                         columns={displayColumns}
-                                        data={currentPageData}
+                                        data={data}
+                                        displayData={currentPageData}
                                         options={options}
                                         status={status}
                                         searchMatchers={searchMatchers}
@@ -654,6 +657,8 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
                                         onRowSelect={onRowSelect}
                                         onCellClick={onCellClick}
                                         onCellStatus={onCellStatus}
+                                        onNoDataMessage={onNoDataMessage}
+                                        onErrorMessage={onErrorMessage}
                                     />
                                 </Table>
                             </div>

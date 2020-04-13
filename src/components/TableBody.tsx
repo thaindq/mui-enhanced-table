@@ -111,6 +111,7 @@ interface TableBodyProps<T> extends
     className?: string;
     columns: TableColumn<T>[];
     data: readonly MuiTableRow<T>[];
+    displayData: readonly MuiTableRow<T>[];
     options: TableOptions<T>;
     status?: TableStatus;
     rowCount?: number;
@@ -188,6 +189,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             className,
             columns,
             data,
+            displayData,
             searchMatchers,
             rowCount,
             options,
@@ -218,13 +220,13 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             component,
         } = options;
 
-        const emptyRows = data.length === 0 ? 1 : ((rowCount || 0) - data.length);
+        const emptyRows = displayData.length === 0 ? 1 : ((rowCount || 0) - displayData.length);
         const colSpan = columns.length + (selectable ? 1 : 0);
         const isLoading = status === 'Pending';
         const hasError = status === 'Error';
-        const shouldShowLoading = isLoading && !data.length;
-        const shouldShowError = hasError && !data.length;
-        const shouldShowNoData = !isLoading && !hasError && !data.length;
+        const shouldShowLoading = isLoading && !displayData.length;
+        const shouldShowError = hasError && !displayData.length;
+        const shouldShowNoData = !isLoading && !hasError && !displayData.length;
         const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
 
         return (
@@ -243,13 +245,13 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                             <div className={classes.messageWrapper}>
                                 <div className={classes.message}>
                                     {shouldShowLoading && <CircularProgress size={40}/>}
-                                    {shouldShowError && (onErrorMessage?.() || <Typography>Error loading data</Typography>)}
-                                    {shouldShowNoData && (onNoDataMessage?.() || <Typography>No data</Typography>)}
+                                    {shouldShowError && (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
+                                    {shouldShowNoData && (onNoDataMessage?.(data) || <Typography>No data</Typography>)}
                                 </div>
                             </div>
                         </TableCell>
                     </TableRow>
-                ) || data.map((row, rowIndex) => {
+                ) || displayData.map((row, rowIndex) => {
                     const {
                         style,
                         tooltip,
@@ -269,7 +271,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                     const cellClassName = cx(classes.cell, {
                         [classes.cellDisabled]: disabled,
                         [classes.cellHighlighted]: selected || highlighted,
-                        [classes.cellLastRow]: rowIndex === data.length - 1,
+                        [classes.cellLastRow]: rowIndex === displayData.length - 1,
                     });
 
                     const actions = _.isFunction(rowActions) ? rowActions?.(row.id, row.data, rowIndex) : rowActions;
