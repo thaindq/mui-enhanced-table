@@ -403,15 +403,17 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
     }
 }
 
-// export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(MuiTableBody);
+export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(MuiTableBody) as <T extends {}>(props: TableBodyProps<T> & {
+    classes?: { [key in TableBodyClassKey]?: string }
+}) => React.ReactElement;
 
 // https://stackoverflow.com/a/52573647
-export default class<T = any> extends React.Component<TableBodyProps<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
-    private readonly Component = withStyles(styles, { name: 'MuiEnhancedTableBody', withTheme: true })(
-        (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
-    );
+// export default class<T = any> extends React.Component<TableBodyProps<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
+//     private readonly Component = withStyles(styles, { name: 'MuiEnhancedTableBody', withTheme: true })(
+//         (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
+//     );
 
-    render() {
-        return <this.Component {...this.props} />;
-    }
-}
+//     render() {
+//         return <this.Component {...this.props} />;
+//     }
+// }

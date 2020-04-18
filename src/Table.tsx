@@ -1,4 +1,4 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider, CircularProgress } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider, CircularProgress, TableClassKey } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -83,7 +83,7 @@ const styles = (theme: Theme) => createStyles({
     }
 });
 
-class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
+export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
     static defaultProps: Partial<TableProps> = {
         className: '',
         title: '',
@@ -670,15 +670,38 @@ class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeo
     }
 }
 
-// export default withStyles(styles, { name: 'MuiTable' })(MuiTable)
+// export default withStyles(styles, { name: 'MuiTable' })(MuiTable) as <T extends {}>(props: TableProps<T> & { 
+//     ref?: React.Ref<MuiTable<T>>,
+//     classes?: {
+//         [key in keyof ReturnType<typeof styles>]?: string
+//     },
+// }) => React.ReactElement;
 
 // https://stackoverflow.com/a/52573647
 export default class <T = any> extends React.Component<TableProps<T> & Partial<WithStyles<typeof styles>>> {
-    private readonly Component = withStyles(styles, { name: 'MuiEnhancedTable' })(
-        (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>) => <MuiTable<T> {...props} />
-    );
+    private readonly Component = withStyles(styles, { name: 'MuiEnhancedTable' })(React.forwardRef(
+        (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>, ref: React.Ref<MuiTable<T>>) => <MuiTable<T> {...props} ref={ref} />
+    ));
+
+    private tableRef = React.createRef<MuiTable<T>>();
+
+    toggleColumn = (columnId: TableColumnId, display?: boolean) => {
+        this.tableRef.current?.toggleColumn(columnId, display);
+    }
+
+    toggleRowSelection = (rowId: TableRowId | TableRowId[], select?: boolean) => {
+        this.tableRef.current?.toggleRowSelection(rowId, select);
+    }
+
+    toggleRowExpansion = (rowId: TableRowId | TableRowId[], expand?: boolean) => {
+        this.tableRef.current?.toggleRowExpansion(rowId, expand);
+    }
+
+    toggleSelectAllRows = (select?: boolean) => {
+        this.tableRef.current?.toggleSelectAllRows(select);
+    }
 
     render() {
-        return <this.Component {...this.props} />;
+        return <this.Component {...this.props} ref={this.tableRef}/>;
     }
 }
