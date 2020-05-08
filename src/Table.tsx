@@ -23,7 +23,8 @@ const styles = (theme: Theme) => createStyles({
     container: {
         overflowX: 'auto',
         position: 'relative',
-        height: '100%'
+        flexGrow: 1,
+        // height: '100%'
     },
     border: {
         border: `1px solid rgb(110, 110, 110)`
@@ -651,6 +652,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                                         rowActions={rowActions}
                                         rowExpand={rowExpand}
                                         onToggleRowSelection={this.toggleRowSelection}
+                                        onToggleRowExpansion={this.toggleRowExpansion}
                                         onRowClick={onRowClick}
                                         onRowStatus={onRowStatus}
                                         onRowExpand={onRowExpand}

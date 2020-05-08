@@ -1,21 +1,22 @@
 import { Checkbox, CircularProgress, createStyles, Icon, IconButton, Radio, TableBody, TableCell, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
-import { WithStyles } from '@material-ui/styles';
+import { WithStyles, CSSProperties } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
 import { FormatterProps, SearchMatchers, TableAction, TableColumn, TableComponents, TableOptions, TableProps, TableRow as MuiTableRow, TableRowId, TableStatus } from '..';
 
 const styles = (theme: Theme) => createStyles({
-    root: {        
-        position: 'relative'
+    root: {
+        position: 'relative',
+        // height: '100%',
     },
     row: {
         transition: 'all ease .2s',
         '&:nth-of-type(odd)': {
             backgroundColor: theme.palette.background.default,
         },
-    },    
+    },
     rowNoHeader: {
         '&:nth-of-type(odd)': {
             backgroundColor: 'inherit',
@@ -31,7 +32,7 @@ const styles = (theme: Theme) => createStyles({
         '&:nth-of-type(odd)': {
             backgroundColor: 'inherit',
         },
-    },    
+    },
     rowClickable: {
         cursor: 'pointer'
     },
@@ -39,7 +40,7 @@ const styles = (theme: Theme) => createStyles({
         height: 64
     },
     cell: {
-    },    
+    },
     cellEmpty: {
         textAlign: 'center',
         fontSize: '1rem',
@@ -51,13 +52,13 @@ const styles = (theme: Theme) => createStyles({
         cursor: 'not-allowed',
         color: theme.palette.text.disabled,
         // backgroundColor: `${chroma(theme.palette.common.red).alpha(0.1)}`,
-    },    
+    },
     cellExpanded: {
         padding: 8,
         paddingLeft: 48,
     },
     cellExpandButton: {
-        width: 20, 
+        width: 20,
         paddingRight: 0,
         '& > button': {
             width: 20,
@@ -104,10 +105,9 @@ const styles = (theme: Theme) => createStyles({
 
 export type TableBodyClassKey = keyof ReturnType<typeof styles>;
 
-interface TableBodyProps<T> extends 
-    Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus' | 'onNoDataMessage' | 'onErrorMessage'>, 
-    Pick<TableComponents<T>, 'rowActions' | 'rowExpand'> 
-{
+interface TableBodyProps<T> extends
+    Pick<TableProps<T>, 'onRowSelect' | 'onRowExpand' | 'onRowClick' | 'onRowStatus' | 'onCellClick' | 'onCellStatus' | 'onNoDataMessage' | 'onErrorMessage'>,
+    Pick<TableComponents<T>, 'rowActions' | 'rowExpand'> {
     className?: string;
     columns: TableColumn<T>[];
     data: readonly MuiTableRow<T>[];
@@ -118,7 +118,8 @@ interface TableBodyProps<T> extends
     rowSelections: TableRowId[];
     rowExpansions: TableRowId[];
     searchMatchers?: SearchMatchers | null;
-    onToggleRowSelection: (rowId: TableRowId) => void;    
+    onToggleRowSelection: (rowId: TableRowId) => void;
+    onToggleRowExpansion: (rowId: TableRowId) => void;
 }
 
 class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyles<typeof styles, true>> {
@@ -138,8 +139,10 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
         const {
             rowExpansions,
             onRowExpand,
+            onToggleRowExpansion,
         } = this.props;
 
+        onToggleRowExpansion(rowId)
         onRowExpand?.(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
     };
 
@@ -173,7 +176,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                 <IconButton
                     size="small"
                     className={className}
-                    onClick={(event) => +event.stopPropagation() || callback(event)} 
+                    onClick={(event) => +event.stopPropagation() || callback(event)}
                     disabled={disabled}>
 
                     {_.isString(icon) ? <Icon className={icon} /> : icon}
@@ -195,12 +198,12 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             options,
             status,
             rowSelections,
-            rowExpansions,            
+            rowExpansions,
             rowActions,
             rowExpand: RowExpandComponent,
             onRowStatus,
             onRowSelect,
-            onRowExpand, 
+            onRowExpand,
             onRowClick,
             onCellClick,
             onCellStatus,
@@ -214,7 +217,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             expandable,
             multiSelect,
             highlightRow,
-            alternativeRowColor,            
+            alternativeRowColor,
             showHeader,
             stickyHeader,
             component,
@@ -230,9 +233,9 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
         const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
 
         return (
-            <TableBody 
+            <TableBody
                 component={component || 'tbody'}
-                className={cx(className, classes.root)} 
+                className={cx(className, classes.root)}
                 style={{
                     display: hasMessage
                         ? undefined
@@ -244,7 +247,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                         <TableCell colSpan={1000} component={component}>
                             <div className={classes.messageWrapper}>
                                 <div className={classes.message}>
-                                    {shouldShowLoading && <CircularProgress size={40}/>}
+                                    {shouldShowLoading && <CircularProgress size={40} />}
                                     {shouldShowError && (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
                                     {shouldShowNoData && (onNoDataMessage?.(data) || <Typography>No data</Typography>)}
                                 </div>
