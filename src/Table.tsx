@@ -1,6 +1,6 @@
 import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider, CircularProgress, TableClassKey } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
-import { WithStyles } from '@material-ui/styles';
+import { WithStyles, StyledComponentProps, ClassKeyOfStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
@@ -77,7 +77,7 @@ const styles = (theme: Theme) => createStyles({
     },
     filtersContainer: {
         paddingLeft: 16,
-        paddingRight: 8
+        paddingRight: 16,
     },
     noTitle: {
         marginTop: -48
@@ -240,7 +240,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                 } = {};
 
                 searchColumns.forEach(column => {
-                    const value = row.data[column.id];
+                    const value = _.get(row.data, column.id);
                     const valueString = column.formatter && !_.isFunction(column.formatter)
                         ? column.formatter.getValueString(value)
                         : _.toString(value);
@@ -353,7 +353,9 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const prevRowExpansions = this.state.rowExpansions;
         const nextRowExpansions = this.state.options.multiExpand
             ? Utils.toggleArrayItem(prevRowExpansions, ids, expand)
-            : ids;
+            : prevRowExpansions[0] === rowId
+                ? []
+                : ids;
 
         this.updateTableState({
             rowExpansions: nextRowExpansions
@@ -680,7 +682,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 // }) => React.ReactElement;
 
 // https://stackoverflow.com/a/52573647
-export default class <T = any> extends React.Component<TableProps<T> & Partial<WithStyles<typeof styles>>> {
+export default class <T = any> extends React.Component<TableProps<T> & StyledComponentProps<ClassKeyOfStyles<typeof styles>>> {
     private readonly Component = withStyles(styles, { name: 'MuiEnhancedTable' })(React.forwardRef(
         (props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>["props"]>, ref: React.Ref<MuiTable<T>>) => <MuiTable<T> {...props} ref={ref} />
     ));

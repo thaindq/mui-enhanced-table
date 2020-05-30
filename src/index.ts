@@ -39,7 +39,7 @@ export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     dateTime?: boolean;
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
-    formatter?: React.FunctionComponent<FormatterProps<T>> | Formatter<T>;
+    formatter?: Formatter<T> | ((props: FormatterProps<T>) => React.ReactNode);
 }
 
 export interface TableCellStatus {
@@ -127,7 +127,7 @@ export interface TableAction {
 }
 
 export interface TableFilter<T = any> {
-    name: string,
+    name?: string,
     field: string,
     component: React.ComponentType<FilterProps<T>>
 }

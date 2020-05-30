@@ -84,8 +84,9 @@ const styles = (theme: Theme) => createStyles({
         borderBottom: 'none'
     },
     cellSelectionControl: {
+        width: 1,
         paddingTop: 0,
-        paddingBottom: 0
+        paddingBottom: 0,
     },
     messageWrapper: {
         position: 'relative',
