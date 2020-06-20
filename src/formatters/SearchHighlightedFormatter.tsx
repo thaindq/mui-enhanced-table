@@ -25,10 +25,11 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
 
     format({
         value,
+        item,
         matcher,
     }: FormatterProps<T>) {
         if (!matcher) {
-            return this.getValueString(value);
+            return this.getValueString(value, item);
         }
  
         const {

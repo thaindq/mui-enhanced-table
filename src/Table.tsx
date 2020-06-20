@@ -242,7 +242,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                 searchColumns.forEach(column => {
                     const value = _.get(row.data, column.id);
                     const valueString = column.formatter && !_.isFunction(column.formatter)
-                        ? column.formatter.getValueString(value)
+                        ? column.formatter.getValueString(value, row.data)
                         : _.toString(value);
                     const matcher = Utils.getMatcher(valueString, searchText);
 

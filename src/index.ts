@@ -158,7 +158,7 @@ export interface SearchMatchers {
 
 export interface Formatter<T = any> {
     format(props: FormatterProps<T>): React.ReactNode;
-    getValueString(value: any): string;
+    getValueString(value: any, item: T): string;
 }
 
 export type FormatterProps<T = any> = {
