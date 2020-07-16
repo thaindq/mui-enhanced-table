@@ -90,7 +90,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         title: '',
         headClasses: {},
         bodyClasses: {},
-        dataId: '',
+        dataId: 'id',
         status: 'Idle',
         init: {},
         options: {},
@@ -457,6 +457,36 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         });
     }
 
+    exportData = () => {
+        const { 
+            columns, 
+            displayData
+        } = this.state;
+
+        const displayColumns = columns.filter((column) => column.display);
+        const columnNames = displayColumns.map((column) => column.name);
+        const data = displayData.map((item) =>
+            displayColumns.map((column) => {
+                let value: string = _.get(item.data, column.id);
+
+                if (value === undefined && column.formatter) {
+                    if (_.isFunction(column.formatter)) {
+                        const formattedValue = column.formatter({ value, item: item.data });
+                        if (_.isString(formattedValue)) {
+                            value = formattedValue;
+                        }
+                    } else {
+                        value = column.formatter.getValueString(value, item.data);
+                    }
+                }
+
+                return value;
+            }),
+        );
+
+        this.props.onDataExport?.([columnNames, ...data]);
+    }
+
     renderPagination = () => {
         const {
             classes,
@@ -551,6 +581,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             showHeader,
             stickyHeader,
             showPagination,
+            exportable,
             elevation,
             component,
         } = options as Required<TableOptions<T>>;
@@ -581,10 +612,13 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                     <TableToolbar
                         title={title}
                         columns={columns}
+                        exportable={exportable}
                         selectionCount={rowSelections.length}
                         actions={actions}
-                        onToggleColumn={this.toggleColumn}
-                        onDragColumn={this.reorderColumns} />
+                        onColumnToggle={this.toggleColumn}
+                        onColumnDrag={this.reorderColumns}
+                        onDataExport={this.exportData}
+                    />
                 }
 
                 {customs && customs.length > 0 &&
@@ -706,6 +740,6 @@ export default class <T = any> extends React.Component<TableProps<T> & StyledCom
     }
 
     render() {
-        return <this.Component {...this.props} ref={this.tableRef}/>;
+        return <this.Component {...this.props} ref={this.tableRef} />;
     }
 }

@@ -1,5 +1,5 @@
 import { createStyles, Icon, IconButton, Popover, Theme, Toolbar, Tooltip, Typography, withStyles } from '@material-ui/core';
-import { ViewColumn } from '@material-ui/icons';
+import { ViewColumn, GetApp } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
@@ -35,8 +35,10 @@ interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     title?: string;
     columns: readonly TableColumn[];
     selectionCount: number;
-    onToggleColumn: (columnId: TableColumnId, display?: boolean) => void;
-    onDragColumn: (result: DropResult, provided: ResponderProvided) => void;
+    exportable?: boolean;
+    onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
+    onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
+    onDataExport: () => void;
 }
 
 interface State {
@@ -74,8 +76,10 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
             columns,
             selectionCount,
             actions,
-            onToggleColumn,
-            onDragColumn,
+            exportable,
+            onColumnToggle,
+            onColumnDrag,
+            onDataExport
         } = this.props;
 
         const {
@@ -121,6 +125,12 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                                         );
                                 }))}
 
+                                {exportable && this.renderAction({
+                                    name: 'Export',
+                                    icon: <GetApp />,
+                                    callback: onDataExport,
+                                })}
+
                                 {this.renderAction({
                                     name: 'Columns',
                                     icon: <ViewColumn/>,
@@ -151,8 +161,8 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
 
                     <TableViewColumns
                         columns={columns}
-                        onToggleColumn={onToggleColumn}
-                        onDragColumn={onDragColumn}/>
+                        onToggleColumn={onColumnToggle}
+                        onDragColumn={onColumnDrag}/>
                 </Popover>
             </>
         );

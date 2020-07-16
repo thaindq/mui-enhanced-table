@@ -56,6 +56,7 @@ export interface TableOptions<T = any> {
     multiSelect?: boolean;
     multiExpand?: boolean;
     searchable?: boolean;
+    exportable?: boolean;
     rowsPerPageOptions?: number[];
     showBorder?: boolean;
     showToolbar?: boolean;
@@ -91,7 +92,8 @@ export interface TableProps<T = any> {
     onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
     onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
     onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;
-    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
+    onDataExport?: (content: string[][]) => void;
+    onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;    
     onNoDataMessage?: (data: readonly TableRow<T>[]) => React.ReactNode;
     onErrorMessage?: (data: readonly TableRow<T>[]) => React.ReactNode;
 }
