@@ -1,4 +1,4 @@
-import { Checkbox, createStyles, FormControl, FormControlLabel, FormGroup, Theme, withStyles } from "@material-ui/core";
+import { Checkbox, createStyles, FormControl, FormControlLabel, FormGroup, Theme, withStyles, Button } from "@material-ui/core";
 import { DragHandle } from "@material-ui/icons";
 import { WithStyles } from "@material-ui/styles";
 import React from "react";
@@ -43,13 +43,17 @@ export const styles = (theme: Theme) => createStyles({
         color: theme.palette.text.primary,
         verticalAlign: 'middle',
         marginRight: 8,
+    },
+    resetButton: {
+        marginTop: 8,
     }
 });
 
 interface TableViewColumnProps {
     columns: readonly TableColumn[];
-    onToggleColumn: (columnId: TableColumnId, display?: boolean) => void;
-    onDragColumn: (result: DropResult, provided: ResponderProvided) => void;
+    onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
+    onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
+    onColumnsReset: () => void;
 }
 
 class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles<typeof styles>> {
@@ -57,7 +61,7 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
     renderCheckbox = (column: TableColumn) => {
         const {
             classes,
-            onToggleColumn,
+            onColumnToggle,
         } = this.props;
 
         return (
@@ -65,7 +69,7 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
                 className={classes.checkbox}
                 value={column.name}
                 checked={column.display}
-                onChange={() => onToggleColumn(column.id)}
+                onChange={() => onColumnToggle(column.id)}
                 classes={{
                     root: classes.checkboxRoot,
                     checked: classes.checked,
@@ -77,11 +81,12 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
         const {
             classes,
             columns,
-            onDragColumn,
+            onColumnDrag,
+            onColumnsReset,
         } = this.props;
 
         return (
-            <DragDropContext onDragEnd={onDragColumn}>
+            <DragDropContext onDragEnd={onColumnDrag}>
                 <Droppable droppableId="droppable" direction="vertical">
                     {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
                         <div
@@ -124,6 +129,8 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
                                     })}
                                     
                                     {provided.placeholder}
+
+                                    <Button color="primary" className={classes.resetButton} onClick={onColumnsReset}>Reset to default</Button>
                                 </FormGroup>
                             </FormControl>
                         </div>

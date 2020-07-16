@@ -100,6 +100,7 @@ export interface TableProps<T = any> {
 
 export interface TableState<T = any> {
     columns: readonly TableColumn<T>[];
+    originalColumns: readonly TableColumn<T>[];
     data: readonly TableRow<T>[];
     originalData: readonly T[];
     displayData: readonly TableRow<T>[];
@@ -175,5 +176,6 @@ export interface FilterProps<T = any> {
     filterId: number;
     filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: readonly TableRow<T>[];
+    displayData: readonly TableRow<T>[];
     onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
 }

@@ -99,6 +99,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
     static defaultState: TableState = {
         columns: [],
+        originalColumns: [],
         data: [],
         originalData: [],
         displayData: [],
@@ -137,9 +138,9 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
     static getInitialState = (props: TableProps): TableState => {
         const {
-            data,
+            data: rawData,
             dataId,
-            columns,
+            columns: rawColumns,
             init,
             options,
             dependencies,
@@ -151,7 +152,40 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         }
 
         const seenColumnIds: string[] = [];
-        const tableData = MuiTable.mapDataToTableRow(data, dataId);
+        const data = MuiTable.mapDataToTableRow(rawData, dataId);
+        const columns = rawColumns.map(column => {
+            const {
+                id,
+                name = '',
+                display = true,
+                sortable = true,
+                filterable = true,
+                searchable = true,
+                formatter = SearchHighlightedFormatter.getInstance(),
+                ...rest
+            } = column;
+
+            if (id === undefined) {
+                throw new Error(`Columns must have \`id\`:\n${JSON.stringify(column, null, 4)}`);
+            }
+
+            if (seenColumnIds.includes(id)) {
+                throw new Error(`Column's \`id\` must be unique. Duplicated id: ${id}`);
+            } else {
+                seenColumnIds.push(id);
+            }
+
+            return {
+                id,
+                name,
+                display,
+                sortable,
+                filterable,
+                searchable,
+                formatter,
+                ...rest,
+            };
+        });
 
         return {
             ...MuiTable.defaultState,
@@ -159,41 +193,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             dependencies,
             options: mergedOptions,
             originalData: data,
-            data: tableData,
-            displayData: tableData,
-            columns: columns.map(column => {
-                const {
-                    id,
-                    name = '',
-                    display = true,
-                    sortable = true,
-                    filterable = true,
-                    searchable = true,
-                    formatter = SearchHighlightedFormatter.getInstance(),
-                    ...rest
-                } = column;
-
-                if (id === undefined) {
-                    throw new Error(`Columns must have \`id\`:\n${JSON.stringify(column, null, 4)}`);
-                }
-
-                if (seenColumnIds.includes(id)) {
-                    throw new Error(`Column's \`id\` must be unique. Duplicated id: ${id}`);
-                } else {
-                    seenColumnIds.push(id);
-                }
-
-                return {
-                    id,
-                    name,
-                    display,
-                    sortable,
-                    filterable,
-                    searchable,
-                    formatter,
-                    ...rest,
-                };
-            }),
+            data,
+            displayData: data,
+            columns,
+            originalColumns: columns,
         };
     }
 
@@ -457,6 +460,12 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         });
     }
 
+    resetColumns = () => {
+        this.updateTableState({
+            columns: this.state.originalColumns
+        });
+    }
+
     exportData = () => {
         const { 
             columns, 
@@ -617,6 +626,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         actions={actions}
                         onColumnToggle={this.toggleColumn}
                         onColumnDrag={this.reorderColumns}
+                        onColumnsReset={this.resetColumns}
                         onDataExport={this.exportData}
                     />
                 }
@@ -627,7 +637,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                     </div>
                 }
 
-                {filters && filters.length > 0 &&
+                {filters && filters.length > 0 && data.length > 0 &&
                     <div className={cx(classes.filtersContainer, { [classes.noTitle]: !title })}>
                         {filters.map(({ name, field, component: Component }, index) => (
                             <div key={index}>
@@ -636,6 +646,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                                     filterId={index}
                                     filterBy={field}
                                     data={data}
+                                    displayData={displayData}
                                     onUpdateFilter={this.updateFilter} />
                             </div>
                         ))}

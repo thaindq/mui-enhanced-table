@@ -38,6 +38,7 @@ interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     exportable?: boolean;
     onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
+    onColumnsReset: () => void;
     onDataExport: () => void;
 }
 
@@ -79,6 +80,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
             exportable,
             onColumnToggle,
             onColumnDrag,
+            onColumnsReset,
             onDataExport
         } = this.props;
 
@@ -157,12 +159,14 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                         style: {
                             transform: !!viewColumnsAnchor ? 'none !important' : '' // https://github.com/atlassian/react-beautiful-dnd/issues/1329
                         }
-                    }}>
-
+                    }}
+                >
                     <TableViewColumns
                         columns={columns}
-                        onToggleColumn={onColumnToggle}
-                        onDragColumn={onColumnDrag}/>
+                        onColumnToggle={onColumnToggle}
+                        onColumnDrag={onColumnDrag}
+                        onColumnsReset={onColumnsReset}
+                    />
                 </Popover>
             </>
         );
