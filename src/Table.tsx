@@ -1,4 +1,4 @@
-import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider, CircularProgress, TableClassKey } from '@material-ui/core';
+import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, SortDirection, Table, TablePagination, Theme, Typography, withStyles, createMuiTheme, MuiThemeProvider, CircularProgress, TableClassKey, TextField, InputLabel } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles, StyledComponentProps, ClassKeyOfStyles } from '@material-ui/styles';
 import cx from 'classnames';
@@ -224,12 +224,11 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const hasNewSortBy = newValues.sortBy !== undefined;
         const hasNewSortDirection = newValues.sortDirection !== undefined;
 
-        let displayData = (hasNewData || hasNewSearchText || hasNewFilteredData || hasNewSortBy || hasNewSortDirection)
-            ? data
-            : prevState.displayData;
+        let displayData = prevState.displayData;
         let searchMatchers: SearchMatchers | null = !!prevState.searchText ? prevState.searchMatchers : null;
 
-        if (hasNewData || prevState.filteredData !== filteredData || prevState.searchText !== searchText) {
+        if (hasNewData || hasNewSearchText || hasNewFilteredData) {
+            displayData = data;
             const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
             displayData = displayData.filter(row => filteredIds.includes(row.id));
 
@@ -267,7 +266,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             });
         }
 
-        if ((hasNewData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
+        if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
             const sortColumn = _.find(columns, column => column.id === sortBy);
             displayData = _.orderBy(displayData, row => sortColumn?.dateTime ? Date.parse(_.get(row.data, sortBy)) : _.get(row.data, sortBy), sortDirection);
         }
@@ -467,8 +466,8 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     }
 
     exportData = () => {
-        const { 
-            columns, 
+        const {
+            columns,
             displayData
         } = this.state;
 
@@ -519,18 +518,25 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             <div className={classes.paginationContainer}>
                 {searchable &&
                     <FormControl className={classes.search}>
-                        {/* <InputLabel>Search</InputLabel> */}
-                        <Input
+                        <TextField
                             value={searchText}
                             onChange={this.changeSearch}
-                            startAdornment={<InputAdornment position="start"><Search /></InputAdornment>}
-                            endAdornment={searchText &&
-                                <InputAdornment position="end">
-                                    <IconButton className={classes.clearSearchButton} onClick={() => this.updateTableState({ searchText: '' })}>
-                                        <Clear fontSize="inherit" />
-                                    </IconButton>
-                                </InputAdornment>
-                            } />
+                            // label="Search"
+                            // variant="outlined"
+                            // size="small"
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start"><Search /></InputAdornment>,
+                                endAdornment: !searchText
+                                    ? null
+                                    : (
+                                        <InputAdornment position="end">
+                                            <IconButton className={classes.clearSearchButton} onClick={() => this.updateTableState({ searchText: '' })}>
+                                                <Clear fontSize="inherit" />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                            }}
+                        />
                     </FormControl>
                 }
 
