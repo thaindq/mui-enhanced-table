@@ -59,9 +59,12 @@ export interface TableOptions<T = any> {
     exportable?: boolean;
     rowsPerPageOptions?: number[];
     showBorder?: boolean;
+    showTitle?: boolean;
+    showActions?: boolean;
     showToolbar?: boolean;
     showHeader?: boolean;
     showPagination?: boolean;
+    respectDataStatus?: boolean;
     stickyHeader?: boolean;
     allCapsHeader?: boolean;
     noWrap?: boolean;

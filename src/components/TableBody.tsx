@@ -220,6 +220,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             highlightRow,
             alternativeRowColor,
             showHeader,
+            respectDataStatus,
             stickyHeader,
             component,
         } = options;
@@ -228,8 +229,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
         const colSpan = columns.length + (selectable ? 1 : 0);
         const isLoading = status === 'Pending';
         const hasError = status === 'Error';
-        const shouldShowLoading = isLoading && !displayData.length;
-        const shouldShowError = hasError && !displayData.length;
+        const shouldShowLoading = isLoading && (respectDataStatus || !displayData.length);
+        const shouldShowError = hasError && (respectDataStatus || !displayData.length);
         const shouldShowNoData = !isLoading && !hasError && !displayData.length;
         const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
 

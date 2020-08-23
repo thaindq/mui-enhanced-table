@@ -5,7 +5,7 @@ import cx from 'classnames';
 import React from 'react';
 import _ from 'lodash';
 import TableViewColumns from './TableViewColumns';
-import { TableAction, TableColumn, TableColumnId, TableComponents } from '..';
+import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '..';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
 
 const styles = (theme: Theme) => createStyles({
@@ -35,7 +35,7 @@ interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     title?: string;
     columns: readonly TableColumn[];
     selectionCount: number;
-    exportable?: boolean;
+    options: TableOptions;
     onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
     onColumnsReset: () => void;
@@ -77,7 +77,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
             columns,
             selectionCount,
             actions,
-            exportable,
+            options,
             onColumnToggle,
             onColumnDrag,
             onColumnsReset,
@@ -88,6 +88,12 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
             viewColumnsAnchor
         } = this.state;
 
+        const {
+            exportable,
+            showTitle,
+            showActions,
+        } = options;
+
         return (
             <>
                 <Toolbar
@@ -95,55 +101,60 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                         // [classes.highlight]: selectionCount > 0,
                     })}>
 
-                    <div className={classes.title}>
-                        {/* {selectionCount > 0 ? (
-                            <Typography color="inherit" variant="subtitle1">
-                                {selectionCount} selected
-                            </Typography>
-                        ) : ( */}
-                            <Typography variant="h6">
-                                {title}
-                            </Typography>
-                        {/* )} */}
-                    </div>
+                    {showTitle &&
+                        <div className={classes.title}>
+                            {/* {selectionCount > 0 ? (
+                                <Typography color="inherit" variant="subtitle1">
+                                    {selectionCount} selected
+                                </Typography>
+                            ) : ( */}
+                                <Typography variant="h6">
+                                    {title}
+                                </Typography>
+                            {/* )} */}
+                        </div>
+                    }
 
                     <div className={classes.spacer} />
 
-                    <div className={classes.actions}>
-                        {/* {selectionCount > 0 ? (
-                            this.renderAction({
-                                name: 'Delete',
-                                icon: <Delete/>,                            
-                            })
-                        ) : ( */}
-                            <>
-                                {actions && (_.isFunction(actions) 
-                                    ? actions() 
-                                    : actions.map((action, index) => {
-                                        return (
-                                            <React.Fragment key={index}>
-                                                {this.renderAction(action)}
-                                            </React.Fragment>
-                                        );
-                                }))}
+                    {showActions && 
+                        <div className={classes.actions}>
+                            {/* {selectionCount > 0 ? (
+                                this.renderAction({
+                                    name: 'Delete',
+                                    icon: <Delete/>,                            
+                                })
+                            ) : ( */}
+                                <>
+                                    {actions && (_.isFunction(actions) 
+                                        ? actions() 
+                                        : actions.map((action, index) => {
+                                            return (
+                                                <React.Fragment key={index}>
+                                                    {this.renderAction(action)}
+                                                </React.Fragment>
+                                            );
+                                    }))}
 
-                                {exportable && this.renderAction({
-                                    name: 'Export',
-                                    icon: <GetApp />,
-                                    callback: onDataExport,
-                                })}
+                                    {exportable && this.renderAction({
+                                        name: 'Export',
+                                        icon: <GetApp />,
+                                        callback: onDataExport,
+                                    })}
 
-                                {this.renderAction({
-                                    name: 'Columns',
-                                    icon: <ViewColumn/>,
-                                    callback: (event: React.MouseEvent<HTMLElement>) => this.toggleViewColumns(event)
-                                })}
-                            </>
-                        {/* )} */}
-                    </div>
+                                    {this.renderAction({
+                                        name: 'Columns',
+                                        icon: <ViewColumn/>,
+                                        callback: (event: React.MouseEvent<HTMLElement>) => this.toggleViewColumns(event)
+                                    })}
+                                </>
+                            {/* )} */}
+                        </div>
+                    }
                 </Toolbar>
 
                 <Popover
+                    disablePortal
                     open={!!viewColumnsAnchor}
                     anchorEl={viewColumnsAnchor}
                     onClose={this.toggleViewColumns}

@@ -125,8 +125,11 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             showPagination: true,
             rowsPerPageOptions: [10, 20, 40],
             showBorder: false,
-            showToolbar: true,
+            showTitle: true,
+            showActions: true,
+            showToolbar: true,            
             showHeader: true,
+            respectDataStatus: true,
             stickyHeader: false,
             allCapsHeader: true,
             highlightRow: true,
@@ -592,7 +595,8 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
         const {
             showBorder,
-            showToolbar,
+            showTitle,
+            showToolbar,            
             showHeader,
             stickyHeader,
             showPagination,
@@ -627,7 +631,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                     <TableToolbar
                         title={title}
                         columns={columns}
-                        exportable={exportable}
+                        options={options}
                         selectionCount={rowSelections.length}
                         actions={actions}
                         onColumnToggle={this.toggleColumn}
