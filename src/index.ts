@@ -107,8 +107,7 @@ export interface TableState<T = any> {
     data: readonly TableRow<T>[];
     originalData: readonly T[];
     displayData: readonly TableRow<T>[];
-    filteredData: (TableRowId[] | null)[];
-    columnHidings: TableColumnId[];
+    filteredData: (TableRowId[] | null)[];    
     rowExpansions: TableRowId[];
     rowSelections: TableRowId[];
     sortBy: TableColumnId;
@@ -121,7 +120,10 @@ export interface TableState<T = any> {
     dependencies?: any[];    
 }
 
-export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'columnHidings' | 'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'>>;
+export type TableInitData<T = any> = Partial<Pick<TableState<T>, 'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'>> & {
+    hiddenColumns?: TableColumnId[];
+    columnOrders?: TableColumnId[];
+};
 
 export interface TableAction {
     name: string;

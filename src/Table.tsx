@@ -104,7 +104,6 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         originalData: [],
         displayData: [],
         filteredData: [],
-        columnHidings: [],
         rowSelections: [],
         rowExpansions: [],
         sortBy: '',
@@ -149,14 +148,11 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             dependencies,
         } = props;
 
-        const mergedOptions = {
-            ...MuiTable.defaultState.options,
-            ...options,
-        }
+        const mergedOptions = _.merge({}, MuiTable.defaultState.options, options);
 
         const seenColumnIds: string[] = [];
         const data = MuiTable.mapDataToTableRow(rawData, dataId);
-        const columns = rawColumns.map(column => {
+        const originalColumns = rawColumns.map(column => {
             const {
                 id,
                 name = '',
@@ -190,6 +186,19 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             };
         });
 
+        const columns = _.sortBy(originalColumns, column => {
+            const index = init?.columnOrders?.indexOf(column.id) ?? -1;
+            
+            if (index === -1) {
+                return Number.MAX_SAFE_INTEGER
+            }
+
+            return index;
+        }).map(column => ({
+            ...column,
+            display: init?.hiddenColumns?.includes(column.id) ? false : column.display,
+        }));
+
         return {
             ...MuiTable.defaultState,
             ...init,
@@ -199,7 +208,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             data,
             displayData: data,
             columns,
-            originalColumns: columns,
+            originalColumns,
         };
     }
 
