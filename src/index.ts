@@ -144,6 +144,7 @@ export interface TableComponents<T = any> {
     filters?: TableFilter<T>[];
     actions?: TableAction[] | (() => React.ReactElement);
     customs?: React.ComponentType<TableProps<T>>[];
+    customsBottom?: React.ComponentType<TableProps<T>>[];
     rowExpand?: React.ComponentType<{
         id: TableRowId;
         data: T;

@@ -75,6 +75,10 @@ const styles = (theme: Theme) => createStyles({
         paddingLeft: 16,
         paddingRight: 8,
     },
+    bottomCustomComponentsContainer: {
+        paddingLeft: 16,
+        paddingRight: 8,
+    },
     filtersContainer: {
         paddingLeft: 16,
         paddingRight: 16,
@@ -617,6 +621,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const {
             filters,
             customs,
+            customsBottom,
             rowExpand,
             rowActions,
             actions,
@@ -733,6 +738,12 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         )}
                     </Droppable>
                 </DragDropContext>
+
+                {customsBottom && customsBottom.length > 0 &&
+                    <div className={cx(classes.bottomCustomComponentsContainer, { [classes.noTitle]: !title && showToolbar })}>
+                        {customsBottom.map((Component, index) => <Component key={index} {...this.props} />)}
+                    </div>
+                }
             </Paper>
         );
     }
