@@ -33,8 +33,17 @@ export function toggleArrayItem<T = any>(array: T[], values: T[], forceValue?: b
             : array.filter(item => !values.includes(item));
 }
 
+export function mergeOverwriteArray(obj: any, src: unknown) {
+    return _.mergeWith(obj, src, (objValue, srcValue) => {
+        if (_.isArray(srcValue)) {
+            return srcValue;
+        }
+    });
+}
+
 export default {
     getMatcher,
     reorder,
     toggleArrayItem,
+    mergeOverwriteArray,
 }

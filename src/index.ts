@@ -34,6 +34,7 @@ export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     defaultValue?: any;
     display?: boolean;
     sortable?: boolean;
+    sortBy?: (value: any) => number | string;
     filterable?: boolean;
     searchable?: boolean;
     dateTime?: boolean;
@@ -71,6 +72,7 @@ export interface TableOptions<T = any> {
     highlightRow?: boolean;
     highlightColumn?: boolean;
     alternativeRowColor?: boolean;
+    dataLimit?: number;
     component?: 'div';
 }
 

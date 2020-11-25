@@ -152,7 +152,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             dependencies,
         } = props;
 
-        const mergedOptions = _.merge({}, MuiTable.defaultState.options, options);
+        const mergedOptions = Utils.mergeOverwriteArray({ ...MuiTable.defaultState.options }, options);
 
         const seenColumnIds: string[] = [];
         const data = MuiTable.mapDataToTableRow(rawData, dataId);
@@ -284,7 +284,23 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
         if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
             const sortColumn = _.find(columns, column => column.id === sortBy);
-            displayData = _.orderBy(displayData, row => sortColumn?.dateTime ? Date.parse(_.get(row.data, sortBy)) : _.get(row.data, sortBy), sortDirection);
+            displayData = _.orderBy(displayData, row => {
+                if (sortColumn?.dateTime) {
+                    return Date.parse(_.get(row.data, sortBy));
+                }
+
+                let value = _.get(row.data, sortBy);
+
+                if (sortColumn?.sortBy) {
+                    value = sortColumn.sortBy(value);
+                }
+
+                return value;                
+            }, sortDirection);
+        }
+
+        if (options.dataLimit)  {
+            displayData = displayData.slice(0, options.dataLimit);
         }
 
         return {
@@ -661,7 +677,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                     </div>
                 }
 
-                {filters && filters.length > 0 && data.length > 0 &&
+                {filters && filters.length > 0 &&
                     <div className={cx(classes.filtersContainer, { [classes.noTitle]: !title })}>
                         {filters.map(({ name, field, component: Component }, index) => (
                             <div key={index}>
