@@ -137,7 +137,6 @@ export interface TableAction {
 }
 
 export interface TableFilter<T = any> {
-    name?: string,
     field: string,
     component: React.ComponentType<FilterProps<T>>
 }
