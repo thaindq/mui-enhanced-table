@@ -41,6 +41,7 @@ export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
     formatter?: Formatter<T> | ((props: FormatterProps<T>) => React.ReactNode);
+    getValue?: (item: T) => string | number;
 }
 
 export interface TableCellStatus {
@@ -137,6 +138,7 @@ export interface TableAction {
 }
 
 export interface TableFilter<T = any> {
+    name?: string,
     field: string,
     component: React.ComponentType<FilterProps<T>>
 }
@@ -180,6 +182,7 @@ export type FormatterProps<T = any> = {
 };
 
 export interface FilterProps<T = any> {
+    name?: string;
     filterId: number;
     filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: readonly TableRow<T>[];

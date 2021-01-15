@@ -322,7 +322,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 }
 
                                 {columns.map((column, cellIndex) => {
-                                    let value = _.get(row.data, column.id);
+                                    let value = column.getValue?.(row.data) ??  _.get(row.data, column.id);
                                     
                                     if (value === undefined) {
                                         value = column.defaultValue;

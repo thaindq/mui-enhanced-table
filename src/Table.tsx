@@ -258,7 +258,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                 } = {};
 
                 searchColumns.forEach(column => {
-                    const value = _.get(row.data, column.id);
+                    const value = column.getValue?.(row.data) ?? _.get(row.data, column.id);
                     const valueString = column.formatter && !_.isFunction(column.formatter)
                         ? column.formatter.getValueString(value, row.data)
                         : _.toString(value);
@@ -285,11 +285,11 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
             const sortColumn = _.find(columns, column => column.id === sortBy);
             displayData = _.orderBy(displayData, row => {
-                if (sortColumn?.dateTime) {
-                    return Date.parse(_.get(row.data, sortBy));
-                }
+                let value = sortColumn?.getValue?.(row.data) ?? _.get(row.data, sortBy);
 
-                let value = _.get(row.data, sortBy);
+                if (sortColumn?.dateTime) {
+                    return Date.parse(value);
+                }                
 
                 if (sortColumn?.sortBy) {
                     value = sortColumn.sortBy(value);
@@ -507,7 +507,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const columnNames = displayColumns.map((column) => column.name);
         const data = displayData.map((item) =>
             displayColumns.map((column) => {
-                let value: string = _.get(item.data, column.id);
+                let value: string = column.getValue?.(item.data) ?? _.get(item.data, column.id);
 
                 if (value === undefined && column.formatter) {
                     if (_.isFunction(column.formatter)) {
@@ -679,9 +679,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
                 {filters && filters.length > 0 &&
                     <div className={cx(classes.filtersContainer, { [classes.noTitle]: !title })}>
-                        {filters.map(({ field, component: Component }, index) => (
+                        {filters.map(({ name, field, component: Component }, index) => (
                             <div key={index}>
                                 <Component
+                                    name={name}
                                     filterId={index}
                                     filterBy={field}
                                     data={data}
