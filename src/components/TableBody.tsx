@@ -1,10 +1,10 @@
-import { Checkbox, CircularProgress, createStyles, Icon, IconButton, Radio, TableBody, TableCell, TableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
+import { Checkbox, CircularProgress, createStyles, Icon, IconButton, Radio, TableBody, TableCell, TableRow as MuiTableRow, Theme, Tooltip, Typography, withStyles } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { WithStyles, CSSProperties } from '@material-ui/styles';
 import cx from 'classnames';
 import _ from 'lodash';
 import React from 'react';
-import { FormatterProps, SearchMatchers, TableAction, TableColumn, TableComponents, TableOptions, TableProps, TableRow as MuiTableRow, TableRowId, TableStatus } from '..';
+import { FormatterProps, SearchMatchers, TableAction, TableColumn, TableComponents, TableOptions, TableProps, TableRow, TableRowId, TableStatus } from '..';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -111,8 +111,8 @@ interface TableBodyProps<T> extends
     Pick<TableComponents<T>, 'rowActions' | 'rowExpand'> {
     className?: string;
     columns: TableColumn<T>[];
-    data: readonly MuiTableRow<T>[];
-    displayData: readonly MuiTableRow<T>[];
+    data: readonly TableRow<T>[];
+    displayData: readonly TableRow<T>[];
     options: TableOptions<T>;
     status?: TableStatus;
     rowCount?: number;
@@ -245,7 +245,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                 }}
             >
                 {hasMessage && (
-                    <TableRow component={component || 'tr'}>
+                    <MuiTableRow component={component || 'tr'}>
                         <TableCell colSpan={1000} component={component}>
                             <div className={classes.messageWrapper}>
                                 <div className={classes.message}>
@@ -255,7 +255,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 </div>
                             </div>
                         </TableCell>
-                    </TableRow>
+                    </MuiTableRow>
                 ) || displayData.map((row, rowIndex) => {
                     const {
                         style,
@@ -283,7 +283,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
                     const rowJsx = (
                         <>
-                            <TableRow
+                            <MuiTableRow
                                 style={style}
                                 className={rowClassName}
                                 selected={selected}
@@ -374,17 +374,17 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                         {_.isArray(actions) ? actions.map(this.renderAction) : actions}
                                     </TableCell>
                                 }
-                            </TableRow>
+                            </MuiTableRow>
 
                             {expanded && RowExpandComponent &&
-                                <TableRow component={component || 'tr'}>
+                                <MuiTableRow component={component || 'tr'}>
                                     <TableCell colSpan={100} className={classes.cellExpanded} component={component}>
                                         <RowExpandComponent 
                                             id={row.id}
                                             data={row.data}
                                             index={rowIndex}/>
                                     </TableCell>
-                                </TableRow>
+                                </MuiTableRow>
                             }
                         </>
                     );

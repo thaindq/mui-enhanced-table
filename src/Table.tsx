@@ -680,15 +680,14 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                 {filters && filters.length > 0 &&
                     <div className={cx(classes.filtersContainer, { [classes.noTitle]: !title })}>
                         {filters.map(({ name, field, component: Component }, index) => (
-                            <div key={index}>
-                                <Component
-                                    name={name}
-                                    filterId={index}
-                                    filterBy={field}
-                                    data={data}
-                                    displayData={displayData}
-                                    onUpdateFilter={this.updateFilter} />
-                            </div>
+                            <Component
+                                key={index}
+                                name={name}
+                                filterId={index}
+                                filterBy={field}
+                                data={data}
+                                displayData={displayData}
+                                onUpdateFilter={this.updateFilter} />
                         ))}
                     </div>
                 }

@@ -4,6 +4,7 @@ import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
 import external from 'rollup-plugin-peer-deps-external';
 import { terser } from 'rollup-plugin-terser';
+// import typescript from "@wessberg/rollup-plugin-ts";
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import { DEFAULT_EXTENSIONS } from '@babel/core';
@@ -27,10 +28,7 @@ export default {
         resolve({
             extensions
         }),
-        typescript({
-            typescript: require('typescript'),
-            clean: true
-        }),
+        typescript({ clean: true }),
         babel({
             // https://www.npmjs.com/package/rollup-plugin-typescript2#rollup-plugin-babel
             extensions,
