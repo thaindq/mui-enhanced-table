@@ -328,7 +328,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                         value = column.defaultValue;
                                     }
 
-                                    const searchMatcher = searchMatchers && searchMatchers[row.id] && searchMatchers[row.id][column.id] || null;
+                                    const searchMatcher = searchMatchers?.[row.id]?.[column.id] || null;
                                     const formatter = column.formatter;
 
                                     const formatterProps: FormatterProps<T> = {

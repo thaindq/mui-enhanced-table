@@ -251,35 +251,37 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             searchMatchers = {};
             const searchColumns = columns.filter(column => column.searchable);
 
-            displayData = displayData.filter(row => {
-                let match = false;
-                const matchers: {
-                    [columnId: string]: SearchMatcher
-                } = {};
+            if (searchText) {
+                displayData = displayData.filter(row => {
+                    let match = false;
+                    const matchers: {
+                        [columnId: string]: SearchMatcher
+                    } = {};
 
-                searchColumns.forEach(column => {
-                    const value = column.getValue?.(row.data) ?? _.get(row.data, column.id);
-                    const valueString = column.formatter && !_.isFunction(column.formatter)
-                        ? column.formatter.getValueString(value, row.data)
-                        : _.toString(value);
-                    const matcher = Utils.getMatcher(valueString, searchText);
+                    searchColumns.forEach(column => {
+                        const value = column.getValue?.(row.data) ?? _.get(row.data, column.id);
+                        const valueString = column.formatter && !_.isFunction(column.formatter)
+                            ? column.formatter.getValueString(value, row.data)
+                            : _.toString(value);
+                        const matcher = Utils.getMatcher(valueString, searchText);
 
-                    if (matcher) {
-                        match = true;
-                        matchers[column.id] = matcher;
+                        if (matcher) {
+                            match = true;
+                            matchers[column.id] = matcher;
+                        }
+                    });
+
+                    if (match) {
+                        if (!searchMatchers) {
+                            searchMatchers = {};
+                        }
+
+                        searchMatchers[row.id] = matchers;
                     }
+
+                    return match;
                 });
-
-                if (match) {
-                    if (!searchMatchers) {
-                        searchMatchers = {};
-                    }
-
-                    searchMatchers[row.id] = matchers;
-                }
-
-                return match;
-            });
+            }
         }
 
         if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {

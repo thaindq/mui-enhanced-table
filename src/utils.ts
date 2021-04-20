@@ -2,6 +2,10 @@ import _ from 'lodash';
 import { SearchMatcher } from '.';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {
+    if (!input || !query) {
+        return null;
+    }
+
     const matchIndex = _.isString(input) && _.isString(query)
         ? input.toLowerCase().indexOf(query.toLowerCase())
         : -1;
