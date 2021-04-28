@@ -4,7 +4,7 @@ export * from './components';
 export * from './utils';
 export * from './filters';
 export * from './formatters';
-import { TableHeadClassKey, TableBodyClassKey } from './components';
+import { TableHeadClassKey, TableBodyClassKey, TableToolbarClassKey } from './components';
 import { SortDirection, TableCellProps } from "@material-ui/core";
 import { ClassNameMap, CSSProperties } from "@material-ui/styles";
 
@@ -81,9 +81,10 @@ export interface TableProps<T = any> {
     className?: string;
     headClasses?: Partial<ClassNameMap<TableHeadClassKey>>;
     bodyClasses?: Partial<ClassNameMap<TableBodyClassKey>>;
+    toolbarClasses?: Partial<ClassNameMap<TableToolbarClassKey>>;
     title?: string;
     data: readonly T[];
-    dataId?: string;
+    dataId?: string | ((data: T) => string);
     columns: readonly TableColumn<T>[];
     status?: TableStatus;
     options?: TableOptions<T>;
@@ -93,8 +94,8 @@ export interface TableProps<T = any> {
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
     onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
     onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
-    onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[]) => void;
-    onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[]) => void;
+    onRowSelectionsChange?: (nextRowSelections: TableRowId[], prevRowSelections: TableRowId[], rowSelections: T[]) => void;
+    onRowExpansionsChange?: (nextRowExpansions: TableRowId[], prevRowExpansions: TableRowId[], rowSelections: T[]) => void;
     onRowStatus?: (rowId: TableRowId, rowData: T, rowIndex: number) => TableRowStatus;
     onCellClick?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => void;
     onCellStatus?: (rowId: TableRowId, columnId: TableColumnId, rowData: T, rowIndex: number, columnIndex: number) => TableCellStatus;

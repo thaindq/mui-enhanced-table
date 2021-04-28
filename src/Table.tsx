@@ -328,10 +328,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         return null;
     }
 
-    static mapDataToTableRow = <T extends {}>(data: readonly T[], dataId?: string): TableRow<T>[] => {
+    static mapDataToTableRow = <T extends {}>(data: readonly T[], dataId?: TableProps<T>['dataId']): TableRow<T>[] => {
         return data.map((item, index) => {
             return {
-                id: String(!!dataId ? _.get(item, dataId, index) : index),
+                id: _.isFunction(dataId) ? dataId(item) : String(!!dataId ? _.get(item, dataId, index) : index),
                 data: item,
             };
         });
@@ -381,7 +381,14 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
         this.updateTableState({
             rowSelections: nextRowSelections
-        }, () => this.props.onRowSelectionsChange?.(nextRowSelections, prevRowSelections));
+        }, () => {
+            const {
+                data,
+                rowSelections,
+            } = this.state;
+
+            this.props.onRowSelectionsChange?.(nextRowSelections, prevRowSelections, data.filter(item => rowSelections.includes(item.id)).map(item => item.data));
+        });
     }
 
     toggleRowExpansion = (rowId: TableRowId | TableRowId[], expand?: boolean) => {
@@ -395,7 +402,14 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
         this.updateTableState({
             rowExpansions: nextRowExpansions
-        }, () => this.props.onRowExpansionsChange?.(nextRowExpansions, prevRowExpansions));
+        }, () => {
+            const {
+                data,
+                rowExpansions,
+            } = this.state;
+
+            this.props.onRowExpansionsChange?.(nextRowExpansions, prevRowExpansions, data.filter(item => rowExpansions.includes(item.id)).map(item => item.data))
+        });
     }
 
     toggleSelectAllRows = (select?: boolean) => {
@@ -428,7 +442,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
         this.updateTableState({
             rowSelections: nextRowSelections
-        }, () => onRowSelectionsChange?.(nextRowSelections, rowSelections));
+        }, () => onRowSelectionsChange?.(nextRowSelections, rowSelections, this.state.data.map(item => item.data)));
     }
 
     sortData = (columnId: TableColumnId, direction?: SortDirection) => {
@@ -597,12 +611,11 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             status,
             headClasses,
             bodyClasses,
+            toolbarClasses,
             components,
             onRowClick,
             onRowSelect,
             onRowExpand,
-            onRowSelectionsChange,
-            onRowExpansionsChange,
             onRowStatus,
             onCellClick,
             onCellStatus,
@@ -666,6 +679,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         options={options}
                         selectionCount={rowSelections.length}
                         actions={actions}
+                        classes={toolbarClasses}
                         onColumnToggle={this.toggleColumn}
                         onColumnDrag={this.reorderColumns}
                         onColumnsReset={this.resetColumns}

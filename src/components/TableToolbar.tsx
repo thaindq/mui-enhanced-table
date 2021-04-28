@@ -29,7 +29,11 @@ const styles = (theme: Theme) => createStyles({
     title: {
         flex: '0 0 auto',
     },
+    viewColumnsContainer: {        
+    }
 });
+
+export type TableToolbarClassKey = keyof ReturnType<typeof styles>;
 
 interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     title?: string;
@@ -167,6 +171,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                         horizontal: 'right',
                     }}
                     PaperProps={{
+                        className: classes.viewColumnsContainer,
                         style: {
                             transform: !!viewColumnsAnchor ? 'none !important' : '' // https://github.com/atlassian/react-beautiful-dnd/issues/1329
                         }
