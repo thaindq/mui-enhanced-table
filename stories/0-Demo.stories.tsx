@@ -1,12 +1,7 @@
-import { Clear, Delete } from '@material-ui/icons';
+import { Typography } from '@material-ui/core';
 import faker from 'faker';
 import React from 'react';
-import MuiTable from '../src';
-import { TableColumn } from '../types';
-
-export default {
-    title: 'Demo',
-};
+import MuiTable, { TableColumn } from '../src';
 
 const data = Array(100).fill(null).map(() => {
     return {
@@ -31,39 +26,41 @@ const columns: TableColumn<Type>[] = [
     {
         name: 'Age',
         id: 'age',
+        getValue: (item) => item.country
     },
     {
         name: 'Country',
-        id: 'country',
+        id: 'country',        
     }
 ];
 
-export const toStorybook = () => (
+export const SimpleTable: React.VFC = () => (
     <MuiTable<Type>
+        title="Test table"
         columns={columns}
         data={data}
+        dataId={(item) => `${item.country} + ${Math.random()}`}
         options={{
-            title: 'Simple Table',
             elevation: 0,
-            showBorder: true,
-            onRowClick: (id, item, index) => {
-                console.log(item)
-            },
-            onRowActions: (id, data, index) => {
-                return [{
-                    name: 'Clear',
-                    icon: <Clear />,
-                    callback: (event) => console.log('Clear: ' + index)
-                }, {
-                    name: 'Delete',
-                    icon: <Delete />,
-                    callback: (event) => console.log('Delete: ' + index)
-                }];
-            },
+            exportable: true,
+            rowsPerPageOptions: [10]
+            // dataLimit: 5,
+            // showBorder: true,            
+            // showTitle: false,
+            // showToolbar: false,
         }}
+        init={{
+            hiddenColumns: ['age'],
+            columnOrders: ['age', 'country', 'lastName'],
+        }}
+        components={{
+            customsBottom: [() => <Typography>Test</Typography>]
+        }}
+        onRowClick={(id) => console.log(id)}
+        onDataExport={(data) => console.log(data)}
     />
 );
 
-toStorybook.story = {
-    name: 'Simple Table',
+export default {
+    title: 'Demo',
 };
