@@ -2,7 +2,7 @@ import { createStyles, FormControl, IconButton, Input, InputAdornment, Paper, So
 import { Clear, Search } from '@material-ui/icons';
 import { WithStyles, StyledComponentProps, ClassKeyOfStyles } from '@material-ui/styles';
 import cx from 'classnames';
-import _ from 'lodash';
+import { find, findIndex, get, intersection, isArray, isBoolean, isEqual, isFunction, isString, orderBy, sortBy, toString, union } from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd';
 import { SearchMatcher, SearchMatchers, TableColumnId, TableProps, TableRowId, TableState, TableOptions, TableInitData, TableRow } from '.';
@@ -190,7 +190,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             };
         });
 
-        const columns = _.sortBy(originalColumns, column => {
+        const columns = sortBy(originalColumns, column => {
             const index = init?.columnOrders?.indexOf(column.id) ?? -1;
             
             if (index === -1) {
@@ -245,7 +245,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
         if (hasNewData || hasNewSearchText || hasNewFilteredData) {
             displayData = data;
-            const filteredIds = _.intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
+            const filteredIds = intersection(displayData.map(row => row.id), ...(filteredData.filter(item => !!item) as TableRowId[][]));
             displayData = displayData.filter(row => filteredIds.includes(row.id));
 
             searchMatchers = {};
@@ -259,10 +259,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                     } = {};
 
                     searchColumns.forEach(column => {
-                        const value = column.getValue?.(row.data) ?? _.get(row.data, column.id);
-                        const valueString = column.formatter && !_.isFunction(column.formatter)
+                        const value = column.getValue?.(row.data) ?? get(row.data, column.id);
+                        const valueString = column.formatter && !isFunction(column.formatter)
                             ? column.formatter.getValueString(value, row.data)
-                            : _.toString(value);
+                            : toString(value);
                         const matcher = Utils.getMatcher(valueString, searchText);
 
                         if (matcher) {
@@ -285,9 +285,9 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         }
 
         if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
-            const sortColumn = _.find(columns, column => column.id === sortBy);
-            displayData = _.orderBy(displayData, row => {
-                let value = sortColumn?.getValue?.(row.data) ?? _.get(row.data, sortBy);
+            const sortColumn = find(columns, column => column.id === sortBy);
+            displayData = orderBy(displayData, row => {
+                let value = sortColumn?.getValue?.(row.data) ?? get(row.data, sortBy);
 
                 if (sortColumn?.dateTime) {
                     return Date.parse(value);
@@ -316,7 +316,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     }
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
-        if (!_.isEqual(prevState.dependencies, nextProps.dependencies)) {
+        if (!isEqual(prevState.dependencies, nextProps.dependencies)) {
             return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState);
         } else if (prevState && prevState.originalData !== nextProps.data) {
             return MuiTable.getNextState({
@@ -331,7 +331,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     static mapDataToTableRow = <T extends {}>(data: readonly T[], dataId?: TableProps<T>['dataId']): TableRow<T>[] => {
         return data.map((item, index) => {
             return {
-                id: _.isFunction(dataId) ? dataId(item) : String(!!dataId ? _.get(item, dataId, index) : index),
+                id: isFunction(dataId) ? dataId(item) : String(!!dataId ? get(item, dataId, index) : index),
                 data: item,
             };
         });
@@ -356,7 +356,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     }
 
     toggleColumn = (columnId: TableColumnId, display?: boolean) => {
-        const index = _.findIndex(this.state.columns, column => column.id === columnId);
+        const index = findIndex(this.state.columns, column => column.id === columnId);
 
         if (index !== -1) {
             const columns = [...this.state.columns];
@@ -373,7 +373,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     }
 
     toggleRowSelection = (rowId: TableRowId | TableRowId[], select?: boolean) => {
-        const ids = _.isArray(rowId) ? rowId : [rowId];
+        const ids = isArray(rowId) ? rowId : [rowId];
         const prevRowSelections = this.state.rowSelections;
         const nextRowSelections = this.state.options.multiSelect
             ? Utils.toggleArrayItem(prevRowSelections, ids, select)
@@ -392,7 +392,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     }
 
     toggleRowExpansion = (rowId: TableRowId | TableRowId[], expand?: boolean) => {
-        const ids = _.isArray(rowId) ? rowId : [rowId];
+        const ids = isArray(rowId) ? rowId : [rowId];
         const prevRowExpansions = this.state.rowExpansions;
         const nextRowExpansions = this.state.options.multiExpand
             ? Utils.toggleArrayItem(prevRowExpansions, ids, expand)
@@ -432,12 +432,12 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             return status ? !status.disabled : true;
         });
 
-        const shouldSelectAll = !_.isBoolean(select)
+        const shouldSelectAll = !isBoolean(select)
             ? rowSelections.length !== enabledRows.length
             : !!select;
 
         const nextRowSelections = shouldSelectAll
-            ? _.union(rowSelections, enabledRows.map(row => row.id))
+            ? union(rowSelections, enabledRows.map(row => row.id))
             : [];
 
         this.updateTableState({
@@ -523,12 +523,12 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const columnNames = displayColumns.map((column) => column.name);
         const data = displayData.map((item) =>
             displayColumns.map((column) => {
-                let value: string = column.getValue?.(item.data) ?? _.get(item.data, column.id);
+                let value: string = column.getValue?.(item.data) ?? get(item.data, column.id);
 
                 if (value === undefined && column.formatter) {
-                    if (_.isFunction(column.formatter)) {
+                    if (isFunction(column.formatter)) {
                         const formattedValue = column.formatter({ value, item: item.data });
-                        if (_.isString(formattedValue)) {
+                        if (isString(formattedValue)) {
                             value = formattedValue;
                         }
                     } else {

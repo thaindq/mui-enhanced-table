@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isArray, isString, mergeWith, union, xor } from 'lodash';
 import { SearchMatcher } from '.';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {
@@ -6,7 +6,7 @@ export function getMatcher(input: string, query: string): SearchMatcher | null {
         return null;
     }
 
-    const matchIndex = _.isString(input) && _.isString(query)
+    const matchIndex = isString(input) && isString(query)
         ? input.toLowerCase().indexOf(query.toLowerCase())
         : -1;
 
@@ -31,15 +31,15 @@ export function reorder<T = any>(input: readonly T[], sourceIndex: number, desti
 
 export function toggleArrayItem<T = any>(array: T[], values: T[], forceValue?: boolean): T[] {
     return forceValue === undefined
-        ? _.xor(array, values)
+        ? xor(array, values)
         : forceValue
-            ? _.union(array, values)
+            ? union(array, values)
             : array.filter(item => !values.includes(item));
 }
 
 export function mergeOverwriteArray(obj: any, src: unknown) {
-    return _.mergeWith(obj, src, (objValue, srcValue) => {
-        if (_.isArray(srcValue)) {
+    return mergeWith(obj, src, (objValue, srcValue) => {
+        if (isArray(srcValue)) {
             return srcValue;
         }
     });

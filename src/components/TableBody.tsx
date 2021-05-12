@@ -2,7 +2,7 @@ import { Checkbox, CircularProgress, createStyles, Icon, IconButton, Radio, Tabl
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { WithStyles, CSSProperties } from '@material-ui/styles';
 import cx from 'classnames';
-import _ from 'lodash';
+import { get, isArray, isFunction, isString } from 'lodash';
 import React from 'react';
 import { FormatterProps, SearchMatchers, TableAction, TableColumn, TableComponents, TableOptions, TableProps, TableRow, TableRowId, TableStatus } from '..';
 
@@ -180,7 +180,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                     onClick={(event) => +event.stopPropagation() || callback(event)}
                     disabled={disabled}>
 
-                    {_.isString(icon) ? <Icon className={icon} /> : icon}
+                    {isString(icon) ? <Icon className={icon} /> : icon}
                 </IconButton>
             </Tooltip>
         );
@@ -279,7 +279,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                         [classes.cellLastRow]: rowIndex === displayData.length - 1,
                     });
 
-                    const actions = _.isFunction(rowActions) ? rowActions?.(row.id, row.data, rowIndex) : rowActions;
+                    const actions = isFunction(rowActions) ? rowActions?.(row.id, row.data, rowIndex) : rowActions;
 
                     const rowJsx = (
                         <>
@@ -322,7 +322,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 }
 
                                 {columns.map((column, cellIndex) => {
-                                    let value = column.getValue?.(row.data) ??  _.get(row.data, column.id);
+                                    let value = column.getValue?.(row.data) ??  get(row.data, column.id);
                                     
                                     if (value === undefined) {
                                         value = column.defaultValue;
@@ -340,7 +340,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                     };
 
                                     const formattedValue = formatter                                        
-                                        ? _.isFunction(formatter)
+                                        ? isFunction(formatter)
                                             ? formatter(formatterProps)
                                             : formatter.format(formatterProps)
                                         : '';
@@ -371,7 +371,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
                                 {actions &&
                                     <TableCell align="right" className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)} component={component}>
-                                        {_.isArray(actions) ? actions.map(this.renderAction) : actions}
+                                        {isArray(actions) ? actions.map(this.renderAction) : actions}
                                     </TableCell>
                                 }
                             </MuiTableRow>

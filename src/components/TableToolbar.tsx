@@ -3,10 +3,10 @@ import { ViewColumn, GetApp } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
-import _ from 'lodash';
 import TableViewColumns from './TableViewColumns';
 import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '..';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import { isFunction } from 'lodash';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -130,7 +130,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                                 })
                             ) : ( */}
                                 <>
-                                    {actions && (_.isFunction(actions) 
+                                    {actions && (isFunction(actions) 
                                         ? actions() 
                                         : actions.map((action, index) => {
                                             return (
