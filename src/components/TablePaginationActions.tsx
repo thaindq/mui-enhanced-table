@@ -4,16 +4,16 @@ import { createStyles, WithStyles } from '@material-ui/styles';
 import React from 'react';
 import { TablePaginationActionsProps } from '@material-ui/core/TablePagination/TablePaginationActions';
 
-const styles = (theme: Theme) => createStyles({
-    root: {
-        flexShrink: 0,
-        color: theme.palette.text.secondary,
-        marginLeft: theme.spacing(2.5),
-    },
-});
+const styles = (theme: Theme) =>
+    createStyles({
+        root: {
+            flexShrink: 0,
+            color: theme.palette.text.secondary,
+            marginLeft: theme.spacing(2.5),
+        },
+    });
 
 class TablePaginationActions extends React.Component<TablePaginationActionsProps & WithStyles<typeof styles>> {
-
     handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement> | null) => {
         this.props.onChangePage(event, 0);
     };
@@ -27,19 +27,11 @@ class TablePaginationActions extends React.Component<TablePaginationActionsProps
     };
 
     handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement> | null) => {
-        this.props.onChangePage(
-            event,
-            Math.max(0, Math.ceil(this.props.count / this.props.rowsPerPage) - 1),
-        );
+        this.props.onChangePage(event, Math.max(0, Math.ceil(this.props.count / this.props.rowsPerPage) - 1));
     };
 
     render() {
-        const { 
-            classes, 
-            count, 
-            page, 
-            rowsPerPage 
-        } = this.props;
+        const { classes, count, page, rowsPerPage } = this.props;
 
         return (
             <div className={classes.root}>
@@ -50,12 +42,15 @@ class TablePaginationActions extends React.Component<TablePaginationActionsProps
                 <IconButton onClick={this.handleBackButtonClick} disabled={page === 0}>
                     <KeyboardArrowLeft />
                 </IconButton>
-                
+
                 <IconButton onClick={this.handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
                     <KeyboardArrowRight />
                 </IconButton>
 
-                <IconButton onClick={this.handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
+                <IconButton
+                    onClick={this.handleLastPageButtonClick}
+                    disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                >
                     <LastPage />
                 </IconButton>
             </div>

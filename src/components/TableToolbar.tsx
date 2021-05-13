@@ -1,37 +1,47 @@
-import { createStyles, Icon, IconButton, Popover, Theme, Toolbar, Tooltip, Typography, withStyles } from '@material-ui/core';
-import { ViewColumn, GetApp } from '@material-ui/icons';
+import {
+    createStyles,
+    Icon,
+    IconButton,
+    Popover,
+    Theme,
+    Toolbar,
+    Tooltip,
+    Typography,
+    withStyles,
+} from '@material-ui/core';
+import { GetApp, ViewColumn } from '@material-ui/icons';
 import { WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
-import React from 'react';
-import TableViewColumns from './TableViewColumns';
-import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '..';
-import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
 import { isFunction } from 'lodash';
+import React from 'react';
+import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '..';
+import TableViewColumns from './TableViewColumns';
 
-const styles = (theme: Theme) => createStyles({
-    root: {
-        paddingLeft: 16,
-        paddingRight: 8,
-        // flexBasis: 64,
-        flexShrink: 0,
-    },
-    highlight: {
-        color: theme.palette.text.primary,
-        backgroundColor: theme.palette.secondary.dark,
-    },
-    spacer: {
-        flex: '1 1 100%',
-    },
-    actions: {
-        color: theme.palette.text.secondary,
-        display: 'inline-flex',
-    },
-    title: {
-        flex: '0 0 auto',
-    },
-    viewColumnsContainer: {        
-    }
-});
+const styles = (theme: Theme) =>
+    createStyles({
+        root: {
+            paddingLeft: 16,
+            paddingRight: 8,
+            // flexBasis: 64,
+            flexShrink: 0,
+        },
+        highlight: {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.secondary.dark,
+        },
+        spacer: {
+            flex: '1 1 100%',
+        },
+        actions: {
+            color: theme.palette.text.secondary,
+            display: 'inline-flex',
+        },
+        title: {
+            flex: '0 0 auto',
+        },
+        viewColumnsContainer: {},
+    });
 
 export type TableToolbarClassKey = keyof ReturnType<typeof styles>;
 
@@ -47,81 +57,72 @@ interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
 }
 
 interface State {
-    viewColumnsAnchor: Element | null,
+    viewColumnsAnchor: Element | null;
 }
 
 class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof styles>, State> {
     state: State = {
         viewColumnsAnchor: null,
-    }
+    };
 
     toggleViewColumns = (event: React.MouseEvent<HTMLElement>) => {
         const target = event.target as HTMLElement;
-        this.setState(prevState => ({
-            viewColumnsAnchor: !!prevState.viewColumnsAnchor ? null : target,
+        this.setState((prevState) => ({
+            viewColumnsAnchor: prevState.viewColumnsAnchor ? null : target,
         }));
-    }
+    };
 
     renderAction = (action: TableAction) => {
         return (
             <Tooltip title={action.name}>
                 <div>
                     <IconButton onClick={action.callback} disabled={action.disabled}>
-                        {!!action.icon ? action.icon : <Icon className={action.className}/>}
+                        {action.icon ? action.icon : <Icon className={action.className} />}
                     </IconButton>
                 </div>
             </Tooltip>
         );
-    }
+    };
 
     render() {
         const {
             classes,
             title,
             columns,
-            selectionCount,
             actions,
             options,
             onColumnToggle,
             onColumnDrag,
             onColumnsReset,
-            onDataExport
+            onDataExport,
         } = this.props;
 
-        const {
-            viewColumnsAnchor
-        } = this.state;
+        const { viewColumnsAnchor } = this.state;
 
-        const {
-            exportable,
-            showTitle,
-            showActions,
-        } = options;
+        const { exportable, showTitle, showActions } = options;
 
         return (
             <>
                 <Toolbar
                     className={cx(classes.root, {
                         // [classes.highlight]: selectionCount > 0,
-                    })}>
-
-                    {showTitle &&
+                    })}
+                >
+                    {showTitle && (
                         <div className={classes.title}>
                             {/* {selectionCount > 0 ? (
                                 <Typography color="inherit" variant="subtitle1">
                                     {selectionCount} selected
                                 </Typography>
                             ) : ( */}
-                                <Typography variant="h6">
-                                    {title}
-                                </Typography>
+                            <Typography variant="h6">{title}</Typography>
                             {/* )} */}
                         </div>
-                    }
+                    )}
 
                     <div className={classes.spacer} />
 
-                    {showActions && 
+                    {showActions && (
                         <div className={classes.actions}>
                             {/* {selectionCount > 0 ? (
                                 this.renderAction({
@@ -129,32 +130,34 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                                     icon: <Delete/>,                            
                                 })
                             ) : ( */}
-                                <>
-                                    {actions && (isFunction(actions) 
-                                        ? actions() 
+                            <>
+                                {actions &&
+                                    (isFunction(actions)
+                                        ? actions()
                                         : actions.map((action, index) => {
-                                            return (
-                                                <React.Fragment key={index}>
-                                                    {this.renderAction(action)}
-                                                </React.Fragment>
-                                            );
-                                    }))}
+                                              return (
+                                                  <React.Fragment key={index}>
+                                                      {this.renderAction(action)}
+                                                  </React.Fragment>
+                                              );
+                                          }))}
 
-                                    {exportable && this.renderAction({
+                                {exportable &&
+                                    this.renderAction({
                                         name: 'Export',
                                         icon: <GetApp />,
                                         callback: onDataExport,
                                     })}
 
-                                    {this.renderAction({
-                                        name: 'Columns',
-                                        icon: <ViewColumn/>,
-                                        callback: (event: React.MouseEvent<HTMLElement>) => this.toggleViewColumns(event)
-                                    })}
-                                </>
+                                {this.renderAction({
+                                    name: 'Columns',
+                                    icon: <ViewColumn />,
+                                    callback: (event: React.MouseEvent<HTMLElement>) => this.toggleViewColumns(event),
+                                })}
+                            </>
                             {/* )} */}
                         </div>
-                    }
+                    )}
                 </Toolbar>
 
                 <Popover
@@ -173,8 +176,8 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                     PaperProps={{
                         className: classes.viewColumnsContainer,
                         style: {
-                            transform: !!viewColumnsAnchor ? 'none !important' : '' // https://github.com/atlassian/react-beautiful-dnd/issues/1329
-                        }
+                            transform: viewColumnsAnchor ? 'none !important' : '', // https://github.com/atlassian/react-beautiful-dnd/issues/1329
+                        },
                     }}
                 >
                     <TableViewColumns

@@ -3,14 +3,16 @@ import faker from 'faker';
 import React from 'react';
 import MuiTable, { TableColumn } from '../src';
 
-const data = Array(100).fill(null).map(() => {
-    return {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
-        age: faker.random.number({ min: 10, max: 100 }),
-        country: faker.address.country()
-    }
-});
+const data = Array(100)
+    .fill(null)
+    .map(() => {
+        return {
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            age: faker.random.number({ min: 10, max: 100 }),
+            country: faker.address.country(),
+        };
+    });
 
 type Type = typeof data[0];
 
@@ -21,17 +23,17 @@ const columns: TableColumn<Type>[] = [
     },
     {
         name: 'Last Name',
-        id: 'lastName'
+        id: 'lastName',
     },
     {
         name: 'Age',
         id: 'age',
-        getValue: (item) => item.country
+        getValue: (item) => item.country,
     },
     {
         name: 'Country',
-        id: 'country',        
-    }
+        id: 'country',
+    },
 ];
 
 export const SimpleTable: React.VFC = () => (
@@ -43,9 +45,9 @@ export const SimpleTable: React.VFC = () => (
         options={{
             elevation: 0,
             exportable: true,
-            rowsPerPageOptions: [10]
+            rowsPerPageOptions: [10],
             // dataLimit: 5,
-            // showBorder: true,            
+            // showBorder: true,
             // showTitle: false,
             // showToolbar: false,
         }}
@@ -54,7 +56,7 @@ export const SimpleTable: React.VFC = () => (
             columnOrders: ['age', 'country', 'lastName'],
         }}
         components={{
-            customsBottom: [() => <Typography>Test</Typography>]
+            customsBottom: [() => <Typography>Test</Typography>],
         }}
         onRowClick={(id) => console.log(id)}
         onDataExport={(data) => console.log(data)}

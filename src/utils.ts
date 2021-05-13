@@ -6,9 +6,7 @@ export function getMatcher(input: string, query: string): SearchMatcher | null {
         return null;
     }
 
-    const matchIndex = isString(input) && isString(query)
-        ? input.toLowerCase().indexOf(query.toLowerCase())
-        : -1;
+    const matchIndex = isString(input) && isString(query) ? input.toLowerCase().indexOf(query.toLowerCase()) : -1;
 
     if (matchIndex >= 0) {
         return {
@@ -22,19 +20,19 @@ export function getMatcher(input: string, query: string): SearchMatcher | null {
 }
 
 export function reorder<T = any>(input: readonly T[], sourceIndex: number, destinationIndex: number): T[] {
-    const output = [ ...input ];
+    const output = [...input];
     const item = output[sourceIndex];
     output.splice(sourceIndex, 1);
     output.splice(destinationIndex, 0, item);
     return output;
-};
+}
 
 export function toggleArrayItem<T = any>(array: T[], values: T[], forceValue?: boolean): T[] {
     return forceValue === undefined
         ? xor(array, values)
         : forceValue
-            ? union(array, values)
-            : array.filter(item => !values.includes(item));
+        ? union(array, values)
+        : array.filter((item) => !values.includes(item));
 }
 
 export function mergeOverwriteArray(obj: any, src: unknown) {
@@ -50,4 +48,4 @@ export default {
     reorder,
     toggleArrayItem,
     mergeOverwriteArray,
-}
+};

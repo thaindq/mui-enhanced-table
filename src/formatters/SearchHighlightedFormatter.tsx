@@ -3,9 +3,8 @@ import BaseFormatter from './BaseFormatter';
 import { FormatterProps } from '..';
 
 class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
-
     static instance: SearchHighlightedFormatter;
-    
+
     static getInstance() {
         if (!this.instance) {
             this.instance = new SearchHighlightedFormatter();
@@ -23,27 +22,25 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
         this.backgroundColor = backgroundColor;
     }
 
-    format({
-        value,
-        item,
-        matcher,
-    }: FormatterProps<T>) {
+    format({ value, item, matcher }: FormatterProps<T>) {
         if (!matcher) {
             return this.getValueString(value, item);
         }
- 
-        const {
-            pre,
-            post,
-            match,
-        } = matcher;
+
+        const { pre, post, match } = matcher;
 
         return (
             <>
-                {pre}<span style={{
-                    backgroundColor: this.backgroundColor,
-                    color: this.textColor,
-                }}>{match}</span>{post}
+                {pre}
+                <span
+                    style={{
+                        backgroundColor: this.backgroundColor,
+                        color: this.textColor,
+                    }}
+                >
+                    {match}
+                </span>
+                {post}
             </>
         );
     }

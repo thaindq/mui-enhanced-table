@@ -10,5 +10,5 @@ export * from './TablePaginationActions';
 export { default as TableToolbar } from './TableToolbar';
 export * from './TableToolbar';
 
-export { default as TableViewColumns} from './TableViewColumns';
+export { default as TableViewColumns } from './TableViewColumns';
 export * from './TableViewColumns';
