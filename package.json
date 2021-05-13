@@ -13,6 +13,8 @@
     "start": "npm run storybook",
     "prepare": "npm run build",
     "clean": "rimraf ./dist && mkdir dist",
+    "lint": "eslint {src,tests,stories}/**/*.{ts,tsx} --fix",
+    "format": "prettier --write {src,stories,tests}/**/*.{ts,tsx}",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
@@ -57,9 +59,18 @@
     "@types/react-beautiful-dnd": "^13.0.0",
     "@types/react-dom": "^17.0.4",
     "@types/storybook__addon-info": "^5.2.3",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-lodash": "^3.3.4",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
     "faker": "^5.5.3",
+    "husky": "^4.3.8",
+    "lint-staged": "^11.0.0",
+    "microbundle": "^0.13.0",
+    "prettier": "^2.3.0",
     "react": "^17.0.2",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-docgen-typescript-webpack-plugin": "^1.1.0",
@@ -72,5 +83,17 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "ts-loader": "^9.1.2",
     "typescript": "^4.2.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run lint"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
