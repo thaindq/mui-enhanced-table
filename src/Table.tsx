@@ -699,11 +699,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                             <Component
                                 key={index}
                                 name={name}
-                                filterId={index}
                                 filterBy={field}
                                 data={data}
                                 displayData={displayData}
-                                onUpdateFilter={this.updateFilter} />
+                                onUpdateFilter={(ids) => this.updateFilter(index, ids)} />
                         ))}
                     </div>
                 }

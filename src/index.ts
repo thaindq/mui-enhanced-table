@@ -184,9 +184,8 @@ export type FormatterProps<T = any> = {
 
 export interface FilterProps<T = any> {
     name?: string;
-    filterId: number;
-    filterBy?: TableColumnId | ((row: TableRow<T>) => TableColumnId);
+    filterBy: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: readonly TableRow<T>[];
     displayData: readonly TableRow<T>[];
-    onUpdateFilter: (filterId: number, matchedRowIds: TableRowId[] | null) => void;
+    onUpdateFilter: (matchedRowIds: TableRowId[] | null) => void;
 }
