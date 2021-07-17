@@ -1,5 +1,4 @@
 import {
-    createStyles,
     FormControl,
     IconButton,
     InputAdornment,
@@ -9,10 +8,9 @@ import {
     TablePagination,
     TextField,
     Theme,
-    withStyles,
 } from '@material-ui/core';
 import { Clear, Search } from '@material-ui/icons';
-import { ClassKeyOfStyles, StyledComponentProps, WithStyles } from '@material-ui/styles';
+import { withStyles, createStyles, ClassKeyOfStyles, StyledComponentProps, WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import {
     find,
@@ -601,7 +599,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                             value={searchText}
                             onChange={this.changeSearch}
                             // label="Search"
-                            // variant="outlined"
+                            variant="standard"
                             // size="small"
                             InputProps={{
                                 startAdornment: (
@@ -631,8 +629,8 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         rowsPerPage={rowsPerPage}
                         rowsPerPageOptions={rowsPerPageOptions}
                         page={currentPage}
-                        onChangePage={this.changePage}
-                        onChangeRowsPerPage={this.changeRowsPerPage}
+                        onPageChange={this.changePage}
+                        onRowsPerPageChange={this.changeRowsPerPage}
                         ActionsComponent={TablePaginationActions}
                     />
                 )}

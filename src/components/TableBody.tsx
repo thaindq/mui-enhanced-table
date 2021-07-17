@@ -1,7 +1,6 @@
 import {
     Checkbox,
     CircularProgress,
-    createStyles,
     Icon,
     IconButton,
     Radio,
@@ -11,10 +10,9 @@ import {
     Theme,
     Tooltip,
     Typography,
-    withStyles,
 } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
-import { WithStyles } from '@material-ui/styles';
+import { WithStyles, withStyles, createStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import { get, isArray, isFunction, isString } from 'lodash';
 import React from 'react';
@@ -344,7 +342,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                                 <Checkbox
                                                     checked={selected}
                                                     disabled={disabled}
-                                                    onClick={(event) =>
+                                                    onChange={(event) =>
                                                         +event.stopPropagation() ||
                                                         this.handleRowSelect(row.id, row.data, rowIndex)
                                                     }
@@ -353,7 +351,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                                 <Radio
                                                     checked={selected}
                                                     disabled={disabled}
-                                                    onClick={(event) =>
+                                                    onChange={(event) =>
                                                         +event.stopPropagation() ||
                                                         this.handleRowSelect(row.id, row.data, rowIndex)
                                                     }

@@ -1,14 +1,5 @@
-import {
-    Checkbox,
-    SortDirection,
-    TableCell,
-    TableHead,
-    TableRow,
-    TableSortLabel,
-    Theme,
-    withStyles,
-} from '@material-ui/core';
-import { createStyles, WithStyles } from '@material-ui/styles';
+import { Checkbox, SortDirection, TableCell, TableHead, TableRow, TableSortLabel, Theme } from '@material-ui/core';
+import { withStyles, createStyles, WithStyles } from '@material-ui/styles';
 import cx from 'classnames';
 import React from 'react';
 import { TableColumn, TableColumnId, TableOptions } from '..';
