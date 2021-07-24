@@ -631,7 +631,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         rowsPerPage={rowsPerPage}
                         rowsPerPageOptions={rowsPerPageOptions}
                         page={currentPage}
-                        onChangePage={this.changePage}
+                        onPageChange={this.changePage}
                         onChangeRowsPerPage={this.changeRowsPerPage}
                         ActionsComponent={TablePaginationActions}
                     />
