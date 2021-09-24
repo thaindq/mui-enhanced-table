@@ -26,7 +26,7 @@ export interface TableRowStatus {
     expanded?: boolean;
 }
 
-export type TableStatus = 'Idle' | 'Pending' | 'Completed' | 'Error';
+export type TableStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected';
 
 export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     id: TableColumnId;

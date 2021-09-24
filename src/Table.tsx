@@ -131,7 +131,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         headClasses: {},
         bodyClasses: {},
         dataId: 'id',
-        status: 'Idle',
+        status: 'idle',
         init: {},
         options: {},
         components: {},
