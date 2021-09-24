@@ -1,6 +1,6 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, Theme } from '@material-ui/core';
-import { DragHandle } from '@material-ui/icons';
-import { WithStyles, createStyles, withStyles } from '@material-ui/styles';
+import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, Theme } from '@mui/material';
+import { DragHandle } from '@mui/icons-material';
+import { WithStyles, createStyles, withStyles } from '@mui/styles';
 import React from 'react';
 import {
     DragDropContext,

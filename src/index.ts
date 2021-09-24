@@ -5,8 +5,8 @@ export * from './utils';
 export * from './filters';
 export * from './formatters';
 import { TableHeadClassKey, TableBodyClassKey, TableToolbarClassKey } from './components';
-import { SortDirection, TableCellProps } from '@material-ui/core';
-import { ClassNameMap, CSSProperties } from '@material-ui/styles';
+import { SortDirection, TableCellProps } from '@mui/material';
+import { ClassNameMap, CSSProperties } from '@mui/styles';
 
 export type TableRowId = string;
 export type TableColumnId = string;

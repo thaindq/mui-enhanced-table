@@ -10,9 +10,9 @@ import {
     Theme,
     Tooltip,
     Typography,
-} from '@material-ui/core';
-import { ExpandLess, ExpandMore } from '@material-ui/icons';
-import { WithStyles, withStyles, createStyles } from '@material-ui/styles';
+} from '@mui/material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { WithStyles, withStyles, createStyles } from '@mui/styles';
 import cx from 'classnames';
 import { get, isArray, isFunction, isString } from 'lodash';
 import React from 'react';
@@ -252,7 +252,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
             <TableBody
                 component={component || 'tbody'}
                 className={cx(className, classes.root)}
-                style={{
+                sx={{
                     display: hasMessage ? undefined : 'table-footer-group',
                 }}
             >
@@ -302,7 +302,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                         const rowJsx = (
                             <>
                                 <MuiTableRow
-                                    style={style}
+                                    sx={style}
                                     className={rowClassName}
                                     selected={selected}
                                     hover={highlightRow}
@@ -325,10 +325,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                                 }
                                             >
                                                 {(expanded && (
-                                                    <ExpandLess fontSize="inherit" style={{ position: 'absolute' }} />
-                                                )) || (
-                                                    <ExpandMore fontSize="inherit" style={{ position: 'absolute' }} />
-                                                )}
+                                                    <ExpandLess fontSize="inherit" sx={{ position: 'absolute' }} />
+                                                )) || <ExpandMore fontSize="inherit" sx={{ position: 'absolute' }} />}
                                             </IconButton>
                                         </TableCell>
                                     )}
@@ -408,7 +406,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                                         )) ||
                                                     undefined
                                                 }
-                                                style={{
+                                                sx={{
                                                     ...style,
                                                     ...column.bodyStyle,
                                                 }}

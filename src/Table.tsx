@@ -8,9 +8,9 @@ import {
     TablePagination,
     TextField,
     Theme,
-} from '@material-ui/core';
-import { Clear, Search } from '@material-ui/icons';
-import { withStyles, createStyles, ClassKeyOfStyles, StyledComponentProps, WithStyles } from '@material-ui/styles';
+} from '@mui/material';
+import { Clear, Search } from '@mui/icons-material';
+import { withStyles, createStyles, ClassKeyOfStyles, StyledComponentProps, WithStyles } from '@mui/styles';
 import cx from 'classnames';
 import {
     find,

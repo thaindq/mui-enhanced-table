@@ -1,5 +1,5 @@
-import { Checkbox, SortDirection, TableCell, TableHead, TableRow, TableSortLabel, Theme } from '@material-ui/core';
-import { withStyles, createStyles, WithStyles } from '@material-ui/styles';
+import { Checkbox, SortDirection, TableCell, TableHead, TableRow, TableSortLabel, Theme } from '@mui/material';
+import { withStyles, createStyles, WithStyles } from '@mui/styles';
 import cx from 'classnames';
 import React from 'react';
 import { TableColumn, TableColumnId, TableOptions } from '..';
@@ -83,7 +83,7 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
                     {columns.map((column) => (
                         <TableCell
                             key={column.id}
-                            style={column.headStyle}
+                            sx={column.headStyle}
                             className={cx(classes.cell, {
                                 [classes.allCaps]: allCapsHeader,
                                 [classes.cellNoWrap]: noWrap,

@@ -1,8 +1,8 @@
-import { IconButton, Theme } from '@material-ui/core';
-import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@material-ui/icons';
-import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
+import { IconButton, Theme } from '@mui/material';
+import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@mui/icons-material';
+import { createStyles, WithStyles, withStyles } from '@mui/styles';
 import React from 'react';
-import { TablePaginationActionsProps } from '@material-ui/core/TablePagination/TablePaginationActions';
+import { TablePaginationActionsProps } from '@mui/material/TablePagination/TablePaginationActions';
 
 const styles = (theme: Theme) =>
     createStyles({

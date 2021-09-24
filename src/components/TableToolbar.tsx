@@ -1,6 +1,6 @@
-import { Icon, IconButton, Popover, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import { GetApp, ViewColumn } from '@material-ui/icons';
-import { WithStyles, withStyles, createStyles } from '@material-ui/styles';
+import { Icon, IconButton, Popover, Theme, Toolbar, Tooltip, Typography } from '@mui/material';
+import { GetApp, ViewColumn } from '@mui/icons-material';
+import { WithStyles, withStyles, createStyles } from '@mui/styles';
 import cx from 'classnames';
 import { isFunction } from 'lodash';
 import React from 'react';
