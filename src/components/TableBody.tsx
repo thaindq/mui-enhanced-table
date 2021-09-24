@@ -241,8 +241,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
         // const emptyRows = displayData.length === 0 ? 1 : (rowCount || 0) - displayData.length;
         // const colSpan = columns.length + (selectable ? 1 : 0);
-        const isLoading = status === 'Pending';
-        const hasError = status === 'Error';
+        const isLoading = status === 'pending';
+        const hasError = status === 'rejected';
         const shouldShowLoading = isLoading && (respectDataStatus || !displayData.length);
         const shouldShowError = hasError && (respectDataStatus || !displayData.length);
         const shouldShowNoData = !isLoading && !hasError && !displayData.length;
