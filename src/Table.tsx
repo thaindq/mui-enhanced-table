@@ -1,16 +1,16 @@
+import { Clear, Search } from '@mui/icons-material';
 import {
     FormControl,
     IconButton,
     InputAdornment,
     Paper,
     SortDirection,
+    styled,
     Table,
     TablePagination,
+    tablePaginationClasses,
     TextField,
-    Theme,
 } from '@mui/material';
-import { Clear, Search } from '@mui/icons-material';
-import { withStyles, createStyles, ClassKeyOfStyles, StyledComponentProps, WithStyles } from '@mui/styles';
 import cx from 'classnames';
 import {
     find,
@@ -29,6 +29,7 @@ import {
 } from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import { generateNamesObject, getMatcher, mergeOverwriteArray, reorder, toggleArrayItem } from './utils';
 import {
     SearchMatcher,
     SearchMatchers,
@@ -38,96 +39,113 @@ import {
     TableRow,
     TableRowId,
     TableState,
-} from '.';
+} from './types';
 import TableBody from './components/TableBody';
 import TableHead from './components/TableHead';
 import TablePaginationActions from './components/TablePaginationActions';
 import TableToolbar from './components/TableToolbar';
 import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
-import Utils from './utils';
 
-const styles = (theme: Theme) =>
-    createStyles({
-        root: {
-            width: '100%',
-            // height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-        },
-        container: {
-            overflowX: 'auto',
-            position: 'relative',
-            flexGrow: 1,
-            // height: '100%'
-        },
-        border: {
-            border: `1px solid rgb(110, 110, 110)`,
-        },
-        table: {
-            position: 'relative',
-            display: 'table',
-            height: 'calc(100% - 1px)',
-        },
-        search: {
-            flexGrow: 1,
-            flexWrap: 'nowrap',
-            margin: '12px 16px',
-        },
-        clearSearchButton: {
-            width: 20,
-            height: 20,
-            fontSize: '16px',
-            '& > span': {
-                position: 'absolute',
-            },
-        },
-        paginationContainer: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            flexShrink: 0,
-            '& > *:last-child': {
-                flexGrow: 2,
-            },
-        },
-        loader: {
-            top: 0,
-            left: 0,
-            zIndex: 1000,
+export const muiTableClasses = generateNamesObject(
+    [
+        'root',
+        'container',
+        'border',
+        'table',
+        'search',
+        'clearSearchButton',
+        'paginationContainer',
+        'loader',
+        'customComponentsContainer',
+        'bottomCustomComponentsContainer',
+        'filtersContainer',
+        'noTitle',
+    ],
+    'MuiTable',
+);
+
+const Root = styled(Paper)(({ theme }) => ({
+    [`& .${muiTableClasses.root}`]: {
+        width: '100%',
+        // height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    [`& .${muiTableClasses.container}`]: {
+        overflowX: 'auto',
+        position: 'relative',
+        flexGrow: 1,
+        // height: '100%'
+    },
+    [`& .${muiTableClasses.border}`]: {
+        border: `1px solid rgb(110, 110, 110)`,
+    },
+    [`& .${muiTableClasses.table}`]: {
+        position: 'relative',
+        display: 'table',
+        height: 'calc(100% - 1px)',
+    },
+    [`& .${muiTableClasses.search}`]: {
+        flexGrow: 1,
+        flexWrap: 'nowrap',
+        margin: '12px 16px',
+    },
+    [`& .${muiTableClasses.clearSearchButton}`]: {
+        width: 20,
+        height: 20,
+        fontSize: '16px',
+        '& > span': {
             position: 'absolute',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: theme.palette.action.disabledBackground,
-            '& ~ *': {
-                opacity: 0.25,
-            },
         },
-        customComponentsContainer: {
-            paddingLeft: 16,
-            paddingRight: 8,
+    },
+    [`& .${muiTableClasses.paginationContainer}`]: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        flexShrink: 0,
+        '& > *:last-child': {
+            flexGrow: 2,
         },
-        bottomCustomComponentsContainer: {
-            paddingLeft: 16,
-            paddingRight: 8,
+        [`& .${tablePaginationClasses.spacer}`]: {
+            flexBasis: 'auto',
         },
-        filtersContainer: {
-            paddingLeft: 16,
-            paddingRight: 16,
+    },
+    [`& .${muiTableClasses.loader}`]: {
+        top: 0,
+        left: 0,
+        zIndex: 1000,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: theme.palette.action.disabledBackground,
+        '& ~ *': {
+            opacity: 0.25,
         },
-        noTitle: {
-            marginTop: -48,
-        },
-    });
+    },
+    [`& .${muiTableClasses.customComponentsContainer}`]: {
+        paddingLeft: 16,
+        paddingRight: 8,
+    },
+    [`& .${muiTableClasses.bottomCustomComponentsContainer}`]: {
+        paddingLeft: 16,
+        paddingRight: 8,
+    },
+    [`& .${muiTableClasses.filtersContainer}`]: {
+        paddingLeft: 16,
+        paddingRight: 16,
+    },
+    [`& .${muiTableClasses.noTitle}`]: {
+        marginTop: -48,
+    },
+}));
 
-export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyles<typeof styles>, TableState<T>> {
+export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState<T>> {
     static defaultProps: Partial<TableProps> = {
         className: '',
         title: '',
-        headClasses: {},
-        bodyClasses: {},
         dataId: 'id',
         status: 'idle',
         init: {},
@@ -179,7 +197,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     static getInitialState = (props: TableProps): TableState => {
         const { data: rawData, dataId, columns: rawColumns, init, options, dependencies } = props;
 
-        const mergedOptions = Utils.mergeOverwriteArray({ ...MuiTable.defaultState.options }, options);
+        const mergedOptions = mergeOverwriteArray({ ...MuiTable.defaultState.options }, options);
 
         const seenColumnIds: string[] = [];
         const data = MuiTable.mapDataToTableRow(rawData, dataId);
@@ -285,7 +303,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                             column.formatter && !isFunction(column.formatter)
                                 ? column.formatter.getValueString(value, row.data)
                                 : toString(value);
-                        const matcher = Utils.getMatcher(valueString, searchText);
+                        const matcher = getMatcher(valueString, searchText);
 
                         if (matcher) {
                             match = true;
@@ -411,7 +429,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const ids = isArray(rowId) ? rowId : [rowId];
         const prevRowSelections = this.state.rowSelections;
         const nextRowSelections = this.state.options.multiSelect
-            ? Utils.toggleArrayItem(prevRowSelections, ids, select)
+            ? toggleArrayItem(prevRowSelections, ids, select)
             : ids;
 
         this.updateTableState(
@@ -434,7 +452,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const ids = isArray(rowId) ? rowId : [rowId];
         const prevRowExpansions = this.state.rowExpansions;
         const nextRowExpansions = this.state.options.multiExpand
-            ? Utils.toggleArrayItem(prevRowExpansions, ids, expand)
+            ? toggleArrayItem(prevRowExpansions, ids, expand)
             : prevRowExpansions[0] === rowId
             ? []
             : ids;
@@ -547,7 +565,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
         const destinationIndex = result.destination.index;
 
         this.updateTableState({
-            columns: Utils.reorder(this.state.columns, sourceIndex, destinationIndex),
+            columns: reorder(this.state.columns, sourceIndex, destinationIndex),
         });
     };
 
@@ -585,16 +603,14 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     };
 
     renderPagination = () => {
-        const { classes } = this.props;
-
         const { searchText, displayData, currentPage, rowsPerPage, options } = this.state;
 
         const { searchable, showPagination, rowsPerPageOptions } = options;
 
         return (
-            <div className={classes.paginationContainer}>
+            <div className={muiTableClasses.paginationContainer}>
                 {searchable && (
-                    <FormControl className={classes.search}>
+                    <FormControl className={muiTableClasses.search}>
                         <TextField
                             value={searchText}
                             onChange={this.changeSearch}
@@ -610,7 +626,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                                 endAdornment: !searchText ? null : (
                                     <InputAdornment position="end">
                                         <IconButton
-                                            className={classes.clearSearchButton}
+                                            className={muiTableClasses.clearSearchButton}
                                             onClick={() => this.updateTableState({ searchText: '' })}
                                         >
                                             <Clear fontSize="inherit" />
@@ -641,12 +657,8 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
     render() {
         const {
             className,
-            classes,
             title,
             status,
-            headClasses,
-            bodyClasses,
-            toolbarClasses,
             components,
             onRowClick,
             onRowSelect,
@@ -683,10 +695,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
             : displayData;
 
         return (
-            <Paper
+            <Root
                 elevation={showBorder ? 0 : elevation}
-                className={cx(classes.root, className, {
-                    [classes.border]: showBorder,
+                className={cx(muiTableClasses.root, className, {
+                    [muiTableClasses.border]: showBorder,
                 })}
             >
                 {/* <div className={classes.loader}>
@@ -700,7 +712,6 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         options={options}
                         selectionCount={rowSelections.length}
                         actions={actions}
-                        classes={toolbarClasses}
                         onColumnToggle={this.toggleColumn}
                         onColumnDrag={this.reorderColumns}
                         onColumnsReset={this.resetColumns}
@@ -710,7 +721,9 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
                 {customs && customs.length > 0 && (
                     <div
-                        className={cx(classes.customComponentsContainer, { [classes.noTitle]: !title && showToolbar })}
+                        className={cx(muiTableClasses.customComponentsContainer, {
+                            [muiTableClasses.noTitle]: !title && showToolbar,
+                        })}
                     >
                         {customs.map((Component, index) => (
                             <Component key={index} {...this.props} />
@@ -719,7 +732,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                 )}
 
                 {filters && filters.length > 0 && (
-                    <div className={cx(classes.filtersContainer, { [classes.noTitle]: !title })}>
+                    <div className={cx(muiTableClasses.filtersContainer, { [muiTableClasses.noTitle]: !title })}>
                         {filters.map(({ name, field, component: Component }, index) => (
                             <Component
                                 key={index}
@@ -733,21 +746,24 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                     </div>
                 )}
 
-                {showPagination && this.renderPagination()}
+                {this.renderPagination()}
 
                 <DragDropContext onDragEnd={this.reorderColumns}>
                     <Droppable droppableId="droppable" direction="horizontal">
                         {(provided) => (
-                            <div className={classes.container} ref={provided.innerRef} {...provided.droppableProps}>
+                            <div
+                                className={muiTableClasses.container}
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}
+                            >
                                 <Table
                                     size="small"
-                                    className={classes.table}
+                                    className={muiTableClasses.table}
                                     stickyHeader={stickyHeader}
                                     component={component}
                                 >
                                     {showHeader && (
                                         <TableHead
-                                            classes={headClasses}
                                             columns={displayColumns}
                                             options={options}
                                             selectionCount={rowSelections.length}
@@ -761,7 +777,6 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                                     )}
 
                                     <TableBody<T>
-                                        classes={bodyClasses}
                                         columns={displayColumns}
                                         data={data}
                                         displayData={currentPageData}
@@ -792,8 +807,8 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
 
                 {customsBottom && customsBottom.length > 0 && (
                     <div
-                        className={cx(classes.bottomCustomComponentsContainer, {
-                            [classes.noTitle]: !title && showToolbar,
+                        className={cx(muiTableClasses.bottomCustomComponentsContainer, {
+                            [muiTableClasses.noTitle]: !title && showToolbar,
                         })}
                     >
                         {customsBottom.map((Component, index) => (
@@ -801,50 +816,9 @@ export class MuiTable<T = any> extends React.Component<TableProps<T> & WithStyle
                         ))}
                     </div>
                 )}
-            </Paper>
+            </Root>
         );
     }
 }
 
-// export default withStyles(styles, { name: 'MuiTable' })(MuiTable) as <T extends {}>(props: TableProps<T> & {
-//     ref?: React.Ref<MuiTable<T>>,
-//     classes?: {
-//         [key in keyof ReturnType<typeof styles>]?: string
-//     },
-// }) => React.ReactElement;
-
-// https://stackoverflow.com/a/52573647
-export default class<T = any> extends React.Component<
-    TableProps<T> & StyledComponentProps<ClassKeyOfStyles<typeof styles>>
-> {
-    private readonly Component = withStyles(styles, { name: 'MuiEnhancedTable' })(
-        React.forwardRef(
-            (
-                props: JSX.LibraryManagedAttributes<typeof MuiTable, MuiTable<T>['props']>,
-                ref: React.Ref<MuiTable<T>>,
-            ) => <MuiTable<T> {...props} ref={ref} />,
-        ),
-    );
-
-    private tableRef = React.createRef<MuiTable<T>>();
-
-    toggleColumn = (columnId: TableColumnId, display?: boolean) => {
-        this.tableRef.current?.toggleColumn(columnId, display);
-    };
-
-    toggleRowSelection = (rowId: TableRowId | TableRowId[], select?: boolean) => {
-        this.tableRef.current?.toggleRowSelection(rowId, select);
-    };
-
-    toggleRowExpansion = (rowId: TableRowId | TableRowId[], expand?: boolean) => {
-        this.tableRef.current?.toggleRowExpansion(rowId, expand);
-    };
-
-    toggleSelectAllRows = (select?: boolean) => {
-        this.tableRef.current?.toggleSelectAllRows(select);
-    };
-
-    render() {
-        return <this.Component {...this.props} ref={this.tableRef} />;
-    }
-}
+export default MuiTable;

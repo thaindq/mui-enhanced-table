@@ -1,6 +1,6 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, Theme } from '@mui/material';
 import { DragHandle } from '@mui/icons-material';
-import { WithStyles, createStyles, withStyles } from '@mui/styles';
+import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, styled } from '@mui/material';
+import { Box } from '@mui/system';
 import React from 'react';
 import {
     DragDropContext,
@@ -10,52 +10,57 @@ import {
     DropResult,
     ResponderProvided,
 } from 'react-beautiful-dnd';
-import { TableColumn, TableColumnId } from '..';
+import { TableColumn, TableColumnId } from '../types';
+import { generateNamesObject } from '../utils';
 
-export const styles = (theme: Theme) =>
-    createStyles({
-        root: {
-            padding: '8px 16px 16px 24px',
-            fontFamily: 'Roboto',
-        },
-        title: {
-            marginLeft: '-7px',
-            fontSize: '14px',
-            // color: "#424242",
-            textAlign: 'left',
-            fontWeight: 500,
-        },
-        formGroup: {
-            marginTop: '8px',
-        },
-        formControl: {
-            // height: 36
-        },
-        checkbox: {
-            // width: "32px",
-            // height: "32px",
-        },
-        checkboxRoot: {
-            // "&$checked": {
-            //     color: "#027cb5",
-            // },
-        },
-        checked: {},
-        // label: {
-        //     fontSize: "15px",
-        //     marginLeft: "8px",
-        //     color: "#4a4a4a",
+export const muiTableViewColumnsClasses = generateNamesObject(
+    ['root', 'title', 'formGroup', 'formControl', 'checkbox', 'checkboxRoot', 'checked', 'dragHandle', 'resetButton'],
+    'MuiTableViewColumns',
+);
+
+const Root = styled(Box)(({ theme }) => ({
+    [`& .${muiTableViewColumnsClasses.root}`]: {
+        padding: '8px 16px 16px 24px',
+        fontFamily: 'Roboto',
+    },
+    [`& .${muiTableViewColumnsClasses.title}`]: {
+        marginLeft: '-7px',
+        fontSize: '14px',
+        // color: "#424242",
+        textAlign: 'left',
+        fontWeight: 500,
+    },
+    [`& .${muiTableViewColumnsClasses.formGroup}`]: {
+        marginTop: 8,
+    },
+    [`& .${muiTableViewColumnsClasses.formControl}`]: {
+        // height: 36
+    },
+    [`& .${muiTableViewColumnsClasses.checkbox}`]: {
+        // width: "32px",
+        // height: "32px",
+    },
+    [`& .${muiTableViewColumnsClasses.checkboxRoot}`]: {
+        // "&$checked": {
+        //     color: "#027cb5",
         // },
-        dragHandle: {
-            display: 'inline-block',
-            color: theme.palette.text.primary,
-            verticalAlign: 'middle',
-            marginRight: 8,
-        },
-        resetButton: {
-            marginTop: 8,
-        },
-    });
+    },
+    [`& .${muiTableViewColumnsClasses.checked}`]: {},
+    // [`& .${muiTableViewColumnsClasses.label}`]: {
+    //     fontSize: "15px",
+    //     marginLeft: "8px",
+    //     color: "#4a4a4a",
+    // },
+    [`& .${muiTableViewColumnsClasses.dragHandle}`]: {
+        display: 'inline-block',
+        color: theme.palette.text.primary,
+        verticalAlign: 'middle',
+        marginRight: 8,
+    },
+    [`& .${muiTableViewColumnsClasses.resetButton}`]: {
+        marginTop: 8,
+    },
+}));
 
 interface TableViewColumnProps {
     columns: readonly TableColumn[];
@@ -64,34 +69,34 @@ interface TableViewColumnProps {
     onColumnsReset: () => void;
 }
 
-class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles<typeof styles>> {
+class TableViewColumns extends React.Component<TableViewColumnProps> {
     renderCheckbox = (column: TableColumn) => {
-        const { classes, onColumnToggle } = this.props;
+        const { onColumnToggle } = this.props;
 
         return (
             <Checkbox
-                className={classes.checkbox}
+                className={muiTableViewColumnsClasses.checkbox}
                 value={column.name}
                 checked={column.display}
                 onChange={() => onColumnToggle(column.id)}
                 classes={{
-                    root: classes.checkboxRoot,
-                    checked: classes.checked,
+                    root: muiTableViewColumnsClasses.checkboxRoot,
+                    checked: muiTableViewColumnsClasses.checked,
                 }}
             />
         );
     };
 
     render() {
-        const { classes, columns, onColumnDrag, onColumnsReset } = this.props;
+        const { columns, onColumnDrag, onColumnsReset } = this.props;
 
         return (
             <DragDropContext onDragEnd={onColumnDrag}>
                 <Droppable droppableId="droppable" direction="vertical">
                     {(provided: DroppableProvided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps}>
-                            <FormControl component={'fieldset'} className={classes.root}>
-                                <FormGroup className={classes.formGroup}>
+                        <Root ref={provided.innerRef} {...provided.droppableProps}>
+                            <FormControl component={'fieldset'} className={muiTableViewColumnsClasses.root}>
+                                <FormGroup className={muiTableViewColumnsClasses.formGroup}>
                                     {columns.map((column, index) => {
                                         return (
                                             <Draggable key={column.id} draggableId={column.id} index={index}>
@@ -104,10 +109,12 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
                                                         }}
                                                     >
                                                         <div
-                                                            className={classes.dragHandle}
+                                                            className={muiTableViewColumnsClasses.dragHandle}
                                                             {...provided.dragHandleProps}
                                                         >
-                                                            <DragHandle className={classes.dragHandle} />
+                                                            <DragHandle
+                                                                className={muiTableViewColumnsClasses.dragHandle}
+                                                            />
                                                         </div>
 
                                                         <FormControlLabel
@@ -115,7 +122,7 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
                                                             label={column.name || <i>Untitled</i>}
                                                             control={this.renderCheckbox(column)}
                                                             classes={{
-                                                                root: classes.formControl,
+                                                                root: muiTableViewColumnsClasses.formControl,
                                                                 // label: classes.label,
                                                             }}
                                                         />
@@ -127,12 +134,16 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
 
                                     {provided.placeholder}
 
-                                    <Button color="primary" className={classes.resetButton} onClick={onColumnsReset}>
+                                    <Button
+                                        color="primary"
+                                        className={muiTableViewColumnsClasses.resetButton}
+                                        onClick={onColumnsReset}
+                                    >
                                         Reset to default
                                     </Button>
                                 </FormGroup>
                             </FormControl>
-                        </div>
+                        </Root>
                     )}
                 </Droppable>
             </DragDropContext>
@@ -140,4 +151,4 @@ class TableViewColumns extends React.Component<TableViewColumnProps & WithStyles
     }
 }
 
-export default withStyles(styles, { name: 'MuiEnhancedTableViewColumn' })(TableViewColumns);
+export default TableViewColumns;

@@ -1,18 +1,17 @@
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import {
     Checkbox,
     CircularProgress,
     Icon,
     IconButton,
     Radio,
+    styled,
     TableBody,
     TableCell,
     TableRow as MuiTableRow,
-    Theme,
     Tooltip,
     Typography,
 } from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { WithStyles, withStyles, createStyles } from '@mui/styles';
 import cx from 'classnames';
 import { get, isArray, isFunction, isString } from 'lodash';
 import React from 'react';
@@ -27,107 +26,129 @@ import {
     TableRow,
     TableRowId,
     TableStatus,
-} from '..';
+} from '../types';
+import { generateNamesObject } from '../utils';
 
-const styles = (theme: Theme) =>
-    createStyles({
-        root: {
-            position: 'relative',
-            // height: '100%',
-        },
-        row: {
-            transition: 'all ease .2s',
-            '&:nth-of-type(odd)': {
-                backgroundColor: theme.palette.background.default,
-            },
-        },
-        rowNoHeader: {
-            '&:nth-of-type(odd)': {
-                backgroundColor: 'inherit',
-            },
-            '&:nth-of-type(even)': {
-                backgroundColor: theme.palette.background.default,
-            },
-        },
-        rowNoAlternativeColor: {
-            '&:nth-of-type(even)': {
-                backgroundColor: 'inherit',
-            },
-            '&:nth-of-type(odd)': {
-                backgroundColor: 'inherit',
-            },
-        },
-        rowClickable: {
-            cursor: 'pointer',
-        },
-        rowMessage: {
-            height: 64,
-        },
-        cell: {},
-        cellEmpty: {
-            textAlign: 'center',
-            fontSize: '1rem',
-        },
-        cellHighlighted: {
-            backgroundColor: theme.palette.action.selected,
-        },
-        cellDisabled: {
-            cursor: 'not-allowed',
-            color: theme.palette.text.disabled,
-            // backgroundColor: `${chroma(theme.palette.common.red).alpha(0.1)}`,
-        },
-        cellExpanded: {
-            padding: 8,
-            paddingLeft: 48,
-        },
-        cellExpandButton: {
-            width: 20,
-            paddingRight: 0,
-            '& > button': {
-                width: 20,
-                height: 20,
-                fontSize: '16px',
-            },
-        },
-        cellRowActions: {
-            right: 0,
-            width: 1,
-            position: 'sticky',
+export const muiTableBodyClasses = generateNamesObject(
+    [
+        'root',
+        'row',
+        'rowNoHeader',
+        'rowNoAlternativeColor',
+        'rowClickable',
+        'rowMessage',
+        'cell',
+        'cellEmpty',
+        'cellHighlighted',
+        'cellDisabled',
+        'cellExpanded',
+        'cellExpandButton',
+        'cellRowActions',
+        'cellNoWrap',
+        'cellLastRow',
+        'cellSelectionControl',
+        'messageWrapper',
+        'message',
+    ],
+    'MuiTableBody',
+);
+
+const Root = styled(TableBody)(({ theme }) => ({
+    [`& .${muiTableBodyClasses.root}`]: {
+        position: 'relative',
+        // height: '100%',
+    },
+    [`& .${muiTableBodyClasses.row}`]: {
+        transition: 'all ease .2s',
+        '&:nth-of-type(odd)': {
             backgroundColor: theme.palette.background.default,
-            '& > *': {
-                display: 'inline-block',
-            },
         },
-        cellNoWrap: {
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+    },
+    [`& .${muiTableBodyClasses.rowNoHeader}`]: {
+        '&:nth-of-type(odd)': {
+            backgroundColor: 'inherit',
         },
-        cellLastRow: {
-            borderBottom: 'none',
+        '&:nth-of-type(even)': {
+            backgroundColor: theme.palette.background.default,
         },
-        cellSelectionControl: {
-            width: 1,
-            paddingTop: 0,
-            paddingBottom: 0,
+    },
+    [`& .${muiTableBodyClasses.rowNoAlternativeColor}`]: {
+        '&:nth-of-type(even)': {
+            backgroundColor: 'inherit',
         },
-        messageWrapper: {
-            position: 'relative',
-            height: 64,
+        '&:nth-of-type(odd)': {
+            backgroundColor: 'inherit',
         },
-        message: {
-            top: 0,
-            left: 0,
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+    },
+    [`& .${muiTableBodyClasses.rowClickable}`]: {
+        cursor: 'pointer',
+    },
+    [`& .${muiTableBodyClasses.rowMessage}`]: {
+        height: 64,
+    },
+    [`& .${muiTableBodyClasses.cell}`]: {},
+    [`& .${muiTableBodyClasses.cellEmpty}`]: {
+        textAlign: 'center',
+        fontSize: '1rem',
+    },
+    [`& .${muiTableBodyClasses.cellHighlighted}`]: {
+        backgroundColor: theme.palette.action.selected,
+    },
+    [`& .${muiTableBodyClasses.cellDisabled}`]: {
+        cursor: 'not-allowed',
+        color: theme.palette.text.disabled,
+        // backgroundColor: `${chroma(theme.palette.common.red).alpha(0.1)}`,
+    },
+    [`& .${muiTableBodyClasses.cellExpanded}`]: {
+        padding: 8,
+        paddingLeft: 48,
+    },
+    [`& .${muiTableBodyClasses.cellExpandButton}`]: {
+        width: 20,
+        paddingRight: 0,
+        '& > button': {
+            width: 20,
+            height: 20,
+            fontSize: '16px',
         },
-    });
-
-export type TableBodyClassKey = keyof ReturnType<typeof styles>;
+    },
+    [`& .${muiTableBodyClasses.cellRowActions}`]: {
+        right: 0,
+        width: 1,
+        position: 'sticky',
+        backgroundColor: theme.palette.background.default,
+        '& > *': {
+            display: 'inline-block',
+        },
+    },
+    [`& .${muiTableBodyClasses.cellNoWrap}`]: {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    [`& .${muiTableBodyClasses.cellLastRow}`]: {
+        borderBottom: 'none',
+    },
+    [`& .${muiTableBodyClasses.cellSelectionControl}`]: {
+        width: 1,
+        paddingTop: 0,
+        paddingBottom: 0,
+    },
+    [`& .${muiTableBodyClasses.messageWrapper}`]: {
+        position: 'relative',
+        height: 64,
+    },
+    [`& .${muiTableBodyClasses.message}`]: {
+        top: 0,
+        left: 0,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+}));
 
 interface TableBodyProps<T>
     extends Pick<
@@ -156,7 +177,7 @@ interface TableBodyProps<T>
     onToggleRowExpansion: (rowId: TableRowId) => void;
 }
 
-class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyles<typeof styles, true>> {
+class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         const { rowSelections, onRowSelect, onToggleRowSelection } = this.props;
 
@@ -206,7 +227,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
     render() {
         const {
-            classes,
             className,
             columns,
             data,
@@ -249,9 +269,10 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
         const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
 
         return (
-            <TableBody
+            <Root
+                // @ts-ignore: fix this
                 component={component || 'tbody'}
-                className={cx(className, classes.root)}
+                className={cx(className, muiTableBodyClasses.root)}
                 sx={{
                     display: hasMessage ? undefined : 'table-footer-group',
                 }}
@@ -259,8 +280,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                 {(hasMessage && (
                     <MuiTableRow component={component || 'tr'}>
                         <TableCell colSpan={1000} component={component}>
-                            <div className={classes.messageWrapper}>
-                                <div className={classes.message}>
+                            <div className={muiTableBodyClasses.messageWrapper}>
+                                <div className={muiTableBodyClasses.message}>
                                     {shouldShowLoading && <CircularProgress size={40} />}
                                     {shouldShowError &&
                                         (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
@@ -282,19 +303,19 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                         } = (onRowStatus && onRowStatus(row.id, row.data, rowIndex)) || {};
 
                         const rowClassName = cx(
-                            classes.row,
+                            muiTableBodyClasses.row,
                             {
-                                [classes.rowNoHeader]: !showHeader || stickyHeader,
-                                [classes.rowClickable]: !!onRowClick || selectable || expandable,
-                                [classes.rowNoAlternativeColor]: !alternativeRowColor,
+                                [muiTableBodyClasses.rowNoHeader]: !showHeader || stickyHeader,
+                                [muiTableBodyClasses.rowClickable]: !!onRowClick || selectable || expandable,
+                                [muiTableBodyClasses.rowNoAlternativeColor]: !alternativeRowColor,
                             },
                             className,
                         );
 
-                        const cellClassName = cx(classes.cell, {
-                            [classes.cellDisabled]: disabled,
-                            [classes.cellHighlighted]: selected || highlighted,
-                            [classes.cellLastRow]: rowIndex === displayData.length - 1,
+                        const cellClassName = cx(muiTableBodyClasses.cell, {
+                            [muiTableBodyClasses.cellDisabled]: disabled,
+                            [muiTableBodyClasses.cellHighlighted]: selected || highlighted,
+                            [muiTableBodyClasses.cellLastRow]: rowIndex === displayData.length - 1,
                         });
 
                         const actions = isFunction(rowActions) ? rowActions?.(row.id, row.data, rowIndex) : rowActions;
@@ -315,7 +336,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                 >
                                     {expandable && (
                                         <TableCell
-                                            className={cx(cellClassName, classes.cellExpandButton)}
+                                            className={cx(cellClassName, muiTableBodyClasses.cellExpandButton)}
                                             component={component}
                                         >
                                             <IconButton
@@ -333,7 +354,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
                                     {selectable && (
                                         <TableCell
-                                            className={cx(cellClassName, classes.cellSelectionControl)}
+                                            className={cx(cellClassName, muiTableBodyClasses.cellSelectionControl)}
                                             component={component}
                                         >
                                             {(multiSelect && (
@@ -391,7 +412,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                             <TableCell
                                                 key={column.id}
                                                 className={cx(cellClassName, className, {
-                                                    [classes.cellNoWrap]: noWrap,
+                                                    [muiTableBodyClasses.cellNoWrap]: noWrap,
                                                 })}
                                                 align={column.align}
                                                 component={component}
@@ -419,7 +440,11 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
                                     {actions && (
                                         <TableCell
                                             align="right"
-                                            className={cx(cellClassName, classes.cellRowActions, classes.cellNoWrap)}
+                                            className={cx(
+                                                cellClassName,
+                                                muiTableBodyClasses.cellRowActions,
+                                                muiTableBodyClasses.cellNoWrap,
+                                            )}
                                             component={component}
                                         >
                                             {isArray(actions) ? actions.map(this.renderAction) : actions}
@@ -429,7 +454,11 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
                                 {expanded && RowExpandComponent && (
                                     <MuiTableRow component={component || 'tr'}>
-                                        <TableCell colSpan={100} className={classes.cellExpanded} component={component}>
+                                        <TableCell
+                                            colSpan={100}
+                                            className={muiTableBodyClasses.cellExpanded}
+                                            component={component}
+                                        >
                                             <RowExpandComponent id={row.id} data={row.data} index={rowIndex} />
                                         </TableCell>
                                     </MuiTableRow>
@@ -447,24 +476,9 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T> & WithStyl
 
                         return <React.Fragment key={row.id}>{rowJsx}</React.Fragment>;
                     })}
-            </TableBody>
+            </Root>
         );
     }
 }
 
-export default withStyles(styles, { name: 'MuiTableBody', withTheme: true })(MuiTableBody) as <T extends {}>(
-    props: TableBodyProps<T> & {
-        classes?: { [key in TableBodyClassKey]?: string };
-    },
-) => React.ReactElement;
-
-// https://stackoverflow.com/a/52573647
-// export default class<T = any> extends React.Component<TableBodyProps<T> & { classes?: { [key in keyof typeof styles]?: string } }> {
-//     private readonly Component = withStyles(styles, { name: 'MuiEnhancedTableBody', withTheme: true })(
-//         (props: JSX.LibraryManagedAttributes<typeof MuiTableBody, MuiTableBody<T>["props"]>) => <MuiTableBody<T> {...props} />
-//     );
-
-//     render() {
-//         return <this.Component {...this.props} />;
-//     }
-// }
+export default MuiTableBody;

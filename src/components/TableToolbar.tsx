@@ -1,39 +1,42 @@
-import { Icon, IconButton, Popover, Theme, Toolbar, Tooltip, Typography } from '@mui/material';
 import { GetApp, ViewColumn } from '@mui/icons-material';
-import { WithStyles, withStyles, createStyles } from '@mui/styles';
+import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import cx from 'classnames';
 import { isFunction } from 'lodash';
 import React from 'react';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '..';
+import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '../types';
+import { generateNamesObject } from '../utils';
 import TableViewColumns from './TableViewColumns';
 
-const styles = (theme: Theme) =>
-    createStyles({
-        root: {
-            paddingLeft: 16,
-            paddingRight: 8,
-            // flexBasis: 64,
-            flexShrink: 0,
-        },
-        highlight: {
-            color: theme.palette.text.primary,
-            backgroundColor: theme.palette.secondary.dark,
-        },
-        spacer: {
-            flex: '1 1 100%',
-        },
-        actions: {
-            color: theme.palette.text.secondary,
-            display: 'inline-flex',
-        },
-        title: {
-            flex: '0 0 auto',
-        },
-        viewColumnsContainer: {},
-    });
+export const muiTableToolbarClasses = generateNamesObject(
+    ['root', 'highlight', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
+    'MuiTableToolbar',
+);
 
-export type TableToolbarClassKey = keyof ReturnType<typeof styles>;
+const Root = styled(Box)(({ theme }) => ({
+    [`& .${muiTableToolbarClasses.root}`]: {
+        paddingLeft: 16,
+        paddingRight: 8,
+        // flexBasis: 64,
+        flexShrink: 0,
+    },
+    [`& .${muiTableToolbarClasses.highlight}`]: {
+        color: theme.palette.text.primary,
+        backgroundColor: theme.palette.secondary.dark,
+    },
+    [`& .${muiTableToolbarClasses.spacer}`]: {
+        flex: '1 1 100%',
+    },
+    [`& .${muiTableToolbarClasses.actions}`]: {
+        color: theme.palette.text.secondary,
+        display: 'inline-flex',
+    },
+    [`& .${muiTableToolbarClasses.title}`]: {
+        flex: '0 0 auto',
+    },
+    [`& .${muiTableToolbarClasses.viewColumnsContainer}`]: {},
+}));
 
 interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     title?: string;
@@ -50,7 +53,7 @@ interface State {
     viewColumnsAnchor: Element | null;
 }
 
-class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof styles>, State> {
+class TableToolbar extends React.Component<TableToolbarProps, State> {
     state: State = {
         viewColumnsAnchor: null,
     };
@@ -75,31 +78,22 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
     };
 
     render() {
-        const {
-            classes,
-            title,
-            columns,
-            actions,
-            options,
-            onColumnToggle,
-            onColumnDrag,
-            onColumnsReset,
-            onDataExport,
-        } = this.props;
+        const { title, columns, actions, options, onColumnToggle, onColumnDrag, onColumnsReset, onDataExport } =
+            this.props;
 
         const { viewColumnsAnchor } = this.state;
 
         const { exportable, showTitle, showActions } = options;
 
         return (
-            <>
+            <Root>
                 <Toolbar
-                    className={cx(classes.root, {
+                    className={cx(muiTableToolbarClasses.root, {
                         // [classes.highlight]: selectionCount > 0,
                     })}
                 >
                     {showTitle && (
-                        <div className={classes.title}>
+                        <div className={muiTableToolbarClasses.title}>
                             {/* {selectionCount > 0 ? (
                                 <Typography color="inherit" variant="subtitle1">
                                     {selectionCount} selected
@@ -110,10 +104,10 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                         </div>
                     )}
 
-                    <div className={classes.spacer} />
+                    <div className={muiTableToolbarClasses.spacer} />
 
                     {showActions && (
-                        <div className={classes.actions}>
+                        <div className={muiTableToolbarClasses.actions}>
                             {/* {selectionCount > 0 ? (
                                 this.renderAction({
                                     name: 'Delete',
@@ -164,7 +158,7 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                         horizontal: 'right',
                     }}
                     PaperProps={{
-                        className: classes.viewColumnsContainer,
+                        className: muiTableToolbarClasses.viewColumnsContainer,
                         style: {
                             transform: viewColumnsAnchor ? 'none !important' : '', // https://github.com/atlassian/react-beautiful-dnd/issues/1329
                         },
@@ -177,9 +171,9 @@ class TableToolbar extends React.Component<TableToolbarProps & WithStyles<typeof
                         onColumnsReset={onColumnsReset}
                     />
                 </Popover>
-            </>
+            </Root>
         );
     }
 }
 
-export default withStyles(styles, { name: 'MuiEnhancedTableToolbar' })(TableToolbar);
+export default TableToolbar;

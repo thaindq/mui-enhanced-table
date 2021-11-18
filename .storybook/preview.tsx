@@ -4,9 +4,11 @@ import React from 'react';
 const theme = createTheme();
 
 export const decorators = [
-    (storyFn: Function) => (
-        <StyledEngineProvider injectFirst={true}>
-            <ThemeProvider theme={theme}>{storyFn()}</ThemeProvider>
-        </StyledEngineProvider>
-    ),
+    (Story: React.ComponentType) => {
+        return (
+            <ThemeProvider theme={theme}>
+                <Story />
+            </ThemeProvider>
+        );
+    },
 ];

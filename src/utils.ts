@@ -1,5 +1,5 @@
 import { isArray, isString, mergeWith, union, xor } from 'lodash';
-import { SearchMatcher } from '.';
+import { SearchMatcher } from './types';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {
     if (!input || !query) {
@@ -43,9 +43,29 @@ export function mergeOverwriteArray(obj: any, src: unknown) {
     });
 }
 
-export default {
-    getMatcher,
-    reorder,
-    toggleArrayItem,
-    mergeOverwriteArray,
+type FieldNames<Names extends string, Prefix extends string = ''> = {
+    [Name in Names]: Prefix extends '' ? `${Name}` : `${Prefix}-${Name}`;
 };
+export function generateNamesObject<Names extends string>(name: Names, ...args: Names[]): FieldNames<Names>;
+export function generateNamesObject<Names extends string, Prefix extends string = ''>(
+    fields: readonly Names[],
+    prefix?: Prefix,
+): FieldNames<Names, Prefix>;
+export function generateNamesObject<Names extends string, Prefix extends string = ''>(
+    ...args: any
+): FieldNames<Names, Prefix> {
+    let names: Names[] = [];
+    let prefix: Prefix | undefined;
+
+    if (isArray(args[0])) {
+        names = args[0];
+        prefix = args[1];
+    } else {
+        names = args;
+    }
+
+    return names.reduce((result, name) => {
+        result[name] = (prefix ? `${prefix}-${name}` : `${name}`) as any;
+        return result;
+    }, {} as FieldNames<Names, Prefix>);
+}
