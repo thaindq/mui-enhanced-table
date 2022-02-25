@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseFormatter from './BaseFormatter';
-import { FormatterProps } from '..';
+import { FormatterProps } from '../types';
 
 class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
     static instance: SearchHighlightedFormatter;

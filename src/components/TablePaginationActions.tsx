@@ -1,19 +1,19 @@
-import { IconButton, Theme, withStyles } from '@material-ui/core';
-import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@material-ui/icons';
-import { createStyles, WithStyles } from '@material-ui/styles';
+import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@mui/icons-material';
+import { IconButton, styled } from '@mui/material';
+import { TablePaginationActionsProps } from '@mui/material/TablePagination/TablePaginationActions';
+import { Box } from '@mui/system';
 import React from 'react';
-import { TablePaginationActionsProps } from '@material-ui/core/TablePagination/TablePaginationActions';
+import { generateNamesObject } from '../utils';
 
-const styles = (theme: Theme) =>
-    createStyles({
-        root: {
-            flexShrink: 0,
-            color: theme.palette.text.secondary,
-            marginLeft: theme.spacing(2.5),
-        },
-    });
+export const muiTablePaginationActionsClasses = generateNamesObject(['root'], 'MuiTablePaginationActions');
 
-class TablePaginationActions extends React.Component<TablePaginationActionsProps & WithStyles<typeof styles>> {
+const Root = styled(Box)(({ theme }) => ({
+    flexShrink: 0,
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(2.5),
+}));
+
+class TablePaginationActions extends React.Component<TablePaginationActionsProps> {
     handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement> | null) => {
         this.props.onPageChange(event, 0);
     };
@@ -31,10 +31,10 @@ class TablePaginationActions extends React.Component<TablePaginationActionsProps
     };
 
     render() {
-        const { classes, count, page, rowsPerPage } = this.props;
+        const { count, page, rowsPerPage } = this.props;
 
         return (
-            <div className={classes.root}>
+            <Root className={muiTablePaginationActionsClasses.root}>
                 <IconButton onClick={this.handleFirstPageButtonClick} disabled={page === 0}>
                     <FirstPage />
                 </IconButton>
@@ -53,9 +53,9 @@ class TablePaginationActions extends React.Component<TablePaginationActionsProps
                 >
                     <LastPage />
                 </IconButton>
-            </div>
+            </Root>
         );
     }
 }
 
-export default withStyles(styles, { name: 'MuiEnhancedTablePaginationActions' })(TablePaginationActions);
+export default TablePaginationActions;

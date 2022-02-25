@@ -1,45 +1,37 @@
-import {
-    Checkbox,
-    SortDirection,
-    TableCell,
-    TableHead,
-    TableRow,
-    TableSortLabel,
-    Theme,
-    withStyles,
-} from '@material-ui/core';
-import { createStyles, WithStyles } from '@material-ui/styles';
+import { Checkbox, SortDirection, styled, TableCell, TableHead, TableRow, TableSortLabel } from '@mui/material';
 import cx from 'classnames';
 import React from 'react';
-import { TableColumn, TableColumnId, TableOptions } from '..';
+import { TableColumn, TableColumnId, TableOptions } from '../types';
+import { generateNamesObject } from '../utils';
 
-const styles = (theme: Theme) =>
-    createStyles({
-        root: {},
-        row: {
-            height: 48,
-        },
-        cell: {
-            '& > div': {
-                flexDirection: 'inherit',
-            },
-        },
-        cellNoWrap: {
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-        },
-        allCaps: {
-            textTransform: 'uppercase',
-        },
-        cellRowActions: {
-            right: 0,
-            position: 'sticky',
-            backgroundColor: theme.palette.background.default,
-        },
-    });
+export const muiTableHeadClasses = generateNamesObject(
+    ['root', 'row', 'cell', 'cellNoWrap', 'allCaps', 'cellRowActions'],
+    'MuiTableHead',
+);
 
-export type TableHeadClassKey = keyof ReturnType<typeof styles>;
+const Root = styled(TableHead)(({ theme }) => ({
+    [`& .${muiTableHeadClasses.row}`]: {
+        height: 48,
+    },
+    [`& .${muiTableHeadClasses.cell}`]: {
+        '& > div': {
+            flexDirection: 'inherit',
+        },
+    },
+    [`& .${muiTableHeadClasses.cellNoWrap}`]: {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    [`& .${muiTableHeadClasses.allCaps}`]: {
+        textTransform: 'uppercase',
+    },
+    [`& .${muiTableHeadClasses.cellRowActions}`]: {
+        right: 0,
+        position: 'sticky',
+        backgroundColor: theme.palette.background.default,
+    },
+}));
 
 interface TableHeadProps {
     className?: string;
@@ -54,10 +46,9 @@ interface TableHeadProps {
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
 
-class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof styles, true>> {
+class MuiTableHead extends React.Component<TableHeadProps> {
     render() {
         const {
-            classes,
             className,
             columns,
             options,
@@ -73,12 +64,16 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
         const { noWrap, sortable, selectable, expandable, allCapsHeader, multiSelect, component } = options;
 
         return (
-            <TableHead className={cx(className, classes.root)} component={component || 'thead'}>
-                <TableRow className={classes.row} component={component || 'tr'}>
-                    {expandable && <TableCell className={classes.cell} component={component} />}
+            <Root
+                // @ts-ignore: fix this
+                component={component || 'thead'}
+                className={cx(className, muiTableHeadClasses.root)}
+            >
+                <TableRow className={muiTableHeadClasses.row} component={component || 'tr'}>
+                    {expandable && <TableCell className={muiTableHeadClasses.cell} component={component} />}
 
                     {selectable && (
-                        <TableCell className={classes.cell} component={component}>
+                        <TableCell className={muiTableHeadClasses.cell} component={component}>
                             {multiSelect && selectionCount !== undefined && rowCount !== undefined && (
                                 <Checkbox
                                     indeterminate={selectionCount > 0 && selectionCount < rowCount}
@@ -89,17 +84,18 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
                         </TableCell>
                     )}
 
-                    {columns.map((column) => (
+                    {columns.map((column, index) => (
                         <TableCell
                             key={column.id}
-                            style={column.headStyle}
-                            className={cx(classes.cell, {
-                                [classes.allCaps]: allCapsHeader,
-                                [classes.cellNoWrap]: noWrap,
+                            sx={column.headStyle}
+                            className={cx(muiTableHeadClasses.cell, {
+                                [muiTableHeadClasses.allCaps]: allCapsHeader,
+                                [muiTableHeadClasses.cellNoWrap]: noWrap,
                             })}
                             align={column.align}
                             component={component}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}
+                            colSpan={index === columns.length - 1 ? 2 : undefined} // colspan over row actions column
                         >
                             {(sortable && column.sortable && (
                                 <TableSortLabel
@@ -114,13 +110,16 @@ class MuiTableHead extends React.Component<TableHeadProps & WithStyles<typeof st
                         </TableCell>
                     ))}
 
-                    {hasRowActions && (
-                        <TableCell className={cx(classes.cell, classes.cellRowActions)} component={component} />
-                    )}
+                    {/* {hasRowActions && ( */}
+                    {/* <TableCell
+                            className={cx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)}
+                            component={component}
+                        /> */}
+                    {/* )} */}
                 </TableRow>
-            </TableHead>
+            </Root>
         );
     }
 }
 
-export default withStyles(styles, { name: 'MuiEnhancedTableHead', withTheme: true })(MuiTableHead);
+export default MuiTableHead;
