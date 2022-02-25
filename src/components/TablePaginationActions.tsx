@@ -8,11 +8,9 @@ import { generateNamesObject } from '../utils';
 export const muiTablePaginationActionsClasses = generateNamesObject(['root'], 'MuiTablePaginationActions');
 
 const Root = styled(Box)(({ theme }) => ({
-    [`& .${muiTablePaginationActionsClasses.root}`]: {
-        flexShrink: 0,
-        color: theme.palette.text.secondary,
-        marginLeft: theme.spacing(2.5),
-    },
+    flexShrink: 0,
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(2.5),
 }));
 
 class TablePaginationActions extends React.Component<TablePaginationActionsProps> {

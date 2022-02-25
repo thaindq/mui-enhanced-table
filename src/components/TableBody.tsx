@@ -54,10 +54,7 @@ export const muiTableBodyClasses = generateNamesObject(
 );
 
 const Root = styled(TableBody)(({ theme }) => ({
-    [`& .${muiTableBodyClasses.root}`]: {
-        position: 'relative',
-        // height: '100%',
-    },
+    position: 'relative',
     [`& .${muiTableBodyClasses.row}`]: {
         transition: 'all ease .2s',
         '&:nth-of-type(odd)': {
@@ -437,7 +434,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                         );
                                     })}
 
-                                    {actions && (
+                                    {((isArray(actions) && actions.length > 0) || actions) && (
                                         <TableCell
                                             align="right"
                                             className={cx(

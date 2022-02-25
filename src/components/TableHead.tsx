@@ -10,7 +10,6 @@ export const muiTableHeadClasses = generateNamesObject(
 );
 
 const Root = styled(TableHead)(({ theme }) => ({
-    [`& .${muiTableHeadClasses.root}`]: {},
     [`& .${muiTableHeadClasses.row}`]: {
         height: 48,
     },
@@ -85,7 +84,7 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                         </TableCell>
                     )}
 
-                    {columns.map((column) => (
+                    {columns.map((column, index) => (
                         <TableCell
                             key={column.id}
                             sx={column.headStyle}
@@ -96,6 +95,7 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                             align={column.align}
                             component={component}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}
+                            colSpan={index === columns.length - 1 ? 2 : undefined} // colspan over row actions column
                         >
                             {(sortable && column.sortable && (
                                 <TableSortLabel
@@ -110,12 +110,12 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                         </TableCell>
                     ))}
 
-                    {hasRowActions && (
-                        <TableCell
+                    {/* {hasRowActions && ( */}
+                    {/* <TableCell
                             className={cx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)}
                             component={component}
-                        />
-                    )}
+                        /> */}
+                    {/* )} */}
                 </TableRow>
             </Root>
         );

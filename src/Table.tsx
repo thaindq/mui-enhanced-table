@@ -64,21 +64,16 @@ export const muiTableClasses = generateNamesObject(
     'MuiTable',
 );
 
-const Root = styled(Paper)(({ theme }) => ({
-    [`& .${muiTableClasses.root}`]: {
-        width: '100%',
-        // height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-    },
+const Root = styled(Paper)<TableOptions>(({ theme, showBorder }) => ({
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    border: showBorder ? `1px solid rgb(110, 110, 110)` : undefined,
     [`& .${muiTableClasses.container}`]: {
         overflowX: 'auto',
         position: 'relative',
         flexGrow: 1,
         // height: '100%'
-    },
-    [`& .${muiTableClasses.border}`]: {
-        border: `1px solid rgb(110, 110, 110)`,
     },
     [`& .${muiTableClasses.table}`]: {
         position: 'relative',
@@ -696,6 +691,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
 
         return (
             <Root
+                showBorder={showBorder}
                 elevation={showBorder ? 0 : elevation}
                 className={cx(muiTableClasses.root, className, {
                     [muiTableClasses.border]: showBorder,
