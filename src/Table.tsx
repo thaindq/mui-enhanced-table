@@ -570,9 +570,26 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
         });
     };
 
+    scrollToCenter = () => {
+        const rowsSelector = document.querySelectorAll(`[data-row-id]`);
+
+        if (rowsSelector.length) {
+            const element = rowsSelector[rowsSelector.length / 2];
+            element.scrollIntoView({ block: 'center' });
+        }
+    };
+
+    scrollToRow = (rowId: string) => {
+        const rowSelector = `[data-row-id="${rowId}"]`;
+        const element: HTMLElement | null = document.querySelector(rowSelector);
+
+        if (element) {
+            element.scrollIntoView({ block: 'center' });
+        }
+    };
+
     exportData = () => {
         const { columns, displayData } = this.state;
-
         const displayColumns = columns.filter((column) => column.display);
         const columnNames = displayColumns.map((column) => column.name);
         const data = displayData.map((item) =>

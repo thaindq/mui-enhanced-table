@@ -320,6 +320,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                         const rowJsx = (
                             <>
                                 <MuiTableRow
+                                    data-row-id={row.id}
                                     sx={style}
                                     className={rowClassName}
                                     selected={selected}
