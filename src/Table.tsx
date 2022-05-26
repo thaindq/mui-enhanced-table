@@ -29,7 +29,11 @@ import {
 } from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import { generateNamesObject, getMatcher, mergeOverwriteArray, reorder, toggleArrayItem } from './utils';
+import TableBody from './components/TableBody';
+import TableHead from './components/TableHead';
+import TablePaginationActions from './components/TablePaginationActions';
+import TableToolbar from './components/TableToolbar';
+import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
 import {
     SearchMatcher,
     SearchMatchers,
@@ -40,11 +44,7 @@ import {
     TableRowId,
     TableState,
 } from './types';
-import TableBody from './components/TableBody';
-import TableHead from './components/TableHead';
-import TablePaginationActions from './components/TablePaginationActions';
-import TableToolbar from './components/TableToolbar';
-import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
+import { generateNamesObject, getMatcher, mergeOverwriteArray, reorder, toggleArrayItem } from './utils';
 
 export const muiTableClasses = generateNamesObject(
     [
@@ -64,7 +64,13 @@ export const muiTableClasses = generateNamesObject(
     'MuiTable',
 );
 
-const Root = styled(Paper)<TableOptions>(({ theme, showBorder }) => ({
+const extraProps = generateNamesObject('showBorder');
+
+const Root = styled(Paper, {
+    shouldForwardProp: (prop) => extraProps[prop as keyof typeof extraProps] === undefined,
+})<{
+    [extraProps.showBorder]?: boolean;
+}>(({ theme, showBorder }) => ({
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
@@ -381,7 +387,10 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
 
     state: TableState<T> = MuiTable.defaultState;
 
+    tableId = '';
+
     componentDidMount = () => {
+        this.tableId = Math.random().toString(36).slice(2, 8);
         this.updateTableState(MuiTable.getNextState(MuiTable.getInitialState(this.props), MuiTable.defaultState));
     };
 
@@ -570,21 +579,47 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
         });
     };
 
-    scrollToCenter = () => {
-        const rowsSelector = document.querySelectorAll(`[data-row-id]`);
+    scrollToRow = (rowId: string) => {
+        const rowSelector = `[data-row-id="${rowId}"]`;
+        const parent = document.querySelector(`#${this.tableId}`);
+        const element: HTMLElement | null = document.querySelector(rowSelector);
 
-        if (rowsSelector.length) {
-            const element = rowsSelector[rowsSelector.length / 2];
-            element.scrollIntoView({ block: 'center' });
+        if (parent && element) {
+            this.scrollParentToChild(parent, element);
         }
     };
 
-    scrollToRow = (rowId: string) => {
-        const rowSelector = `[data-row-id="${rowId}"]`;
-        const element: HTMLElement | null = document.querySelector(rowSelector);
+    // https://stackoverflow.com/a/45411081
+    private scrollParentToChild = (parent: Element, child: Element) => {
+        // Where is the parent on page
+        const parentRect = parent.getBoundingClientRect();
 
-        if (element) {
-            element.scrollIntoView({ block: 'center' });
+        // What can you see?
+        const parentViewableArea = {
+            height: parent.clientHeight,
+            width: parent.clientWidth,
+        };
+
+        // Where is the child
+        const childRect = child.getBoundingClientRect();
+
+        // Is the child viewable?
+        const isViewable =
+            childRect.top >= parentRect.top && childRect.bottom <= parentRect.top + parentViewableArea.height;
+
+        // if you can't see the child try to scroll parent
+        if (!isViewable) {
+            // Should we scroll using top or bottom? Find the smaller ABS adjustment
+            const scrollTop = childRect.top - parentRect.top;
+            const scrollBottom = childRect.bottom - parentRect.bottom;
+
+            if (Math.abs(scrollTop) < Math.abs(scrollBottom)) {
+                // the child is near the top of the list
+                parent.scrollTop += scrollTop - parent.clientHeight / 2;
+            } else {
+                // the child is near the bottom of the list
+                parent.scrollTop += scrollBottom + (parent.clientHeight / 2 - child.clientHeight);
+            }
         }
     };
 
@@ -765,6 +800,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
                     <Droppable droppableId="droppable" direction="horizontal">
                         {(provided) => (
                             <div
+                                id={this.tableId}
                                 className={muiTableClasses.container}
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
