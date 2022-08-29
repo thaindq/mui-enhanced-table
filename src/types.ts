@@ -1,5 +1,5 @@
 import { SortDirection, TableCellProps } from '@mui/material';
-import { CSSProperties } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -33,13 +33,29 @@ export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
     dateTime?: boolean;
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
-    formatter?: Formatter<T> | ((props: FormatterProps<T>) => React.ReactNode);
+    formatter?: Formatter<T> | ((props: FormatterProps<T>) => ReactNode);
     getValue?: (item: T) => string | number;
 }
 
 export interface TableCellStatus {
     style?: CSSProperties;
     className?: string;
+}
+
+export interface TableIcons {
+    rowExpand?: ReactNode;
+    rowCollapse?: ReactNode;
+    search?: ReactNode;
+    pagination?: {
+        firstPage?: ReactNode;
+        previousPage?: ReactNode;
+        nextPage?: ReactNode;
+        lastPage?: ReactNode;
+    };
+    toolbar?: {
+        export?: ReactNode;
+        columns?: ReactNode;
+    };
 }
 
 export interface TableOptions {
@@ -81,6 +97,7 @@ export interface TableProps<T = any> {
     init?: TableInitData<T>;
     dependencies?: any[];
     components?: TableComponents<T>;
+    icons?: TableIcons;
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
     onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
     onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
@@ -111,8 +128,8 @@ export interface TableProps<T = any> {
     ) => TableCellStatus;
     onDataExport?: (content: string[][]) => void;
     onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
-    onNoDataMessage?: (data: readonly TableRow<T>[]) => React.ReactNode;
-    onErrorMessage?: (data: readonly TableRow<T>[]) => React.ReactNode;
+    onNoDataMessage?: (data: readonly TableRow<T>[]) => ReactNode;
+    onErrorMessage?: (data: readonly TableRow<T>[]) => ReactNode;
 }
 
 export interface TableState<T = any> {
@@ -147,8 +164,8 @@ export type TableInitData<T = any> = Partial<
 export interface TableAction {
     name: string;
     className?: string;
-    icon?: React.ReactNode;
-    button?: React.ReactNode;
+    icon?: ReactNode;
+    button?: ReactNode;
     disabled?: boolean;
     callback: (event: React.MouseEvent<HTMLElement>) => void;
 }
@@ -159,7 +176,14 @@ export interface TableFilter<T = any> {
     component: React.ComponentType<FilterProps<T>>;
 }
 
+export interface TableSearchProps<T = any> {
+    searchText: string;
+    displayData: readonly TableRow<T>[];
+    onChange: (value: string) => void;
+}
+
 export interface TableComponents<T = any> {
+    search?: React.ComponentType<TableSearchProps<T>>;
     filters?: TableFilter<T>[];
     actions?: TableAction[] | (() => React.ReactElement);
     customs?: React.ComponentType<TableProps<T>>[];
@@ -187,7 +211,7 @@ export interface SearchMatchers {
 }
 
 export interface Formatter<T = any> {
-    format(props: FormatterProps<T>): React.ReactNode;
+    format(props: FormatterProps<T>): ReactNode;
     getValueString(value: any, item: T): string;
 }
 

@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { isFunction } from 'lodash';
 import React from 'react';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { TableAction, TableColumn, TableColumnId, TableComponents, TableOptions } from '../types';
+import { TableAction, TableColumn, TableColumnId, TableComponents, TableIcons, TableOptions } from '../types';
 import { generateNamesObject } from '../utils';
 import TableViewColumns from './TableViewColumns';
 
@@ -43,6 +43,7 @@ interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
     columns: readonly TableColumn[];
     selectionCount: number;
     options: TableOptions;
+    icons?: TableIcons;
     onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
     onColumnsReset: () => void;
@@ -78,7 +79,7 @@ class TableToolbar extends React.Component<TableToolbarProps, State> {
     };
 
     render() {
-        const { title, columns, actions, options, onColumnToggle, onColumnDrag, onColumnsReset, onDataExport } =
+        const { title, columns, actions, options, icons, onColumnToggle, onColumnDrag, onColumnsReset, onDataExport } =
             this.props;
 
         const { viewColumnsAnchor } = this.state;
@@ -129,13 +130,13 @@ class TableToolbar extends React.Component<TableToolbarProps, State> {
                                 {exportable &&
                                     this.renderAction({
                                         name: 'Export',
-                                        icon: <GetApp />,
+                                        icon: icons?.toolbar?.export || <GetApp />,
                                         callback: onDataExport,
                                     })}
 
                                 {this.renderAction({
                                     name: 'Columns',
-                                    icon: <ViewColumn />,
+                                    icon: icons?.toolbar?.columns || <ViewColumn />,
                                     callback: (event: React.MouseEvent<HTMLElement>) => this.toggleViewColumns(event),
                                 })}
                             </>

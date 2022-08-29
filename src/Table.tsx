@@ -390,7 +390,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
     tableId = '';
 
     componentDidMount = () => {
-        this.tableId = Math.random().toString(36).slice(2, 8);
+        this.tableId = `table-${Math.random().toString(36).slice(2, 8)}`;
         this.updateTableState(MuiTable.getNextState(MuiTable.getInitialState(this.props), MuiTable.defaultState));
     };
 
@@ -533,21 +533,21 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
         });
     };
 
-    changePage = (event: React.MouseEvent<HTMLButtonElement> | null, page: number) => {
+    changePage = (page: number) => {
         this.updateTableState({
             currentPage: page,
         });
     };
 
-    changeRowsPerPage: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = (event) => {
+    changeRowsPerPage = (value: number) => {
         this.updateTableState({
-            rowsPerPage: parseInt(event.target.value),
+            rowsPerPage: value,
         });
     };
 
-    changeSearch: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = (event) => {
+    changeSearch = (keyword: string) => {
         this.updateTableState({
-            searchText: event.target.value,
+            searchText: keyword,
         });
     };
 
@@ -654,34 +654,44 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
 
         const { searchable, showPagination, rowsPerPageOptions } = options;
 
+        const icons = this.props.icons;
+
+        const SearchComponent = this.props.components?.search;
+
         return (
             <div className={muiTableClasses.paginationContainer}>
                 {searchable && (
                     <FormControl className={muiTableClasses.search}>
-                        <TextField
-                            value={searchText}
-                            onChange={this.changeSearch}
-                            // label="Search"
-                            variant="standard"
-                            // size="small"
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <Search />
-                                    </InputAdornment>
-                                ),
-                                endAdornment: !searchText ? null : (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            className={muiTableClasses.clearSearchButton}
-                                            onClick={() => this.updateTableState({ searchText: '' })}
-                                        >
-                                            <Clear fontSize="inherit" />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                        {SearchComponent ? (
+                            <SearchComponent
+                                searchText={searchText}
+                                displayData={displayData}
+                                onChange={this.changeSearch}
+                            />
+                        ) : (
+                            <TextField
+                                value={searchText}
+                                onChange={(event) => this.changeSearch(event.target.value)}
+                                // label="Search"
+                                variant="standard"
+                                // size="small"
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">{icons?.search || <Search />}</InputAdornment>
+                                    ),
+                                    endAdornment: !searchText ? null : (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                className={muiTableClasses.clearSearchButton}
+                                                onClick={() => this.updateTableState({ searchText: '' })}
+                                            >
+                                                <Clear fontSize="inherit" />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        )}
                     </FormControl>
                 )}
 
@@ -692,9 +702,9 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
                         rowsPerPage={rowsPerPage}
                         rowsPerPageOptions={rowsPerPageOptions}
                         page={currentPage}
-                        onPageChange={this.changePage}
-                        onRowsPerPageChange={this.changeRowsPerPage}
-                        ActionsComponent={TablePaginationActions}
+                        onPageChange={(event, page) => this.changePage(page)}
+                        onRowsPerPageChange={(event) => this.changeRowsPerPage(parseInt(event.target.value))}
+                        ActionsComponent={(props) => <TablePaginationActions {...props} icons={icons} />}
                     />
                 )}
             </div>
@@ -707,6 +717,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
             title,
             status,
             components,
+            icons,
             onRowClick,
             onRowSelect,
             onRowExpand,
@@ -760,6 +771,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
                         options={options}
                         selectionCount={rowSelections.length}
                         actions={actions}
+                        icons={icons}
                         onColumnToggle={this.toggleColumn}
                         onColumnDrag={this.reorderColumns}
                         onColumnsReset={this.resetColumns}

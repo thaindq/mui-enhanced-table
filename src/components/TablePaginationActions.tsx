@@ -3,6 +3,7 @@ import { IconButton, styled } from '@mui/material';
 import { TablePaginationActionsProps } from '@mui/material/TablePagination/TablePaginationActions';
 import { Box } from '@mui/system';
 import React from 'react';
+import { TableIcons } from '../types';
 import { generateNamesObject } from '../utils';
 
 export const muiTablePaginationActionsClasses = generateNamesObject(['root'], 'MuiTablePaginationActions');
@@ -13,7 +14,11 @@ const Root = styled(Box)(({ theme }) => ({
     marginLeft: theme.spacing(2.5),
 }));
 
-class TablePaginationActions extends React.Component<TablePaginationActionsProps> {
+class TablePaginationActions extends React.Component<
+    TablePaginationActionsProps & {
+        icons?: TableIcons;
+    }
+> {
     handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement> | null) => {
         this.props.onPageChange(event, 0);
     };
@@ -31,27 +36,27 @@ class TablePaginationActions extends React.Component<TablePaginationActionsProps
     };
 
     render() {
-        const { count, page, rowsPerPage } = this.props;
+        const { count, page, icons, rowsPerPage } = this.props;
 
         return (
             <Root className={muiTablePaginationActionsClasses.root}>
                 <IconButton onClick={this.handleFirstPageButtonClick} disabled={page === 0}>
-                    <FirstPage />
+                    {icons?.pagination?.firstPage || <FirstPage />}
                 </IconButton>
 
                 <IconButton onClick={this.handleBackButtonClick} disabled={page === 0}>
-                    <KeyboardArrowLeft />
+                    {icons?.pagination?.previousPage || <KeyboardArrowLeft />}
                 </IconButton>
 
                 <IconButton onClick={this.handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
-                    <KeyboardArrowRight />
+                    {icons?.pagination?.nextPage || <KeyboardArrowRight />}
                 </IconButton>
 
                 <IconButton
                     onClick={this.handleLastPageButtonClick}
                     disabled={page >= Math.ceil(count / rowsPerPage) - 1}
                 >
-                    <LastPage />
+                    {icons?.pagination?.lastPage || <LastPage />}
                 </IconButton>
             </Root>
         );

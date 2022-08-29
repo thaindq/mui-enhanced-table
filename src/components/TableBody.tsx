@@ -21,6 +21,7 @@ import {
     TableAction,
     TableColumn,
     TableComponents,
+    TableIcons,
     TableOptions,
     TableProps,
     TableRow,
@@ -165,6 +166,7 @@ interface TableBodyProps<T>
     data: readonly TableRow<T>[];
     displayData: readonly TableRow<T>[];
     options: TableOptions;
+    icons?: TableIcons;
     status?: TableStatus;
     rowCount?: number;
     rowSelections: TableRowId[];
@@ -230,6 +232,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
             displayData,
             searchMatchers,
             options,
+            icons,
             status,
             rowSelections,
             rowExpansions,
@@ -343,9 +346,13 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                                     this.handleRowExpand(row.id, row.data, rowIndex)
                                                 }
                                             >
-                                                {(expanded && (
-                                                    <ExpandLess fontSize="inherit" sx={{ position: 'absolute' }} />
-                                                )) || <ExpandMore fontSize="inherit" sx={{ position: 'absolute' }} />}
+                                                {(expanded &&
+                                                    (icons?.rowCollapse || (
+                                                        <ExpandLess fontSize="inherit" sx={{ position: 'absolute' }} />
+                                                    ))) ||
+                                                    icons?.rowExpand || (
+                                                        <ExpandMore fontSize="inherit" sx={{ position: 'absolute' }} />
+                                                    )}
                                             </IconButton>
                                         </TableCell>
                                     )}
