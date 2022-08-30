@@ -10,12 +10,12 @@ import { generateNamesObject } from '../utils';
 import TableViewColumns from './TableViewColumns';
 
 export const muiTableToolbarClasses = generateNamesObject(
-    ['root', 'highlight', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
+    ['toolbar', 'highlight', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
     'MuiTableToolbar',
 );
 
 const Root = styled(Box)(({ theme }) => ({
-    [`& .${muiTableToolbarClasses.root}`]: {
+    [`& .${muiTableToolbarClasses.toolbar}`]: {
         paddingLeft: 16,
         paddingRight: 8,
         // flexBasis: 64,
@@ -89,12 +89,12 @@ class TableToolbar extends React.Component<TableToolbarProps, State> {
         return (
             <Root>
                 <Toolbar
-                    className={cx(muiTableToolbarClasses.root, {
+                    className={cx(muiTableToolbarClasses.toolbar, {
                         // [classes.highlight]: selectionCount > 0,
                     })}
                 >
                     {showTitle && (
-                        <div className={muiTableToolbarClasses.title}>
+                        <Box className={muiTableToolbarClasses.title}>
                             {/* {selectionCount > 0 ? (
                                 <Typography color="inherit" variant="subtitle1">
                                     {selectionCount} selected
@@ -102,13 +102,13 @@ class TableToolbar extends React.Component<TableToolbarProps, State> {
                             ) : ( */}
                             <Typography variant="h6">{title}</Typography>
                             {/* )} */}
-                        </div>
+                        </Box>
                     )}
 
-                    <div className={muiTableToolbarClasses.spacer} />
+                    <Box className={muiTableToolbarClasses.spacer} />
 
                     {showActions && (
-                        <div className={muiTableToolbarClasses.actions}>
+                        <Box className={muiTableToolbarClasses.actions}>
                             {/* {selectionCount > 0 ? (
                                 this.renderAction({
                                     name: 'Delete',
@@ -141,7 +141,7 @@ class TableToolbar extends React.Component<TableToolbarProps, State> {
                                 })}
                             </>
                             {/* )} */}
-                        </div>
+                        </Box>
                     )}
                 </Toolbar>
 

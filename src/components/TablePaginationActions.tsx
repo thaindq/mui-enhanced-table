@@ -6,7 +6,10 @@ import React from 'react';
 import { TableIcons } from '../types';
 import { generateNamesObject } from '../utils';
 
-export const muiTablePaginationActionsClasses = generateNamesObject(['root'], 'MuiTablePaginationActions');
+export const muiTablePaginationActionsClasses = generateNamesObject(
+    ['root', 'firstPageButton', 'previousPageButton', 'nextPageButton', 'lastPageButton'],
+    'MuiTablePaginationActions',
+);
 
 const Root = styled(Box)(({ theme }) => ({
     flexShrink: 0,
@@ -40,19 +43,32 @@ class TablePaginationActions extends React.Component<
 
         return (
             <Root className={muiTablePaginationActionsClasses.root}>
-                <IconButton onClick={this.handleFirstPageButtonClick} disabled={page === 0}>
+                <IconButton
+                    className={muiTablePaginationActionsClasses.firstPageButton}
+                    onClick={this.handleFirstPageButtonClick}
+                    disabled={page === 0}
+                >
                     {icons?.pagination?.firstPage || <FirstPage />}
                 </IconButton>
 
-                <IconButton onClick={this.handleBackButtonClick} disabled={page === 0}>
+                <IconButton
+                    className={muiTablePaginationActionsClasses.previousPageButton}
+                    onClick={this.handleBackButtonClick}
+                    disabled={page === 0}
+                >
                     {icons?.pagination?.previousPage || <KeyboardArrowLeft />}
                 </IconButton>
 
-                <IconButton onClick={this.handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
+                <IconButton
+                    className={muiTablePaginationActionsClasses.nextPageButton}
+                    onClick={this.handleNextButtonClick}
+                    disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                >
                     {icons?.pagination?.nextPage || <KeyboardArrowRight />}
                 </IconButton>
 
                 <IconButton
+                    className={muiTablePaginationActionsClasses.lastPageButton}
                     onClick={this.handleLastPageButtonClick}
                     disabled={page >= Math.ceil(count / rowsPerPage) - 1}
                 >

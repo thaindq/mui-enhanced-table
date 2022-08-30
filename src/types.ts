@@ -1,4 +1,4 @@
-import { SortDirection, TableCellProps } from '@mui/material';
+import { SortDirection, TableCellProps, TextFieldProps } from '@mui/material';
 import { CSSProperties, ReactNode } from 'react';
 
 export type TableRowId = string;
@@ -97,6 +97,7 @@ export interface TableProps<T = any> {
     init?: TableInitData<T>;
     dependencies?: any[];
     components?: TableComponents<T>;
+    defaultComponentProps?: DefaultTableComponentProps;
     icons?: TableIcons;
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
     onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
@@ -196,6 +197,10 @@ export interface TableComponents<T = any> {
     rowActions?:
         | ((rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement | TableAction[])
         | TableAction[];
+}
+
+export interface DefaultTableComponentProps {
+    SearchProps?: Partial<TextFieldProps>;
 }
 
 export interface SearchMatcher {
