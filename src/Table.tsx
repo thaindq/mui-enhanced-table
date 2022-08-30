@@ -675,7 +675,8 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
 
         const { filters, customs, customsBottom, rowExpand, rowActions, actions } = components || {};
 
-        const SearchComponent = components?.search;
+        const SearchComponent = components?.search || TableSearch;
+        const ToolbarComponent = components?.toolbar || TableToolbar;
         const displayColumns = columns.filter((column) => column.display || !column.name);
         const currentPageData = showPagination
             ? displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage)
@@ -696,7 +697,7 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
                 <Grid container className={muiTableClasses.topContainer}>
                     {showToolbar && (
                         <Grid item xs={12}>
-                            <TableToolbar
+                            <ToolbarComponent
                                 title={title}
                                 columns={columns}
                                 options={options}
@@ -746,22 +747,12 @@ export class MuiTable<T = any> extends React.Component<TableProps<T>, TableState
 
                     <Grid item xs={6} className={muiTableClasses.searchContainer}>
                         {searchable && (
-                            <>
-                                {SearchComponent ? (
-                                    <SearchComponent
-                                        searchText={searchText}
-                                        displayData={displayData}
-                                        onChange={this.changeSearch}
-                                    />
-                                ) : (
-                                    <TableSearch
-                                        searchText={searchText}
-                                        displayData={displayData}
-                                        onChange={this.changeSearch}
-                                        TextFieldProps={defaultComponentProps?.SearchProps}
-                                    />
-                                )}
-                            </>
+                            <SearchComponent
+                                searchText={searchText}
+                                displayData={displayData}
+                                onChange={this.changeSearch}
+                                TextFieldProps={defaultComponentProps?.SearchProps}
+                            />
                         )}
                     </Grid>
 

@@ -12,3 +12,5 @@ export * from './TableToolbar';
 
 export { default as TableViewColumns } from './TableViewColumns';
 export * from './TableViewColumns';
+
+export * from './TableSearch';

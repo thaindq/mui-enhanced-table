@@ -38,9 +38,9 @@ const Root = styled(Box)(({ theme }) => ({
     [`& .${muiTableToolbarClasses.viewColumnsContainer}`]: {},
 }));
 
-interface TableToolbarProps extends Pick<TableComponents, 'actions'> {
+export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actions'> {
     title?: string;
-    columns: readonly TableColumn[];
+    columns: readonly TableColumn<T>[];
     selectionCount: number;
     options: TableOptions;
     icons?: TableIcons;

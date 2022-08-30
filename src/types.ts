@@ -1,5 +1,6 @@
 import { SortDirection, TableCellProps, TextFieldProps } from '@mui/material';
 import { CSSProperties, ReactNode } from 'react';
+import { TableToolbarProps, TableSearchProps } from './components';
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -177,14 +178,9 @@ export interface TableFilter<T = any> {
     component: React.ComponentType<FilterProps<T>>;
 }
 
-export interface TableSearchProps<T = any> {
-    searchText: string;
-    displayData: readonly TableRow<T>[];
-    onChange: (value: string) => void;
-}
-
 export interface TableComponents<T = any> {
-    search?: React.ComponentType<TableSearchProps<T>>;
+    search?: React.ComponentType<Omit<TableSearchProps<T>, 'TextFieldProps'>>;
+    toolbar?: React.ComponentType<TableToolbarProps>;
     filters?: TableFilter<T>[];
     actions?: TableAction[] | (() => React.ReactElement);
     customs?: React.ComponentType<TableProps<T>>[];
