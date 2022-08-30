@@ -486,4 +486,4 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
     }
 }
 
-export default MuiTableBody;
+export { MuiTableBody as TableBody };

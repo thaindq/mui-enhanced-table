@@ -13,5 +13,3 @@ export abstract class BaseFilter<Props = {}, State = {}, T = any> extends React.
 
     abstract updateFilter(): void;
 }
-
-export default BaseFilter;

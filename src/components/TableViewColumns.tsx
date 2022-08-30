@@ -69,7 +69,7 @@ interface TableViewColumnProps {
     onColumnsReset: () => void;
 }
 
-class TableViewColumns extends React.Component<TableViewColumnProps> {
+export class TableViewColumns extends React.Component<TableViewColumnProps> {
     renderCheckbox = (column: TableColumn) => {
         const { onColumnToggle } = this.props;
 
@@ -150,5 +150,3 @@ class TableViewColumns extends React.Component<TableViewColumnProps> {
         );
     }
 }
-
-export default TableViewColumns;

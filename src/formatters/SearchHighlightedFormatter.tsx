@@ -1,8 +1,8 @@
 import React from 'react';
-import BaseFormatter from './BaseFormatter';
+import { BaseFormatter } from './BaseFormatter';
 import { FormatterProps } from '../types';
 
-class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
+export class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
     static instance: SearchHighlightedFormatter;
 
     static getInstance() {
@@ -45,5 +45,3 @@ class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
         );
     }
 }
-
-export default SearchHighlightedFormatter;

@@ -17,7 +17,7 @@ const Root = styled(Box)(({ theme }) => ({
     marginLeft: theme.spacing(2.5),
 }));
 
-class TablePaginationActions extends React.Component<
+export class TablePaginationActions extends React.Component<
     TablePaginationActionsProps & {
         icons?: TableIcons;
     }
@@ -78,5 +78,3 @@ class TablePaginationActions extends React.Component<
         );
     }
 }
-
-export default TablePaginationActions;

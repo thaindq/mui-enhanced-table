@@ -56,7 +56,6 @@ class MuiTableHead extends React.Component<TableHeadProps> {
             rowCount,
             sortBy,
             sortDirection,
-            hasRowActions,
             onToggleSelectAll,
             onSortData,
         } = this.props;
@@ -122,4 +121,4 @@ class MuiTableHead extends React.Component<TableHeadProps> {
     }
 }
 
-export default MuiTableHead;
+export { MuiTableHead as TableHead };

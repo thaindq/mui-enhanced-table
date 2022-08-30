@@ -9,5 +9,3 @@ export abstract class BaseFormatter<T = any> implements Formatter<T> {
         return toString(value);
     }
 }
-
-export default BaseFormatter;

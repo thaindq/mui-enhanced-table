@@ -1,4 +1,4 @@
-import { FormControl, Grid, Paper, SortDirection, styled, Table, TablePagination } from '@mui/material';
+import { Grid, Paper, SortDirection, styled, Table, TablePagination } from '@mui/material';
 import { Box } from '@mui/system';
 import cx from 'classnames';
 import {
@@ -18,12 +18,12 @@ import {
 } from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import TableBody from './components/TableBody';
-import TableHead from './components/TableHead';
-import TablePaginationActions from './components/TablePaginationActions';
+import { TableBody } from './components/TableBody';
+import { TableHead } from './components/TableHead';
+import { TablePaginationActions } from './components/TablePaginationActions';
 import { TableSearch } from './components/TableSearch';
-import TableToolbar from './components/TableToolbar';
-import SearchHighlightedFormatter from './formatters/SearchHighlightedFormatter';
+import { TableToolbar } from './components/TableToolbar';
+import { SearchHighlightedFormatter } from './formatters/SearchHighlightedFormatter';
 import {
     SearchMatcher,
     SearchMatchers,
@@ -80,9 +80,7 @@ const Root = styled(Paper, {
     [`& .${muiTableClasses.topContainer}`]: {
         display: 'flex',
     },
-    [`& .${muiTableClasses.searchContainer}`]: {
-        paddingLeft: 16,
-    },
+    [`& .${muiTableClasses.searchContainer}`]: {},
     [`& .${muiTableClasses.paginationContainer}`]: {
         display: 'flex',
         flexShrink: 0,

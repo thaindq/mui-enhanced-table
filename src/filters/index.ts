@@ -1,1 +1,1 @@
-export { default as BaseFilter } from './BaseFilter';
+export * from './BaseFilter';

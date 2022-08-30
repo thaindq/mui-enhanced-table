@@ -7,7 +7,7 @@ import React from 'react';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
 import { TableAction, TableColumn, TableColumnId, TableComponents, TableIcons, TableOptions } from '../types';
 import { generateNamesObject } from '../utils';
-import TableViewColumns from './TableViewColumns';
+import { TableViewColumns } from './TableViewColumns';
 
 export const muiTableToolbarClasses = generateNamesObject(
     ['toolbar', 'highlight', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
@@ -54,7 +54,7 @@ interface State {
     viewColumnsAnchor: Element | null;
 }
 
-class TableToolbar extends React.Component<TableToolbarProps, State> {
+export class TableToolbar extends React.Component<TableToolbarProps, State> {
     state: State = {
         viewColumnsAnchor: null,
     };
@@ -176,5 +176,3 @@ class TableToolbar extends React.Component<TableToolbarProps, State> {
         );
     }
 }
-
-export default TableToolbar;
