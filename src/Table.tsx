@@ -76,7 +76,7 @@ const Root = styled(Paper, {
     [`& .${muiTableClasses.table}`]: {
         position: 'relative',
         display: 'table',
-        height: 'calc(100% - 1px)',
+        // height: 'calc(100% - 1px)',
     },
     [`& .${muiTableClasses.topContainer}`]: {
         display: 'flex',

@@ -1,10 +1,10 @@
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import {
     Checkbox,
-    CircularProgress,
     Icon,
     IconButton,
     Radio,
+    Skeleton,
     styled,
     TableBody,
     TableCell,
@@ -50,6 +50,7 @@ export const muiTableBodyClasses = generateNamesObject(
         'cellSelectionControl',
         'messageWrapper',
         'message',
+        'skeleton',
     ],
     'MuiTableBody',
 );
@@ -263,32 +264,47 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
         // const colSpan = columns.length + (selectable ? 1 : 0);
         const isLoading = status === 'pending';
         const hasError = status === 'rejected';
-        const shouldShowLoading = isLoading && (respectDataStatus || !displayData.length);
+        const shouldShowLoader = isLoading && (respectDataStatus || !displayData.length);
         const shouldShowError = hasError && (respectDataStatus || !displayData.length);
         const shouldShowNoData = !isLoading && !hasError && !displayData.length;
-        const hasMessage = shouldShowLoading || shouldShowError || shouldShowNoData;
+        const hasMessage = shouldShowLoader || shouldShowError || shouldShowNoData;
 
         return (
             <Root
                 // @ts-ignore: fix this
                 component={component || 'tbody'}
                 className={cx(className, muiTableBodyClasses.root)}
-                sx={{
-                    display: hasMessage ? undefined : 'table-footer-group',
-                }}
+                // sx={{
+                //     display: hasMessage ? undefined : 'table-footer-group',
+                // }}
             >
                 {(hasMessage && (
-                    <MuiTableRow component={component || 'tr'}>
-                        <TableCell colSpan={1000} component={component}>
-                            <div className={muiTableBodyClasses.messageWrapper}>
-                                <div className={muiTableBodyClasses.message}>
-                                    {shouldShowLoading && <CircularProgress size={40} />}
-                                    {shouldShowError &&
-                                        (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
-                                    {shouldShowNoData && (onNoDataMessage?.(data) || <Typography>No data</Typography>)}
+                    <MuiTableRow
+                        component={component || 'tr'}
+                        style={{ verticalAlign: `${shouldShowLoader ? 'top' : 'center'} !important` }}
+                    >
+                        {shouldShowLoader ? (
+                            <>
+                                {columns.map((item, index) => (
+                                    <TableCell key={index} component={component}>
+                                        <Skeleton animation="wave" className={muiTableBodyClasses.skeleton} />
+                                        <Skeleton animation="wave" className={muiTableBodyClasses.skeleton} />
+                                        <Skeleton animation="wave" className={muiTableBodyClasses.skeleton} />
+                                    </TableCell>
+                                ))}
+                            </>
+                        ) : (
+                            <TableCell colSpan={1000} component={component}>
+                                <div className={muiTableBodyClasses.messageWrapper}>
+                                    <div className={muiTableBodyClasses.message}>
+                                        {shouldShowError &&
+                                            (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
+                                        {shouldShowNoData &&
+                                            (onNoDataMessage?.(data) || <Typography>No data</Typography>)}
+                                    </div>
                                 </div>
-                            </div>
-                        </TableCell>
+                            </TableCell>
+                        )}
                     </MuiTableRow>
                 )) ||
                     displayData.map((row, rowIndex) => {
