@@ -1,4 +1,4 @@
-import { GetApp, ViewColumn } from '@mui/icons-material';
+import { GetApp, Refresh, ViewColumn } from '@mui/icons-material';
 import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import cx from 'classnames';
@@ -48,6 +48,7 @@ export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actio
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
     onColumnsReset: () => void;
     onDataExport: () => void;
+    onDataRefresh?: () => void;
 }
 
 interface State {
@@ -79,8 +80,18 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
     };
 
     render() {
-        const { title, columns, actions, options, icons, onColumnToggle, onColumnDrag, onColumnsReset, onDataExport } =
-            this.props;
+        const {
+            title,
+            columns,
+            actions,
+            options,
+            icons,
+            onColumnToggle,
+            onColumnDrag,
+            onColumnsReset,
+            onDataExport,
+            onDataRefresh,
+        } = this.props;
 
         const { viewColumnsAnchor } = this.state;
 
@@ -126,6 +137,13 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
                                                   </React.Fragment>
                                               );
                                           }))}
+
+                                {onDataRefresh &&
+                                    this.renderAction({
+                                        name: 'Refresh',
+                                        icon: icons?.toolbar?.export || <Refresh />,
+                                        callback: onDataRefresh,
+                                    })}
 
                                 {exportable &&
                                     this.renderAction({

@@ -54,6 +54,7 @@ export interface TableIcons {
         lastPage?: ReactNode;
     };
     toolbar?: {
+        refresh?: ReactNode;
         export?: ReactNode;
         columns?: ReactNode;
     };
@@ -87,10 +88,24 @@ export interface TableOptions {
     component?: 'div';
 }
 
+export interface DataQuery {
+    pageNumber: number;
+    pageSize: number;
+    searchText: string;
+    sortBy: string;
+    sortDirection: SortDirection;
+    filters: any[];
+}
+
+export interface PaginatedData<T = any> {
+    items: T[];
+    itemCount: number;
+}
+
 export interface TableProps<T = any> {
     className?: string;
     title?: string;
-    data: readonly T[];
+    data: readonly T[] | ((query: DataQuery) => Promise<PaginatedData<T>>);
     dataId?: string | ((data: T) => string);
     columns: readonly TableColumn<T>[];
     status?: TableStatus;
@@ -138,9 +153,12 @@ export interface TableState<T = any> {
     columns: readonly TableColumn<T>[];
     originalColumns: readonly TableColumn<T>[];
     data: readonly TableRow<T>[];
-    originalData: readonly T[];
+    originalData: TableProps<T>['data'];
+    status: TableStatus;
+    itemCount: number;
     displayData: readonly TableRow<T>[];
     filteredData: (TableRowId[] | null)[];
+    filterExtra: any[];
     rowExpansions: TableRowId[];
     rowSelections: TableRowId[];
     sortBy: TableColumnId;
@@ -229,5 +247,5 @@ export interface FilterProps<T = any> {
     filterBy: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: readonly TableRow<T>[];
     displayData: readonly TableRow<T>[];
-    onUpdateFilter: (matchedRowIds: TableRowId[] | null) => void;
+    onUpdateFilter: (matchedRowIds: TableRowId[] | null, extra?: any) => void;
 }
