@@ -84,8 +84,7 @@ export interface TableOptions {
     highlightRow?: boolean;
     highlightColumn?: boolean;
     alternativeRowColor?: boolean;
-    dataLimit?: number;
-    component?: 'div';
+    skeletonRows?: number;
 }
 
 export interface DataQuery {
@@ -167,7 +166,7 @@ export interface TableState<T = any> {
     rowsPerPage: number;
     searchText: string;
     searchMatchers: SearchMatchers | null;
-    options: TableOptions;
+    options: Required<TableOptions>;
     dependencies?: any[];
 }
 

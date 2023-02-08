@@ -60,19 +60,15 @@ class MuiTableHead extends React.Component<TableHeadProps> {
             onSortData,
         } = this.props;
 
-        const { noWrap, sortable, selectable, expandable, allCapsHeader, multiSelect, component } = options;
+        const { noWrap, sortable, selectable, expandable, allCapsHeader, multiSelect } = options;
 
         return (
-            <Root
-                // @ts-ignore: fix this
-                component={component || 'thead'}
-                className={cx(className, muiTableHeadClasses.root)}
-            >
-                <TableRow className={muiTableHeadClasses.row} component={component || 'tr'}>
-                    {expandable && <TableCell className={muiTableHeadClasses.cell} component={component} />}
+            <Root className={cx(className, muiTableHeadClasses.root)}>
+                <TableRow className={muiTableHeadClasses.row}>
+                    {expandable && <TableCell className={muiTableHeadClasses.cell} />}
 
                     {selectable && (
-                        <TableCell className={muiTableHeadClasses.cell} component={component}>
+                        <TableCell className={muiTableHeadClasses.cell}>
                             {multiSelect && selectionCount !== undefined && rowCount !== undefined && (
                                 <Checkbox
                                     indeterminate={selectionCount > 0 && selectionCount < rowCount}
@@ -92,7 +88,6 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                                 [muiTableHeadClasses.cellNoWrap]: noWrap,
                             })}
                             align={column.align}
-                            component={component}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}
                             colSpan={index === columns.length - 1 ? 2 : undefined} // colspan over row actions column
                         >
@@ -112,7 +107,6 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                     {/* {hasRowActions && ( */}
                     {/* <TableCell
                             className={cx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)}
-                            component={component}
                         /> */}
                     {/* )} */}
                 </TableRow>

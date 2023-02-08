@@ -166,7 +166,7 @@ interface TableBodyProps<T>
     columns: TableColumn<T>[];
     data: readonly TableRow<T>[];
     displayData: readonly TableRow<T>[];
-    options: TableOptions;
+    options: Required<TableOptions>;
     icons?: TableIcons;
     status?: TableStatus;
     rowCount?: number;
@@ -257,7 +257,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
             showHeader,
             respectDataStatus,
             stickyHeader,
-            component,
+            skeletonRows,
         } = options;
 
         // const emptyRows = displayData.length === 0 ? 1 : (rowCount || 0) - displayData.length;
@@ -271,30 +271,31 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
 
         return (
             <Root
-                // @ts-ignore: fix this
-                component={component || 'tbody'}
                 className={cx(className, muiTableBodyClasses.root)}
                 // sx={{
                 //     display: hasMessage ? undefined : 'table-footer-group',
                 // }}
             >
                 {(hasMessage && (
-                    <MuiTableRow
-                        component={component || 'tr'}
-                        style={{ verticalAlign: `${shouldShowLoader ? 'top' : 'center'} !important` }}
-                    >
+                    <MuiTableRow style={{ verticalAlign: `${shouldShowLoader ? 'top' : 'center'} !important` }}>
                         {shouldShowLoader ? (
                             <>
                                 {columns.map((item, index) => (
-                                    <TableCell key={index} component={component}>
-                                        <Skeleton animation="wave" className={muiTableBodyClasses.skeleton} />
-                                        <Skeleton animation="wave" className={muiTableBodyClasses.skeleton} />
-                                        <Skeleton animation="wave" className={muiTableBodyClasses.skeleton} />
+                                    <TableCell key={index}>
+                                        {Array(skeletonRows)
+                                            .fill(0)
+                                            .map((_, index) => (
+                                                <Skeleton
+                                                    key={index}
+                                                    animation="wave"
+                                                    className={muiTableBodyClasses.skeleton}
+                                                />
+                                            ))}
                                     </TableCell>
                                 ))}
                             </>
                         ) : (
-                            <TableCell colSpan={1000} component={component}>
+                            <TableCell colSpan={1000}>
                                 <div className={muiTableBodyClasses.messageWrapper}>
                                     <div className={muiTableBodyClasses.message}>
                                         {shouldShowError &&
@@ -344,7 +345,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                     className={rowClassName}
                                     selected={selected}
                                     hover={highlightRow}
-                                    component={component || 'tr'}
                                     onClick={(event: any) => {
                                         +event.stopPropagation() ||
                                             disabled ||
@@ -352,10 +352,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                     }}
                                 >
                                     {expandable && (
-                                        <TableCell
-                                            className={cx(cellClassName, muiTableBodyClasses.cellExpandButton)}
-                                            component={component}
-                                        >
+                                        <TableCell className={cx(cellClassName, muiTableBodyClasses.cellExpandButton)}>
                                             <IconButton
                                                 onClick={(event) =>
                                                     +event.stopPropagation() ||
@@ -376,7 +373,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                     {selectable && (
                                         <TableCell
                                             className={cx(cellClassName, muiTableBodyClasses.cellSelectionControl)}
-                                            component={component}
                                         >
                                             {(multiSelect && (
                                                 <Checkbox
@@ -436,7 +432,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                                     [muiTableBodyClasses.cellNoWrap]: noWrap,
                                                 })}
                                                 align={column.align}
-                                                component={component}
                                                 onClick={() =>
                                                     (onCellClick &&
                                                         +onCellClick(
@@ -466,7 +461,6 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                                 muiTableBodyClasses.cellRowActions,
                                                 muiTableBodyClasses.cellNoWrap,
                                             )}
-                                            component={component}
                                         >
                                             {isArray(actions) ? actions.map(this.renderAction) : actions}
                                         </TableCell>
@@ -474,12 +468,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                 </MuiTableRow>
 
                                 {expanded && RowExpandComponent && (
-                                    <MuiTableRow component={component || 'tr'}>
-                                        <TableCell
-                                            colSpan={100}
-                                            className={muiTableBodyClasses.cellExpanded}
-                                            component={component}
-                                        >
+                                    <MuiTableRow>
+                                        <TableCell colSpan={100} className={muiTableBodyClasses.cellExpanded}>
                                             <RowExpandComponent id={row.id} data={row.data} index={rowIndex} />
                                         </TableCell>
                                     </MuiTableRow>

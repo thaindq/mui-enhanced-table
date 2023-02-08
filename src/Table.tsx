@@ -173,6 +173,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             highlightColumn: false,
             alternativeRowColor: true,
             elevation: 1,
+            skeletonRows: 3,
+            exportable: false,
         },
     };
 
@@ -328,10 +330,6 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 );
             }
 
-            if (options.dataLimit) {
-                displayData = displayData.slice(0, options.dataLimit);
-            }
-
             currentPage = options.showPagination
                 ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
                 : 0;
@@ -342,7 +340,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             searchMatchers,
             displayData,
             currentPage,
-            itemCount: mergedState.itemCount ?? displayData.length,
+            itemCount: displayData.length,
         };
     };
 
@@ -631,6 +629,12 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         }
     };
 
+    refreshData = () => {
+        if (this.shouldFetchData()) {
+            this.updateTableState({}, undefined, true);
+        }
+    };
+
     // https://stackoverflow.com/a/45411081
     private scrollParentToChild = (parent: Element, child: Element) => {
         // Where is the parent on page
@@ -732,7 +736,6 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             elevation,
             rowsPerPageOptions,
             searchable,
-            component,
         } = options as Required<TableOptions>;
 
         const { filters, customs, customsBottom, rowExpand, rowActions, actions } = components || {};
@@ -772,11 +775,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                 onColumnDrag={this.reorderColumns}
                                 onColumnsReset={this.resetColumns}
                                 onDataExport={this.exportData}
-                                onDataRefresh={
-                                    this.shouldFetchData()
-                                        ? () => this.updateTableState({}, undefined, true)
-                                        : undefined
-                                }
+                                onDataRefresh={this.shouldFetchData() ? this.refreshData : undefined}
                             />
                         </Grid>
                     )}
@@ -851,12 +850,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
                             >
-                                <Table
-                                    size="small"
-                                    className={muiTableClasses.table}
-                                    stickyHeader={stickyHeader}
-                                    component={component}
-                                >
+                                <Table size="small" className={muiTableClasses.table} stickyHeader={stickyHeader}>
                                     {showHeader && (
                                         <TableHead
                                             columns={displayColumns}
@@ -875,7 +869,12 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                         columns={displayColumns}
                                         data={data}
                                         displayData={currentPageData}
-                                        options={options}
+                                        options={{
+                                            ...options,
+                                            respectDataStatus: this.shouldFetchData()
+                                                ? true
+                                                : options.respectDataStatus,
+                                        }}
                                         status={status}
                                         searchMatchers={searchMatchers}
                                         rowCount={showPagination ? rowsPerPage : displayData.length}
