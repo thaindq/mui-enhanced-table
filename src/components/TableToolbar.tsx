@@ -52,31 +52,34 @@ export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actio
 }
 
 interface State {
-    viewColumnsAnchor: Element | null;
+    showViewColumns: boolean;
 }
 
-export class TableToolbar extends React.Component<TableToolbarProps, State> {
-    state: State = {
-        viewColumnsAnchor: null,
-    };
-
-    toggleViewColumns = (event: React.MouseEvent<HTMLElement>) => {
-        const target = event.target as HTMLElement;
-        this.setState((prevState) => ({
-            viewColumnsAnchor: prevState.viewColumnsAnchor ? null : target,
-        }));
-    };
-
-    renderAction = (action: TableAction) => {
+export const Action = React.forwardRef<HTMLButtonElement, TableAction>(
+    ({ className, name, callback, disabled, icon }, ref) => {
         return (
-            <Tooltip title={action.name}>
+            <Tooltip title={name}>
                 <div>
-                    <IconButton onClick={action.callback} disabled={action.disabled}>
-                        {action.icon ? action.icon : <Icon className={action.className} />}
+                    <IconButton onClick={callback} disabled={disabled} ref={ref}>
+                        {icon ? icon : <Icon className={className} />}
                     </IconButton>
                 </div>
             </Tooltip>
         );
+    },
+);
+
+export class TableToolbar extends React.Component<TableToolbarProps, State> {
+    state: State = {
+        showViewColumns: false,
+    };
+
+    viewColumnsButtonRef = React.createRef<HTMLButtonElement>();
+
+    toggleViewColumns = () => {
+        this.setState((prevState) => ({
+            showViewColumns: !prevState.showViewColumns,
+        }));
     };
 
     render() {
@@ -93,8 +96,7 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
             onDataRefresh,
         } = this.props;
 
-        const { viewColumnsAnchor } = this.state;
-
+        const { showViewColumns } = this.state;
         const { exportable, showTitle, showActions } = options;
 
         return (
@@ -130,33 +132,40 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
                                 {actions &&
                                     (isFunction(actions)
                                         ? actions()
-                                        : actions.map((action, index) => {
+                                        : actions.map(({ name, icon, callback, className }, index) => {
                                               return (
-                                                  <React.Fragment key={index}>
-                                                      {this.renderAction(action)}
-                                                  </React.Fragment>
+                                                  <Action
+                                                      key={index}
+                                                      className={className}
+                                                      name={name}
+                                                      icon={icon}
+                                                      callback={callback}
+                                                  />
                                               );
                                           }))}
 
-                                {onDataRefresh &&
-                                    this.renderAction({
-                                        name: 'Refresh',
-                                        icon: icons?.toolbar?.export || <Refresh />,
-                                        callback: onDataRefresh,
-                                    })}
+                                {onDataRefresh && (
+                                    <Action
+                                        name="Refresh"
+                                        icon={icons?.toolbar?.export || <Refresh />}
+                                        callback={onDataRefresh}
+                                    />
+                                )}
 
-                                {exportable &&
-                                    this.renderAction({
-                                        name: 'Export',
-                                        icon: icons?.toolbar?.export || <GetApp />,
-                                        callback: onDataExport,
-                                    })}
+                                {exportable && (
+                                    <Action
+                                        name="Export"
+                                        icon={icons?.toolbar?.export || <GetApp />}
+                                        callback={onDataExport}
+                                    />
+                                )}
 
-                                {this.renderAction({
-                                    name: 'Columns',
-                                    icon: icons?.toolbar?.columns || <ViewColumn />,
-                                    callback: (event: React.MouseEvent<HTMLElement>) => this.toggleViewColumns(event),
-                                })}
+                                <Action
+                                    name="Columns"
+                                    icon={icons?.toolbar?.columns || <ViewColumn />}
+                                    callback={this.toggleViewColumns}
+                                    ref={this.viewColumnsButtonRef}
+                                />
                             </>
                             {/* )} */}
                         </Box>
@@ -165,8 +174,8 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
 
                 <Popover
                     disablePortal
-                    open={!!viewColumnsAnchor}
-                    anchorEl={viewColumnsAnchor}
+                    open={!!showViewColumns}
+                    anchorEl={this.viewColumnsButtonRef.current}
                     onClose={this.toggleViewColumns}
                     anchorOrigin={{
                         vertical: 'bottom',
@@ -178,9 +187,9 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
                     }}
                     PaperProps={{
                         className: muiTableToolbarClasses.viewColumnsContainer,
-                        style: {
-                            transform: viewColumnsAnchor ? 'none !important' : '', // https://github.com/atlassian/react-beautiful-dnd/issues/1329
-                        },
+                        // style: {
+                        //     transform: viewColumnsAnchor ? 'none !important' : '', // https://github.com/atlassian/react-beautiful-dnd/issues/1329
+                        // },
                     }}
                 >
                     <TableViewColumns
