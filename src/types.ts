@@ -108,6 +108,8 @@ export interface TableProps<T = any> {
     dataId?: string | ((data: T) => string);
     columns: readonly TableColumn<T>[];
     status?: TableStatus;
+    isLoading?: boolean;
+    isError?: boolean;
     options?: TableOptions;
     init?: TableInitData<T>;
     dependencies?: any[];
@@ -154,6 +156,8 @@ export interface TableState<T = any> {
     data: readonly TableRow<T>[];
     originalData: TableProps<T>['data'];
     status: TableStatus;
+    isLoading: boolean;
+    isError: boolean;
     itemCount: number;
     displayData: readonly TableRow<T>[];
     filteredData: (TableRowId[] | null)[];

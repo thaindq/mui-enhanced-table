@@ -169,6 +169,8 @@ interface TableBodyProps<T>
     options: Required<TableOptions>;
     icons?: TableIcons;
     status?: TableStatus;
+    isLoading?: boolean;
+    isError?: boolean;
     rowCount?: number;
     rowSelections: TableRowId[];
     rowExpansions: TableRowId[];
@@ -235,6 +237,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
             options,
             icons,
             status,
+            isLoading: isLoadingProp,
+            isError,
             rowSelections,
             rowExpansions,
             rowActions,
@@ -262,8 +266,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
 
         // const emptyRows = displayData.length === 0 ? 1 : (rowCount || 0) - displayData.length;
         // const colSpan = columns.length + (selectable ? 1 : 0);
-        const isLoading = status === 'pending';
-        const hasError = status === 'rejected';
+        const isLoading = status === 'pending' || isLoadingProp;
+        const hasError = status === 'rejected' || isError;
         const shouldShowLoader = isLoading && (respectDataStatus || !displayData.length);
         const shouldShowError = hasError && (respectDataStatus || !displayData.length);
         const shouldShowNoData = !isLoading && !hasError && !displayData.length;

@@ -138,6 +138,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         data: [],
         originalData: [],
         status: 'idle',
+        isLoading: false,
+        isError: false,
         itemCount: 0,
         displayData: [],
         filteredData: [],
@@ -405,6 +407,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                         (newValues.filterExtra !== undefined && !isEqual(newValues.filterExtra, currState.filterExtra))
                     ) {
                         newValues.status = 'pending';
+                        newValues.isLoading = true;
+                        newValues.isError = false;
                         this.state
                             .originalData({
                                 pageNumber: (newValues.currentPage ?? currState.currentPage) + 1,
@@ -418,6 +422,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                 const data = MuiTable.mapDataToTableRow(items);
                                 this.setState({
                                     status: 'fulfilled',
+                                    isLoading: false,
+                                    isError: false,
                                     data,
                                     displayData: data,
                                     itemCount,
@@ -426,6 +432,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                             .catch(() => {
                                 this.setState({
                                     status: 'rejected',
+                                    isLoading: false,
+                                    isError: true,
                                 });
                             });
                     }
@@ -748,6 +756,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 ? displayData
                 : displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage);
         const status = this.shouldFetchData() ? this.state.status : this.props.status;
+        const isLoading = this.shouldFetchData() ? this.state.isLoading : this.props.isLoading;
+        const isError = this.shouldFetchData() ? this.state.isError : this.props.isError;
 
         return (
             <Root
@@ -876,6 +886,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                                 : options.respectDataStatus,
                                         }}
                                         status={status}
+                                        isLoading={isLoading}
+                                        isError={isError}
                                         searchMatchers={searchMatchers}
                                         rowCount={showPagination ? rowsPerPage : displayData.length}
                                         rowSelections={rowSelections}
