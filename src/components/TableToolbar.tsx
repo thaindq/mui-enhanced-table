@@ -147,7 +147,7 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
                                 {onDataRefresh && (
                                     <Action
                                         name="Refresh"
-                                        icon={icons?.toolbar?.export || <Refresh />}
+                                        icon={icons?.toolbar?.refresh || <Refresh />}
                                         callback={onDataRefresh}
                                     />
                                 )}
