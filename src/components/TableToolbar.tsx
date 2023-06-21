@@ -5,7 +5,15 @@ import cx from 'classnames';
 import { isFunction } from 'lodash';
 import React from 'react';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
-import { TableAction, TableColumn, TableColumnId, TableComponents, TableIcons, TableOptions } from '../types';
+import {
+    TableAction,
+    TableColumn,
+    TableColumnId,
+    TableComponents,
+    TableIcons,
+    TableOptions,
+    TableTranslations,
+} from '../types';
 import { generateNamesObject } from '../utils';
 import { TableViewColumns } from './TableViewColumns';
 
@@ -44,6 +52,7 @@ export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actio
     selectionCount: number;
     options: TableOptions;
     icons?: TableIcons;
+    translations?: TableTranslations;
     onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
     onColumnsReset: () => void;
@@ -89,6 +98,7 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
             actions,
             options,
             icons,
+            translations,
             onColumnToggle,
             onColumnDrag,
             onColumnsReset,
@@ -146,7 +156,7 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
 
                                 {onDataRefresh && (
                                     <Action
-                                        name="Refresh"
+                                        name={translations?.refresh ?? 'Refresh'}
                                         icon={icons?.toolbar?.refresh || <Refresh />}
                                         callback={onDataRefresh}
                                     />
@@ -154,14 +164,14 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
 
                                 {exportable && (
                                     <Action
-                                        name="Export"
+                                        name={translations?.export ?? 'Export'}
                                         icon={icons?.toolbar?.export || <GetApp />}
                                         callback={onDataExport}
                                     />
                                 )}
 
                                 <Action
-                                    name="Columns"
+                                    name={translations?.columns ?? 'Columns'}
                                     icon={icons?.toolbar?.columns || <ViewColumn />}
                                     callback={this.toggleViewColumns}
                                     ref={this.viewColumnsButtonRef}
@@ -193,6 +203,7 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
                     }}
                 >
                     <TableViewColumns
+                        translations={translations}
                         columns={columns}
                         onColumnToggle={onColumnToggle}
                         onColumnDrag={onColumnDrag}

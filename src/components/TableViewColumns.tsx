@@ -5,12 +5,12 @@ import React from 'react';
 import {
     DragDropContext,
     Draggable,
+    DropResult,
     Droppable,
     DroppableProvided,
-    DropResult,
     ResponderProvided,
 } from 'react-beautiful-dnd';
-import { TableColumn, TableColumnId } from '../types';
+import { TableColumn, TableColumnId, TableTranslations } from '../types';
 import { generateNamesObject } from '../utils';
 
 export const muiTableViewColumnsClasses = generateNamesObject(
@@ -63,6 +63,7 @@ const Root = styled(Box)(({ theme }) => ({
 }));
 
 interface TableViewColumnProps {
+    translations?: TableTranslations;
     columns: readonly TableColumn[];
     onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
@@ -88,7 +89,7 @@ export class TableViewColumns extends React.Component<TableViewColumnProps> {
     };
 
     render() {
-        const { columns, onColumnDrag, onColumnsReset } = this.props;
+        const { translations, columns, onColumnDrag, onColumnsReset } = this.props;
 
         return (
             <DragDropContext onDragEnd={onColumnDrag}>
@@ -139,7 +140,7 @@ export class TableViewColumns extends React.Component<TableViewColumnProps> {
                                         className={muiTableViewColumnsClasses.resetButton}
                                         onClick={onColumnsReset}
                                     >
-                                        Reset to default
+                                        {translations?.resetDefault ?? 'Reset to default'}
                                     </Button>
                                 </FormGroup>
                             </FormControl>

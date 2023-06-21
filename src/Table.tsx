@@ -710,6 +710,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             components,
             defaultComponentProps,
             icons,
+            translations,
             onRowClick,
             onRowSelect,
             onRowExpand,
@@ -778,6 +779,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                 title={title}
                                 columns={columns}
                                 options={options}
+                                translations={translations}
                                 selectionCount={rowSelections.length}
                                 actions={actions}
                                 icons={icons}

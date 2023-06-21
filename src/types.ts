@@ -114,6 +114,7 @@ export interface TableProps<T = any> {
     init?: TableInitData<T>;
     dependencies?: any[];
     components?: TableComponents<T>;
+    translations?: TableTranslations;
     defaultComponentProps?: DefaultTableComponentProps;
     icons?: TableIcons;
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
@@ -214,6 +215,13 @@ export interface TableComponents<T = any> {
     rowActions?:
         | ((rowId: TableRowId, rowData: T, rowIndex: number) => React.ReactElement | TableAction[])
         | TableAction[];
+}
+
+export interface TableTranslations {
+    refresh?: string;
+    export?: string;
+    columns?: string;
+    resetDefault?: string;
 }
 
 export interface DefaultTableComponentProps {
