@@ -142,8 +142,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         isError: false,
         itemCount: 0,
         displayData: [],
-        filteredData: [],
-        filterExtra: [],
+        filterMatchedRowIds: [],
+        filterData: [],
         rowSelections: [],
         rowExpansions: [],
         sortBy: '',
@@ -253,11 +253,12 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             ...newValues,
         };
 
-        const { data, columns, filteredData, searchText, sortBy, sortDirection, rowsPerPage, options } = mergedState;
+        const { data, columns, filterMatchedRowIds, searchText, sortBy, sortDirection, rowsPerPage, options } =
+            mergedState;
 
         const hasNewData = newValues.data !== undefined;
         const hasNewSearchText = newValues.searchText !== undefined;
-        const hasNewFilteredData = newValues.filteredData !== undefined;
+        const hasNewFilteredData = newValues.filterMatchedRowIds !== undefined;
         const hasNewSortBy = newValues.sortBy !== undefined;
         const hasNewSortDirection = newValues.sortDirection !== undefined;
 
@@ -270,7 +271,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 displayData = data;
                 const filteredIds = intersection(
                     displayData.map((row) => row.id),
-                    ...(filteredData.filter((item) => !!item) as TableRowId[][]),
+                    ...(filterMatchedRowIds.filter((item) => !!item) as TableRowId[][]),
                 );
                 displayData = displayData.filter((row) => filteredIds.includes(row.id));
 
@@ -342,7 +343,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             searchMatchers,
             displayData,
             currentPage,
-            itemCount: displayData.length,
+            itemCount: !isFunction(mergedState.originalData) ? displayData.length : mergedState.itemCount,
         };
     };
 
@@ -404,19 +405,19 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                         (newValues.sortBy !== undefined && !isEqual(newValues.sortBy, currState.sortBy)) ||
                         (newValues.sortDirection !== undefined &&
                             !isEqual(newValues.sortDirection, currState.sortDirection)) ||
-                        (newValues.filterExtra !== undefined && !isEqual(newValues.filterExtra, currState.filterExtra))
+                        (newValues.filterData !== undefined && !isEqual(newValues.filterData, currState.filterData))
                     ) {
                         newValues.status = 'pending';
                         newValues.isLoading = true;
                         newValues.isError = false;
                         this.state
                             .originalData({
-                                pageNumber: (newValues.currentPage ?? currState.currentPage) + 1,
+                                pageNumber: newValues.currentPage ?? currState.currentPage,
                                 pageSize: newValues.rowsPerPage ?? currState.rowsPerPage,
                                 searchText: newValues.searchText ?? currState.searchText,
                                 sortBy: newValues.sortBy ?? currState.sortBy,
                                 sortDirection: newValues.sortDirection ?? currState.sortDirection,
-                                filters: newValues.filterExtra ?? currState.filterExtra,
+                                filters: newValues.filterData ?? currState.filterData,
                             })
                             .then(({ items, itemCount }) => {
                                 const data = MuiTable.mapDataToTableRow(items);
@@ -595,16 +596,16 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         { trailing: true },
     );
 
-    updateFilter = (index: number, ids: TableRowId[] | null, extra?: any) => {
-        const filteredData = [...this.state.filteredData];
-        filteredData[index] = ids;
+    updateFilter = (index: number, matchedRowIds: TableRowId[] | null, data?: any) => {
+        const filterMatchedRowIds = [...this.state.filterMatchedRowIds];
+        filterMatchedRowIds[index] = matchedRowIds;
 
-        const filterExtra = [...this.state.filterExtra];
-        filterExtra[index] = extra;
+        const filterData = [...this.state.filterData];
+        filterData[index] = data;
 
         this.updateTableState({
-            filteredData,
-            filterExtra,
+            filterMatchedRowIds,
+            filterData,
         });
     };
 
@@ -819,9 +820,20 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                     filterBy={field}
                                     data={data}
                                     displayData={displayData}
-                                    onUpdateFilter={(ids, extra) =>
-                                        this.updateFilter(index, this.shouldFetchData() ? [] : ids, extra)
-                                    }
+                                    onUpdateFilter={(matchedRowIds, filterData) => {
+                                        if (
+                                            this.shouldFetchData() &&
+                                            isEqual(this.state.filterData[index], filterData)
+                                        ) {
+                                            return;
+                                        }
+
+                                        this.updateFilter(
+                                            index,
+                                            this.shouldFetchData() ? [] : matchedRowIds,
+                                            filterData,
+                                        );
+                                    }}
                                 />
                             ))}
                         </Grid>
@@ -847,7 +859,9 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                 page={currentPage}
                                 onPageChange={(event, page) => this.changePage(page)}
                                 onRowsPerPageChange={(event) => this.changeRowsPerPage(parseInt(event.target.value))}
-                                ActionsComponent={(props) => <TablePaginationActions {...props} icons={icons} />}
+                                ActionsComponent={(props) => (
+                                    <TablePaginationActions {...props} icons={icons} disabled={status === 'pending'} />
+                                )}
                             />
                         )}
                     </Grid>

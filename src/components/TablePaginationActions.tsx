@@ -20,6 +20,7 @@ const Root = styled(Box)(({ theme }) => ({
 export class TablePaginationActions extends React.Component<
     TablePaginationActionsProps & {
         icons?: TableIcons;
+        disabled?: boolean;
     }
 > {
     handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement> | null) => {
@@ -35,18 +36,24 @@ export class TablePaginationActions extends React.Component<
     };
 
     handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement> | null) => {
-        this.props.onPageChange(event, Math.max(0, Math.ceil(this.props.count / this.props.rowsPerPage) - 1));
+        this.props.onPageChange(event, this.getLastPage());
+    };
+
+    getLastPage = () => {
+        const { count, rowsPerPage } = this.props;
+        const totalPages = count / rowsPerPage;
+        return Number.isInteger(totalPages) ? totalPages - 1 : Math.floor(totalPages);
     };
 
     render() {
-        const { count, page, icons, rowsPerPage } = this.props;
+        const { page, icons, disabled } = this.props;
 
         return (
             <Root className={muiTablePaginationActionsClasses.root}>
                 <IconButton
                     className={muiTablePaginationActionsClasses.firstPageButton}
                     onClick={this.handleFirstPageButtonClick}
-                    disabled={page === 0}
+                    disabled={disabled || page === 0}
                 >
                     {icons?.pagination?.firstPage || <FirstPage />}
                 </IconButton>
@@ -54,7 +61,7 @@ export class TablePaginationActions extends React.Component<
                 <IconButton
                     className={muiTablePaginationActionsClasses.previousPageButton}
                     onClick={this.handleBackButtonClick}
-                    disabled={page === 0}
+                    disabled={disabled || page === 0}
                 >
                     {icons?.pagination?.previousPage || <KeyboardArrowLeft />}
                 </IconButton>
@@ -62,7 +69,7 @@ export class TablePaginationActions extends React.Component<
                 <IconButton
                     className={muiTablePaginationActionsClasses.nextPageButton}
                     onClick={this.handleNextButtonClick}
-                    disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                    disabled={disabled || page >= this.getLastPage()}
                 >
                     {icons?.pagination?.nextPage || <KeyboardArrowRight />}
                 </IconButton>
@@ -70,7 +77,7 @@ export class TablePaginationActions extends React.Component<
                 <IconButton
                     className={muiTablePaginationActionsClasses.lastPageButton}
                     onClick={this.handleLastPageButtonClick}
-                    disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                    disabled={disabled || page >= this.getLastPage()}
                 >
                     {icons?.pagination?.lastPage || <LastPage />}
                 </IconButton>

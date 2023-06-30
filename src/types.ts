@@ -161,8 +161,8 @@ export interface TableState<T = any> {
     isError: boolean;
     itemCount: number;
     displayData: readonly TableRow<T>[];
-    filteredData: (TableRowId[] | null)[];
-    filterExtra: any[];
+    filterMatchedRowIds: (TableRowId[] | null)[];
+    filterData: any[];
     rowExpansions: TableRowId[];
     rowSelections: TableRowId[];
     sortBy: TableColumnId;
@@ -258,5 +258,5 @@ export interface FilterProps<T = any> {
     filterBy: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: readonly TableRow<T>[];
     displayData: readonly TableRow<T>[];
-    onUpdateFilter: (matchedRowIds: TableRowId[] | null, extra?: any) => void;
+    onUpdateFilter: (matchedRowIds: TableRowId[] | null, filterData?: any) => void;
 }
