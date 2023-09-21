@@ -853,15 +853,16 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                         {showPagination && (
                             <TablePagination
                                 component="div"
+                                ActionsComponent={(props) => (
+                                    <TablePaginationActions {...props} icons={icons} disabled={status === 'pending'} />
+                                )}
+                                {...defaultComponentProps?.TablePaginationProps}
                                 count={itemCount}
                                 rowsPerPage={rowsPerPage}
                                 rowsPerPageOptions={rowsPerPageOptions}
                                 page={currentPage}
                                 onPageChange={(event, page) => this.changePage(page)}
                                 onRowsPerPageChange={(event) => this.changeRowsPerPage(parseInt(event.target.value))}
-                                ActionsComponent={(props) => (
-                                    <TablePaginationActions {...props} icons={icons} disabled={status === 'pending'} />
-                                )}
                             />
                         )}
                     </Grid>

@@ -1,6 +1,6 @@
-import { SortDirection, TableCellProps, TextFieldProps } from '@mui/material';
+import { SortDirection, TableCellProps, TablePaginationProps, TextFieldProps } from '@mui/material';
 import { CSSProperties, ReactNode } from 'react';
-import { TableToolbarProps, TableSearchProps } from './components';
+import { TableSearchProps, TableToolbarProps } from './components';
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -226,6 +226,7 @@ export interface TableTranslations {
 
 export interface DefaultTableComponentProps {
     SearchProps?: Partial<TextFieldProps>;
+    TablePaginationProps?: Partial<TablePaginationProps>;
 }
 
 export interface SearchMatcher {
