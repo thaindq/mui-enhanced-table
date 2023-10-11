@@ -56,6 +56,7 @@ class MuiTableHead extends React.Component<TableHeadProps> {
             rowCount,
             sortBy,
             sortDirection,
+            hasRowActions,
             onToggleSelectAll,
             onSortData,
         } = this.props;
@@ -89,7 +90,6 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                             })}
                             align={column.align}
                             sortDirection={sortable && column.sortable && sortBy === column.id ? sortDirection : false}
-                            colSpan={index === columns.length - 1 ? 2 : undefined} // colspan over row actions column
                         >
                             {(sortable && column.sortable && (
                                 <TableSortLabel
@@ -104,11 +104,9 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                         </TableCell>
                     ))}
 
-                    {/* {hasRowActions && ( */}
-                    {/* <TableCell
-                            className={cx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)}
-                        /> */}
-                    {/* )} */}
+                    {hasRowActions && (
+                        <TableCell className={cx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)} />
+                    )}
                 </TableRow>
             </Root>
         );
