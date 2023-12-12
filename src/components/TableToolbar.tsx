@@ -1,6 +1,5 @@
 import { GetApp, Refresh, ViewColumn } from '@mui/icons-material';
-import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography } from '@mui/material';
-import { Box } from '@mui/system';
+import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography, Box } from '@mui/material';
 import cx from 'classnames';
 import { isFunction } from 'lodash';
 import React from 'react';
@@ -25,7 +24,7 @@ export const muiTableToolbarClasses = generateNamesObject(
 const Root = styled(Box)(({ theme }) => ({
     [`& .${muiTableToolbarClasses.toolbar}`]: {
         paddingLeft: 16,
-        paddingRight: 8,
+        paddingRight: 16,
         // flexBasis: 64,
         flexShrink: 0,
     },

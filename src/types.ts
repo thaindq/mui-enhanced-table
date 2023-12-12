@@ -93,7 +93,7 @@ export interface DataQuery {
     searchText: string;
     sortBy: string;
     sortDirection: SortDirection;
-    filters: any[];
+    filters: Record<string, any[]>;
 }
 
 export interface PaginatedData<T = any> {
@@ -168,12 +168,10 @@ export interface TableState<T = any> {
     isError: boolean;
     itemCount: number;
     displayData: readonly TableRow<T>[];
-    filterMatchedRowIds: (TableRowId[] | null)[];
-    filterMatchedRowIds2: Record<string, TableRowId[] | null>;
-    filterData: any[];
-    filterData2: Record<string, any[]>;
-    rowExpansions: TableRowId[];
-    rowSelections: TableRowId[];
+    filteredRowIds: Record<string, TableRowId[] | null>;
+    filterData: Record<string, any[]>;
+    expandedRowIds: TableRowId[];
+    selectedRowIds: TableRowId[];
     sortBy: TableColumnId;
     sortDirection: SortDirection;
     currentPage: number;
@@ -187,7 +185,7 @@ export interface TableState<T = any> {
 export type TableInitData<T = any> = Partial<
     Pick<
         TableState<T>,
-        'rowExpansions' | 'rowSelections' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'
+        'expandedRowIds' | 'selectedRowIds' | 'sortBy' | 'sortDirection' | 'currentPage' | 'rowsPerPage' | 'searchText'
     >
 > & {
     hiddenColumns?: TableColumnId[];
@@ -203,19 +201,10 @@ export interface TableAction {
     callback: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-export interface TableFilter<T = any> {
-    name?: string;
-    field: string;
-    component: React.ComponentType<FilterProps<T>>;
-}
-
 export interface TableComponents<T = any> {
     search?: React.ComponentType<Omit<TableSearchProps<T>, 'TextFieldProps'>>;
     toolbar?: React.ComponentType<TableToolbarProps>;
-    filters?: TableFilter<T>[];
     actions?: TableAction[] | (() => React.ReactElement);
-    customs?: React.ComponentType<TableProps<T>>[];
-    customsBottom?: React.ComponentType<TableProps<T>>[];
     rowExpand?: React.ComponentType<{
         id: TableRowId;
         data: T;

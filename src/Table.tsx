@@ -1,5 +1,4 @@
-import { Grid, Paper, SortDirection, styled, Table, TablePagination } from '@mui/material';
-import { Box } from '@mui/system';
+import { Grid, Paper, SortDirection, styled, Table, TablePagination, Box } from '@mui/material';
 import cx from 'classnames';
 import {
     debounce,
@@ -17,7 +16,7 @@ import {
     toString,
     union,
 } from 'lodash';
-import React, { GetDerivedStateFromProps, PropsWithChildren } from 'react';
+import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { TableBody } from './components/TableBody';
 import { TableHead } from './components/TableHead';
@@ -49,8 +48,6 @@ export const muiTableClasses = generateNamesObject(
         'paginationContainer',
         'loader',
         'customComponentsContainer',
-        'bottomCustomComponentsContainer',
-        'filtersContainer',
         'noTitle',
     ],
     'MuiTable',
@@ -82,9 +79,10 @@ const Root = styled(Paper, {
         display: 'flex',
     },
     [`& .${muiTableClasses.searchContainer}`]: {
-        paddingLeft: theme.spacing(2),
+        paddingLeft: 16,
     },
     [`& .${muiTableClasses.paginationContainer}`]: {
+        paddingRight: 16,
         display: 'flex',
         flexShrink: 0,
         '& > *:last-child': {
@@ -107,16 +105,8 @@ const Root = styled(Paper, {
         },
     },
     [`& .${muiTableClasses.customComponentsContainer}`]: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(1),
-    },
-    [`& .${muiTableClasses.bottomCustomComponentsContainer}`]: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(1),
-    },
-    [`& .${muiTableClasses.filtersContainer}`]: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(1),
+        paddingLeft: 16,
+        paddingRight: 16,
     },
     [`& .${muiTableClasses.noTitle}`]: {
         marginTop: -48,
@@ -133,12 +123,10 @@ const DEFAULT_STATE: TableState = {
     isError: false,
     itemCount: 0,
     displayData: [],
-    filterMatchedRowIds: [],
-    filterMatchedRowIds2: {},
-    filterData: [],
-    filterData2: {},
-    rowSelections: [],
-    rowExpansions: [],
+    filteredRowIds: {},
+    filterData: {},
+    selectedRowIds: [],
+    expandedRowIds: [],
     sortBy: '',
     sortDirection: false,
     currentPage: 0,
@@ -249,23 +237,11 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             ...newValues,
         };
 
-        const {
-            data,
-            columns,
-            filterMatchedRowIds,
-            filterMatchedRowIds2,
-            searchText,
-            sortBy,
-            sortDirection,
-            rowsPerPage,
-            options,
-        } = mergedState;
+        const { data, columns, filteredRowIds, searchText, sortBy, sortDirection, rowsPerPage, options } = mergedState;
 
-        const filteredRowIds = [...filterMatchedRowIds, ...Object.values(filterMatchedRowIds2)];
         const hasNewData = newValues.data !== undefined;
         const hasNewSearchText = newValues.searchText !== undefined;
-        const hasNewFilteredData =
-            newValues.filterMatchedRowIds !== undefined || newValues.filterMatchedRowIds2 !== undefined;
+        const hasNewFilteredData = newValues.filteredRowIds !== undefined;
         const hasNewSortBy = newValues.sortBy !== undefined;
         const hasNewSortDirection = newValues.sortDirection !== undefined;
 
@@ -278,7 +254,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 displayData = data;
                 const filteredIds = intersection(
                     displayData.map((row) => row.id),
-                    ...(filteredRowIds.filter((item) => !!item) as TableRowId[][]),
+                    ...(Object.values(filteredRowIds).filter((item) => !!item) as TableRowId[][]),
                 );
                 displayData = displayData.filter((row) => filteredIds.includes(row.id));
 
@@ -479,22 +455,22 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
 
     toggleRowSelection = (rowId: TableRowId | TableRowId[], select?: boolean) => {
         const ids = isArray(rowId) ? rowId : [rowId];
-        const prevRowSelections = this.state.rowSelections;
+        const prevRowSelections = this.state.selectedRowIds;
         const nextRowSelections = this.state.options.multiSelect
             ? toggleArrayItem(prevRowSelections, ids, select)
             : ids;
 
         this.updateTableState(
             {
-                rowSelections: nextRowSelections,
+                selectedRowIds: nextRowSelections,
             },
             () => {
-                const { data, rowSelections } = this.state;
+                const { data, selectedRowIds } = this.state;
 
                 this.props.onRowSelectionsChange?.(
                     nextRowSelections,
                     prevRowSelections,
-                    data.filter((item) => rowSelections.includes(item.id)).map((item) => item.data),
+                    data.filter((item) => selectedRowIds.includes(item.id)).map((item) => item.data),
                 );
             },
         );
@@ -502,31 +478,31 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
 
     toggleRowExpansion = (rowId: TableRowId | TableRowId[], expand?: boolean) => {
         const ids = isArray(rowId) ? rowId : [rowId];
-        const prevRowExpansions = this.state.rowExpansions;
+        const prevRowExpansions = this.state.expandedRowIds;
         const nextRowExpansions = this.state.options.multiExpand
             ? toggleArrayItem(prevRowExpansions, ids, expand)
             : prevRowExpansions[0] === rowId
-            ? []
-            : ids;
+              ? []
+              : ids;
 
         this.updateTableState(
             {
-                rowExpansions: nextRowExpansions,
+                expandedRowIds: nextRowExpansions,
             },
             () => {
-                const { data, rowExpansions } = this.state;
+                const { data, expandedRowIds } = this.state;
 
                 this.props.onRowExpansionsChange?.(
                     nextRowExpansions,
                     prevRowExpansions,
-                    data.filter((item) => rowExpansions.includes(item.id)).map((item) => item.data),
+                    data.filter((item) => expandedRowIds.includes(item.id)).map((item) => item.data),
                 );
             },
         );
     };
 
     toggleSelectAllRows = (select?: boolean) => {
-        const { displayData, rowSelections } = this.state;
+        const { displayData, selectedRowIds } = this.state;
 
         const { onRowStatus, onRowSelectionsChange } = this.props;
 
@@ -539,23 +515,23 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             return status ? !status.disabled : true;
         });
 
-        const shouldSelectAll = !isBoolean(select) ? rowSelections.length !== enabledRows.length : !!select;
+        const shouldSelectAll = !isBoolean(select) ? selectedRowIds.length !== enabledRows.length : !!select;
 
         const nextRowSelections = shouldSelectAll
             ? union(
-                  rowSelections,
+                  selectedRowIds,
                   enabledRows.map((row) => row.id),
               )
             : [];
 
         this.updateTableState(
             {
-                rowSelections: nextRowSelections,
+                selectedRowIds: nextRowSelections,
             },
             () =>
                 onRowSelectionsChange?.(
                     nextRowSelections,
-                    rowSelections,
+                    selectedRowIds,
                     this.state.data.map((item) => item.data),
                 ),
         );
@@ -568,12 +544,12 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             direction !== undefined
                 ? direction
                 : sortBy !== columnId
-                ? 'asc'
-                : sortDirection === 'asc'
-                ? 'desc'
-                : sortDirection === 'desc'
-                ? false
-                : 'asc';
+                  ? 'asc'
+                  : sortDirection === 'asc'
+                    ? 'desc'
+                    : sortDirection === 'desc'
+                      ? false
+                      : 'asc';
 
         this.updateTableState({
             sortBy: columnId,
@@ -603,29 +579,16 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         { trailing: true },
     );
 
-    updateFilter = (index: number, matchedRowIds: TableRowId[] | null, data?: any) => {
-        const filterMatchedRowIds = [...this.state.filterMatchedRowIds];
-        filterMatchedRowIds[index] = matchedRowIds;
+    updateFilter = (filterId: string, matchedRowIds: TableRowId[] | null, data?: any) => {
+        const filteredRowIds = { ...this.state.filteredRowIds };
+        filteredRowIds[filterId] = matchedRowIds;
 
-        const filterData = [...this.state.filterData];
-        filterData[index] = data;
+        const filterData = { ...this.state.filterData };
+        filterData[filterId] = data;
 
         this.updateTableState({
-            filterMatchedRowIds,
+            filteredRowIds,
             filterData,
-        });
-    };
-
-    updateFilter2 = (filterId: string, matchedRowIds: TableRowId[] | null, data?: any) => {
-        const filterMatchedRowIds2 = { ...this.state.filterMatchedRowIds2 };
-        filterMatchedRowIds2[filterId] = matchedRowIds;
-
-        const filterData2 = { ...this.state.filterData2 };
-        filterData2[filterId] = data;
-
-        this.updateTableState({
-            filterMatchedRowIds2,
-            filterData2,
         });
     };
 
@@ -750,8 +713,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             columns,
             sortBy,
             sortDirection,
-            rowSelections,
-            rowExpansions,
+            selectedRowIds,
+            expandedRowIds,
             currentPage,
             rowsPerPage,
             searchMatchers,
@@ -769,7 +732,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             searchable,
         } = options as Required<TableOptions>;
 
-        const { filters, customs, customsBottom, rowExpand, rowActions, actions } = components || {};
+        const { rowExpand, rowActions, actions } = components || {};
 
         const SearchComponent = components?.search || TableSearch;
         const ToolbarComponent = components?.toolbar || TableToolbar;
@@ -799,7 +762,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                     columns={columns}
                                     options={options}
                                     translations={translations}
-                                    selectionCount={rowSelections.length}
+                                    selectionCount={selectedRowIds.length}
                                     actions={actions}
                                     icons={icons}
                                     onColumnToggle={this.toggleColumn}
@@ -808,52 +771,6 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                     onDataExport={this.exportData}
                                     onDataRefresh={this.shouldFetchData() ? this.refreshData : undefined}
                                 />
-                            </Grid>
-                        )}
-
-                        {customs && customs.length > 0 && (
-                            <Grid
-                                item
-                                xs={12}
-                                className={cx(muiTableClasses.customComponentsContainer, {
-                                    [muiTableClasses.noTitle]: !title && showToolbar,
-                                })}
-                            >
-                                {customs.map((Component, index) => (
-                                    <Component key={index} {...this.props} />
-                                ))}
-                            </Grid>
-                        )}
-
-                        {filters && filters.length > 0 && (
-                            <Grid
-                                item
-                                xs={12}
-                                className={cx(muiTableClasses.filtersContainer, { [muiTableClasses.noTitle]: !title })}
-                            >
-                                {filters.map(({ name, field, component: Component }, index) => (
-                                    <Component
-                                        key={index}
-                                        name={name}
-                                        filterBy={field}
-                                        data={data}
-                                        displayData={displayData}
-                                        onFilterUpdate={(matchedRowIds, filterData) => {
-                                            if (
-                                                this.shouldFetchData() &&
-                                                isEqual(this.state.filterData[index], filterData)
-                                            ) {
-                                                return;
-                                            }
-
-                                            this.updateFilter(
-                                                index,
-                                                this.shouldFetchData() ? [] : matchedRowIds,
-                                                filterData,
-                                            );
-                                        }}
-                                    />
-                                ))}
                             </Grid>
                         )}
 
@@ -872,12 +789,12 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                           onFilterUpdate: (filterId, matchedRowIds, filterData) => {
                                               if (
                                                   this.shouldFetchData() &&
-                                                  isEqual(this.state.filterData2[filterId], filterData)
+                                                  isEqual(this.state.filterData[filterId], filterData)
                                               ) {
                                                   return;
                                               }
 
-                                              this.updateFilter2(
+                                              this.updateFilter(
                                                   filterId,
                                                   this.shouldFetchData() ? [] : matchedRowIds,
                                                   filterData,
@@ -937,7 +854,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                             <TableHead
                                                 columns={displayColumns}
                                                 options={options}
-                                                selectionCount={rowSelections.length}
+                                                selectionCount={selectedRowIds.length}
                                                 rowCount={data.length}
                                                 sortBy={sortBy}
                                                 sortDirection={sortDirection}
@@ -962,8 +879,8 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                                             isError={isError}
                                             searchMatchers={searchMatchers}
                                             rowCount={showPagination ? rowsPerPage : displayData.length}
-                                            rowSelections={rowSelections}
-                                            rowExpansions={rowExpansions}
+                                            selectedRowIds={selectedRowIds}
+                                            expandedRowIds={expandedRowIds}
                                             rowActions={rowActions}
                                             rowExpand={rowExpand}
                                             onToggleRowSelection={this.toggleRowSelection}
@@ -982,18 +899,6 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                             )}
                         </Droppable>
                     </DragDropContext>
-
-                    {customsBottom && customsBottom.length > 0 && (
-                        <Box
-                            className={cx(muiTableClasses.bottomCustomComponentsContainer, {
-                                [muiTableClasses.noTitle]: !title && showToolbar,
-                            })}
-                        >
-                            {customsBottom.map((Component, index) => (
-                                <Component key={index} {...this.props} />
-                            ))}
-                        </Box>
-                    )}
                 </Root>
             </MuiTableContext.Provider>
         );

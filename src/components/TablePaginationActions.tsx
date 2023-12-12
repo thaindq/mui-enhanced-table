@@ -1,7 +1,6 @@
 import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@mui/icons-material';
-import { IconButton, styled } from '@mui/material';
+import { IconButton, styled, Box } from '@mui/material';
 import { TablePaginationActionsProps } from '@mui/material/TablePagination/TablePaginationActions';
-import { Box } from '@mui/system';
 import React from 'react';
 import { TableIcons } from '../types';
 import { generateNamesObject } from '../utils';
@@ -14,7 +13,7 @@ export const muiTablePaginationActionsClasses = generateNamesObject(
 const Root = styled(Box)(({ theme }) => ({
     flexShrink: 0,
     color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(2.5),
+    marginLeft: 20,
 }));
 
 export class TablePaginationActions extends React.Component<

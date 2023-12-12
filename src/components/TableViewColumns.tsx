@@ -1,6 +1,5 @@
 import { DragHandle } from '@mui/icons-material';
-import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, styled } from '@mui/material';
-import { Box } from '@mui/system';
+import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, styled, Box } from '@mui/material';
 import React from 'react';
 import {
     DragDropContext,

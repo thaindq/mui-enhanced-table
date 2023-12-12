@@ -172,8 +172,8 @@ interface TableBodyProps<T>
     isLoading?: boolean;
     isError?: boolean;
     rowCount?: number;
-    rowSelections: TableRowId[];
-    rowExpansions: TableRowId[];
+    selectedRowIds: TableRowId[];
+    expandedRowIds: TableRowId[];
     searchMatchers?: SearchMatchers | null;
     onToggleRowSelection: (rowId: TableRowId) => void;
     onToggleRowExpansion: (rowId: TableRowId) => void;
@@ -181,17 +181,17 @@ interface TableBodyProps<T>
 
 class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
     handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
-        const { rowSelections, onRowSelect, onToggleRowSelection } = this.props;
+        const { selectedRowIds, onRowSelect, onToggleRowSelection } = this.props;
 
         onToggleRowSelection(rowId);
-        onRowSelect && onRowSelect(rowId, rowData, rowIndex, !rowSelections.includes(rowId));
+        onRowSelect && onRowSelect(rowId, rowData, rowIndex, !selectedRowIds.includes(rowId));
     };
 
     handleRowExpand = (rowId: TableRowId, rowData: T, rowIndex: number) => {
-        const { rowExpansions, onRowExpand, onToggleRowExpansion } = this.props;
+        const { expandedRowIds, onRowExpand, onToggleRowExpansion } = this.props;
 
         onToggleRowExpansion(rowId);
-        onRowExpand?.(rowId, rowData, rowIndex, !rowExpansions.includes(rowId));
+        onRowExpand?.(rowId, rowData, rowIndex, !expandedRowIds.includes(rowId));
     };
 
     handleRowClick = (rowId: TableRowId, rowData: T, rowIndex: number) => {
@@ -239,8 +239,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
             status,
             isLoading: isLoadingProp,
             isError,
-            rowSelections,
-            rowExpansions,
+            selectedRowIds,
+            expandedRowIds,
             rowActions,
             rowExpand: RowExpandComponent,
             onRowStatus,
@@ -319,8 +319,8 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                             disabled,
                             className,
                             highlighted,
-                            selected = rowSelections.includes(row.id),
-                            expanded = rowExpansions.includes(row.id),
+                            selected = selectedRowIds.includes(row.id),
+                            expanded = expandedRowIds.includes(row.id),
                         } = (onRowStatus && onRowStatus(row.id, row.data, rowIndex)) || {};
 
                         const rowClassName = cx(
