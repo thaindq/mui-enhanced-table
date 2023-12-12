@@ -17,7 +17,7 @@ import {
     toString,
     union,
 } from 'lodash';
-import React, { GetDerivedStateFromProps } from 'react';
+import React, { GetDerivedStateFromProps, PropsWithChildren } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { TableBody } from './components/TableBody';
 import { TableHead } from './components/TableHead';
@@ -81,7 +81,9 @@ const Root = styled(Paper, {
     [`& .${muiTableClasses.topContainer}`]: {
         display: 'flex',
     },
-    [`& .${muiTableClasses.searchContainer}`]: {},
+    [`& .${muiTableClasses.searchContainer}`]: {
+        paddingLeft: theme.spacing(2),
+    },
     [`& .${muiTableClasses.paginationContainer}`]: {
         display: 'flex',
         flexShrink: 0,
@@ -105,85 +107,79 @@ const Root = styled(Paper, {
         },
     },
     [`& .${muiTableClasses.customComponentsContainer}`]: {
-        paddingLeft: 16,
-        paddingRight: 8,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(1),
     },
     [`& .${muiTableClasses.bottomCustomComponentsContainer}`]: {
-        paddingLeft: 16,
-        paddingRight: 8,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(1),
     },
     [`& .${muiTableClasses.filtersContainer}`]: {
-        paddingLeft: 16,
-        paddingRight: 16,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(1),
     },
     [`& .${muiTableClasses.noTitle}`]: {
         marginTop: -48,
     },
 }));
 
+const DEFAULT_STATE: TableState = {
+    columns: [],
+    originalColumns: [],
+    data: [],
+    originalData: [],
+    status: 'idle',
+    isLoading: false,
+    isError: false,
+    itemCount: 0,
+    displayData: [],
+    filterMatchedRowIds: [],
+    filterMatchedRowIds2: {},
+    filterData: [],
+    filterData2: {},
+    rowSelections: [],
+    rowExpansions: [],
+    sortBy: '',
+    sortDirection: false,
+    currentPage: 0,
+    rowsPerPage: 10,
+    searchText: '',
+    searchMatchers: null,
+    options: {
+        noWrap: false,
+        sortable: true,
+        filterable: true,
+        selectable: false,
+        expandable: false,
+        multiSelect: true,
+        multiExpand: true,
+        searchable: true,
+        showPagination: true,
+        rowsPerPageOptions: [10, 20, 40],
+        showBorder: false,
+        showTitle: true,
+        showActions: true,
+        showToolbar: true,
+        showHeader: true,
+        respectDataStatus: true,
+        stickyHeader: false,
+        allCapsHeader: true,
+        highlightRow: true,
+        highlightColumn: false,
+        alternativeRowColor: true,
+        elevation: 1,
+        skeletonRows: 3,
+        exportable: false,
+    },
+};
+
+export const MuiTableContext = React.createContext<TableState>(DEFAULT_STATE);
+
 export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>, TableState<T>> {
-    static defaultProps: Partial<TableProps> = {
-        className: '',
-        title: '',
-        dataId: 'id',
-        status: 'idle',
-        init: {},
-        options: {},
-        components: {},
-    };
-
-    static defaultState: TableState = {
-        columns: [],
-        originalColumns: [],
-        data: [],
-        originalData: [],
-        status: 'idle',
-        isLoading: false,
-        isError: false,
-        itemCount: 0,
-        displayData: [],
-        filterMatchedRowIds: [],
-        filterData: [],
-        rowSelections: [],
-        rowExpansions: [],
-        sortBy: '',
-        sortDirection: false,
-        currentPage: 0,
-        rowsPerPage: 10,
-        searchText: '',
-        searchMatchers: null,
-        options: {
-            noWrap: false,
-            sortable: true,
-            filterable: true,
-            selectable: false,
-            expandable: false,
-            multiSelect: true,
-            multiExpand: true,
-            searchable: true,
-            showPagination: true,
-            rowsPerPageOptions: [10, 20, 40],
-            showBorder: false,
-            showTitle: true,
-            showActions: true,
-            showToolbar: true,
-            showHeader: true,
-            respectDataStatus: true,
-            stickyHeader: false,
-            allCapsHeader: true,
-            highlightRow: true,
-            highlightColumn: false,
-            alternativeRowColor: true,
-            elevation: 1,
-            skeletonRows: 3,
-            exportable: false,
-        },
-    };
-
     static getInitialState = (props: TableProps): TableState => {
         const { data: rawData, dataId, columns: rawColumns, init, options, dependencies } = props;
 
-        const mergedOptions = mergeOverwriteArray({ ...MuiTable.defaultState.options }, options);
+        const mergedOptions = mergeOverwriteArray({ ...DEFAULT_STATE.options }, options);
 
         const seenColumnIds: string[] = [];
         const data = isFunction(rawData) ? [] : MuiTable.mapDataToTableRow(rawData, dataId);
@@ -235,7 +231,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         }));
 
         return {
-            ...MuiTable.defaultState,
+            ...DEFAULT_STATE,
             ...init,
             dependencies,
             options: mergedOptions,
@@ -253,12 +249,23 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             ...newValues,
         };
 
-        const { data, columns, filterMatchedRowIds, searchText, sortBy, sortDirection, rowsPerPage, options } =
-            mergedState;
+        const {
+            data,
+            columns,
+            filterMatchedRowIds,
+            filterMatchedRowIds2,
+            searchText,
+            sortBy,
+            sortDirection,
+            rowsPerPage,
+            options,
+        } = mergedState;
 
+        const filteredRowIds = [...filterMatchedRowIds, ...Object.values(filterMatchedRowIds2)];
         const hasNewData = newValues.data !== undefined;
         const hasNewSearchText = newValues.searchText !== undefined;
-        const hasNewFilteredData = newValues.filterMatchedRowIds !== undefined;
+        const hasNewFilteredData =
+            newValues.filterMatchedRowIds !== undefined || newValues.filterMatchedRowIds2 !== undefined;
         const hasNewSortBy = newValues.sortBy !== undefined;
         const hasNewSortDirection = newValues.sortDirection !== undefined;
 
@@ -271,7 +278,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 displayData = data;
                 const filteredIds = intersection(
                     displayData.map((row) => row.id),
-                    ...(filterMatchedRowIds.filter((item) => !!item) as TableRowId[][]),
+                    ...(filteredRowIds.filter((item) => !!item) as TableRowId[][]),
                 );
                 displayData = displayData.filter((row) => filteredIds.includes(row.id));
 
@@ -374,7 +381,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         });
     };
 
-    state: TableState<T> = MuiTable.defaultState;
+    state: TableState<T> = DEFAULT_STATE;
 
     tableId = '';
 
@@ -609,6 +616,19 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         });
     };
 
+    updateFilter2 = (filterId: string, matchedRowIds: TableRowId[] | null, data?: any) => {
+        const filterMatchedRowIds2 = { ...this.state.filterMatchedRowIds2 };
+        filterMatchedRowIds2[filterId] = matchedRowIds;
+
+        const filterData2 = { ...this.state.filterData2 };
+        filterData2[filterId] = data;
+
+        this.updateTableState({
+            filterMatchedRowIds2,
+            filterData2,
+        });
+    };
+
     reorderColumns = (result: DropResult) => {
         if (!result.destination) {
             return;
@@ -720,6 +740,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             onCellStatus,
             onNoDataMessage,
             onErrorMessage,
+            children,
         } = this.props;
 
         const {
@@ -762,184 +783,219 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         const isError = this.shouldFetchData() ? this.state.isError : this.props.isError;
 
         return (
-            <Root
-                showBorder={showBorder}
-                elevation={showBorder ? 0 : elevation}
-                className={cx(muiTableClasses.root, className, {
-                    [muiTableClasses.border]: showBorder,
-                })}
-            >
-                {/* <div className={classes.loader}>
-                    <CircularProgress size={40}/>
-                </div> */}
+            <MuiTableContext.Provider value={this.state}>
+                <Root
+                    showBorder={showBorder}
+                    elevation={showBorder ? 0 : elevation}
+                    className={cx(muiTableClasses.root, className, {
+                        [muiTableClasses.border]: showBorder,
+                    })}
+                >
+                    <Grid container className={muiTableClasses.topContainer}>
+                        {showToolbar && (
+                            <Grid item xs={12}>
+                                <ToolbarComponent
+                                    title={title}
+                                    columns={columns}
+                                    options={options}
+                                    translations={translations}
+                                    selectionCount={rowSelections.length}
+                                    actions={actions}
+                                    icons={icons}
+                                    onColumnToggle={this.toggleColumn}
+                                    onColumnDrag={this.reorderColumns}
+                                    onColumnsReset={this.resetColumns}
+                                    onDataExport={this.exportData}
+                                    onDataRefresh={this.shouldFetchData() ? this.refreshData : undefined}
+                                />
+                            </Grid>
+                        )}
 
-                <Grid container className={muiTableClasses.topContainer}>
-                    {showToolbar && (
-                        <Grid item xs={12}>
-                            <ToolbarComponent
-                                title={title}
-                                columns={columns}
-                                options={options}
-                                translations={translations}
-                                selectionCount={rowSelections.length}
-                                actions={actions}
-                                icons={icons}
-                                onColumnToggle={this.toggleColumn}
-                                onColumnDrag={this.reorderColumns}
-                                onColumnsReset={this.resetColumns}
-                                onDataExport={this.exportData}
-                                onDataRefresh={this.shouldFetchData() ? this.refreshData : undefined}
-                            />
+                        {customs && customs.length > 0 && (
+                            <Grid
+                                item
+                                xs={12}
+                                className={cx(muiTableClasses.customComponentsContainer, {
+                                    [muiTableClasses.noTitle]: !title && showToolbar,
+                                })}
+                            >
+                                {customs.map((Component, index) => (
+                                    <Component key={index} {...this.props} />
+                                ))}
+                            </Grid>
+                        )}
+
+                        {filters && filters.length > 0 && (
+                            <Grid
+                                item
+                                xs={12}
+                                className={cx(muiTableClasses.filtersContainer, { [muiTableClasses.noTitle]: !title })}
+                            >
+                                {filters.map(({ name, field, component: Component }, index) => (
+                                    <Component
+                                        key={index}
+                                        name={name}
+                                        filterBy={field}
+                                        data={data}
+                                        displayData={displayData}
+                                        onFilterUpdate={(matchedRowIds, filterData) => {
+                                            if (
+                                                this.shouldFetchData() &&
+                                                isEqual(this.state.filterData[index], filterData)
+                                            ) {
+                                                return;
+                                            }
+
+                                            this.updateFilter(
+                                                index,
+                                                this.shouldFetchData() ? [] : matchedRowIds,
+                                                filterData,
+                                            );
+                                        }}
+                                    />
+                                ))}
+                            </Grid>
+                        )}
+
+                        {children && (
+                            <Grid
+                                item
+                                xs={12}
+                                className={cx(muiTableClasses.customComponentsContainer, {
+                                    [muiTableClasses.noTitle]: !title && showToolbar,
+                                })}
+                            >
+                                {isFunction(children)
+                                    ? children({
+                                          data,
+                                          displayData,
+                                          onFilterUpdate: (filterId, matchedRowIds, filterData) => {
+                                              if (
+                                                  this.shouldFetchData() &&
+                                                  isEqual(this.state.filterData2[filterId], filterData)
+                                              ) {
+                                                  return;
+                                              }
+
+                                              this.updateFilter2(
+                                                  filterId,
+                                                  this.shouldFetchData() ? [] : matchedRowIds,
+                                                  filterData,
+                                              );
+                                          },
+                                      })
+                                    : children}
+                            </Grid>
+                        )}
+
+                        <Grid item xs={6} className={muiTableClasses.searchContainer}>
+                            {searchable && (
+                                <SearchComponent
+                                    displayData={displayData}
+                                    onChange={this.changeSearch}
+                                    TextFieldProps={defaultComponentProps?.SearchProps}
+                                />
+                            )}
                         </Grid>
-                    )}
 
-                    {customs && customs.length > 0 && (
-                        <Grid
-                            item
-                            xs={12}
-                            className={cx(muiTableClasses.customComponentsContainer, {
+                        <Grid item xs={6} className={muiTableClasses.paginationContainer}>
+                            {showPagination && (
+                                <TablePagination
+                                    component="div"
+                                    ActionsComponent={(props) => (
+                                        <TablePaginationActions
+                                            {...props}
+                                            icons={icons}
+                                            disabled={status === 'pending'}
+                                        />
+                                    )}
+                                    {...defaultComponentProps?.TablePaginationProps}
+                                    count={itemCount}
+                                    rowsPerPage={rowsPerPage}
+                                    rowsPerPageOptions={rowsPerPageOptions}
+                                    page={currentPage}
+                                    onPageChange={(event, page) => this.changePage(page)}
+                                    onRowsPerPageChange={(event) =>
+                                        this.changeRowsPerPage(parseInt(event.target.value))
+                                    }
+                                />
+                            )}
+                        </Grid>
+                    </Grid>
+
+                    <DragDropContext onDragEnd={this.reorderColumns}>
+                        <Droppable droppableId="droppable" direction="horizontal">
+                            {(provided) => (
+                                <Box
+                                    id={this.tableId}
+                                    className={muiTableClasses.container}
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                >
+                                    <Table size="small" className={muiTableClasses.table} stickyHeader={stickyHeader}>
+                                        {showHeader && (
+                                            <TableHead
+                                                columns={displayColumns}
+                                                options={options}
+                                                selectionCount={rowSelections.length}
+                                                rowCount={data.length}
+                                                sortBy={sortBy}
+                                                sortDirection={sortDirection}
+                                                hasRowActions={!!rowActions}
+                                                onToggleSelectAll={this.toggleSelectAllRows}
+                                                onSortData={this.sortData}
+                                            />
+                                        )}
+
+                                        <TableBody<T>
+                                            columns={displayColumns}
+                                            data={data}
+                                            displayData={currentPageData}
+                                            options={{
+                                                ...options,
+                                                respectDataStatus: this.shouldFetchData()
+                                                    ? true
+                                                    : options.respectDataStatus,
+                                            }}
+                                            status={status}
+                                            isLoading={isLoading}
+                                            isError={isError}
+                                            searchMatchers={searchMatchers}
+                                            rowCount={showPagination ? rowsPerPage : displayData.length}
+                                            rowSelections={rowSelections}
+                                            rowExpansions={rowExpansions}
+                                            rowActions={rowActions}
+                                            rowExpand={rowExpand}
+                                            onToggleRowSelection={this.toggleRowSelection}
+                                            onToggleRowExpansion={this.toggleRowExpansion}
+                                            onRowClick={onRowClick}
+                                            onRowStatus={onRowStatus}
+                                            onRowExpand={onRowExpand}
+                                            onRowSelect={onRowSelect}
+                                            onCellClick={onCellClick}
+                                            onCellStatus={onCellStatus}
+                                            onNoDataMessage={onNoDataMessage}
+                                            onErrorMessage={onErrorMessage}
+                                        />
+                                    </Table>
+                                </Box>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+
+                    {customsBottom && customsBottom.length > 0 && (
+                        <Box
+                            className={cx(muiTableClasses.bottomCustomComponentsContainer, {
                                 [muiTableClasses.noTitle]: !title && showToolbar,
                             })}
                         >
-                            {customs.map((Component, index) => (
+                            {customsBottom.map((Component, index) => (
                                 <Component key={index} {...this.props} />
                             ))}
-                        </Grid>
+                        </Box>
                     )}
-
-                    {filters && filters.length > 0 && (
-                        <Grid
-                            item
-                            xs={12}
-                            className={cx(muiTableClasses.filtersContainer, { [muiTableClasses.noTitle]: !title })}
-                        >
-                            {filters.map(({ name, field, component: Component }, index) => (
-                                <Component
-                                    key={index}
-                                    name={name}
-                                    filterBy={field}
-                                    data={data}
-                                    displayData={displayData}
-                                    onUpdateFilter={(matchedRowIds, filterData) => {
-                                        if (
-                                            this.shouldFetchData() &&
-                                            isEqual(this.state.filterData[index], filterData)
-                                        ) {
-                                            return;
-                                        }
-
-                                        this.updateFilter(
-                                            index,
-                                            this.shouldFetchData() ? [] : matchedRowIds,
-                                            filterData,
-                                        );
-                                    }}
-                                />
-                            ))}
-                        </Grid>
-                    )}
-
-                    <Grid item xs={6} className={muiTableClasses.searchContainer}>
-                        {searchable && (
-                            <SearchComponent
-                                displayData={displayData}
-                                onChange={this.changeSearch}
-                                TextFieldProps={defaultComponentProps?.SearchProps}
-                            />
-                        )}
-                    </Grid>
-
-                    <Grid item xs={6} className={muiTableClasses.paginationContainer}>
-                        {showPagination && (
-                            <TablePagination
-                                component="div"
-                                ActionsComponent={(props) => (
-                                    <TablePaginationActions {...props} icons={icons} disabled={status === 'pending'} />
-                                )}
-                                {...defaultComponentProps?.TablePaginationProps}
-                                count={itemCount}
-                                rowsPerPage={rowsPerPage}
-                                rowsPerPageOptions={rowsPerPageOptions}
-                                page={currentPage}
-                                onPageChange={(event, page) => this.changePage(page)}
-                                onRowsPerPageChange={(event) => this.changeRowsPerPage(parseInt(event.target.value))}
-                            />
-                        )}
-                    </Grid>
-                </Grid>
-
-                <DragDropContext onDragEnd={this.reorderColumns}>
-                    <Droppable droppableId="droppable" direction="horizontal">
-                        {(provided) => (
-                            <Box
-                                id={this.tableId}
-                                className={muiTableClasses.container}
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                            >
-                                <Table size="small" className={muiTableClasses.table} stickyHeader={stickyHeader}>
-                                    {showHeader && (
-                                        <TableHead
-                                            columns={displayColumns}
-                                            options={options}
-                                            selectionCount={rowSelections.length}
-                                            rowCount={data.length}
-                                            sortBy={sortBy}
-                                            sortDirection={sortDirection}
-                                            hasRowActions={!!rowActions}
-                                            onToggleSelectAll={this.toggleSelectAllRows}
-                                            onSortData={this.sortData}
-                                        />
-                                    )}
-
-                                    <TableBody<T>
-                                        columns={displayColumns}
-                                        data={data}
-                                        displayData={currentPageData}
-                                        options={{
-                                            ...options,
-                                            respectDataStatus: this.shouldFetchData()
-                                                ? true
-                                                : options.respectDataStatus,
-                                        }}
-                                        status={status}
-                                        isLoading={isLoading}
-                                        isError={isError}
-                                        searchMatchers={searchMatchers}
-                                        rowCount={showPagination ? rowsPerPage : displayData.length}
-                                        rowSelections={rowSelections}
-                                        rowExpansions={rowExpansions}
-                                        rowActions={rowActions}
-                                        rowExpand={rowExpand}
-                                        onToggleRowSelection={this.toggleRowSelection}
-                                        onToggleRowExpansion={this.toggleRowExpansion}
-                                        onRowClick={onRowClick}
-                                        onRowStatus={onRowStatus}
-                                        onRowExpand={onRowExpand}
-                                        onRowSelect={onRowSelect}
-                                        onCellClick={onCellClick}
-                                        onCellStatus={onCellStatus}
-                                        onNoDataMessage={onNoDataMessage}
-                                        onErrorMessage={onErrorMessage}
-                                    />
-                                </Table>
-                            </Box>
-                        )}
-                    </Droppable>
-                </DragDropContext>
-
-                {customsBottom && customsBottom.length > 0 && (
-                    <Box
-                        className={cx(muiTableClasses.bottomCustomComponentsContainer, {
-                            [muiTableClasses.noTitle]: !title && showToolbar,
-                        })}
-                    >
-                        {customsBottom.map((Component, index) => (
-                            <Component key={index} {...this.props} />
-                        ))}
-                    </Box>
-                )}
-            </Root>
+                </Root>
+            </MuiTableContext.Provider>
         );
     }
 }

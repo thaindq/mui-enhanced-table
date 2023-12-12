@@ -102,6 +102,13 @@ export interface PaginatedData<T = any> {
 }
 
 export interface TableProps<T = any> {
+    children?:
+        | React.ReactNode
+        | ((props: {
+              data: TableState<T>['data'];
+              displayData: TableState<T>['displayData'];
+              onFilterUpdate: (filterId: string, matchedRowIds: TableRowId[] | null, filterData?: any) => void;
+          }) => React.ReactElement);
     className?: string;
     title?: string;
     data: readonly T[] | ((query: DataQuery) => Promise<PaginatedData<T>>);
@@ -162,7 +169,9 @@ export interface TableState<T = any> {
     itemCount: number;
     displayData: readonly TableRow<T>[];
     filterMatchedRowIds: (TableRowId[] | null)[];
+    filterMatchedRowIds2: Record<string, TableRowId[] | null>;
     filterData: any[];
+    filterData2: Record<string, any[]>;
     rowExpansions: TableRowId[];
     rowSelections: TableRowId[];
     sortBy: TableColumnId;
@@ -259,5 +268,5 @@ export interface FilterProps<T = any> {
     filterBy: TableColumnId | ((row: TableRow<T>) => TableColumnId);
     data: readonly TableRow<T>[];
     displayData: readonly TableRow<T>[];
-    onUpdateFilter: (matchedRowIds: TableRowId[] | null, filterData?: any) => void;
+    onFilterUpdate: (matchedRowIds: TableRowId[] | null, filterData?: any) => void;
 }
