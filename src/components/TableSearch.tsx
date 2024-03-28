@@ -1,6 +1,6 @@
 import { Clear, Search } from '@mui/icons-material';
-import { IconButton, InputAdornment, styled, TextField, TextFieldProps } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { IconButton, InputAdornment, TextField, TextFieldProps, styled } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import { TableRow } from '../types';
 import { generateNamesObject } from '../utils';
 
@@ -27,10 +27,32 @@ export interface TableSearchProps<T = any> {
     TextFieldProps?: Partial<TextFieldProps>;
 }
 
+export function useFirstMountState(): boolean {
+    const isFirst = useRef(true);
+
+    if (isFirst.current) {
+        isFirst.current = false;
+
+        return true;
+    }
+
+    return isFirst.current;
+}
+
+const useUpdateEffect: typeof useEffect = (effect, deps) => {
+    const isFirstMount = useFirstMountState();
+
+    useEffect(() => {
+        if (!isFirstMount) {
+            return effect();
+        }
+    }, deps);
+};
+
 export const TableSearch = <T = any,>({ onChange, TextFieldProps }: TableSearchProps<T>): React.ReactElement => {
     const [searchText, setSearchText] = useState('');
 
-    useEffect(() => {
+    useUpdateEffect(() => {
         onChange(searchText);
     }, [searchText]);
 

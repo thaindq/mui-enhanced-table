@@ -363,13 +363,14 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
 
     componentDidMount = () => {
         this.tableId = `table-${Math.random().toString(36).slice(2, 8)}`;
-        this.updateTableState(MuiTable.getInitialState(this.props), undefined, true);
+        this.updateTableState(MuiTable.getInitialState(this.props), undefined, true, true);
     };
 
     updateTableState = (
         newValues: Partial<TableState<T>>,
         callback?: (newState: TableState<T>, prevState: TableState<T>) => void,
         forceFetchData?: boolean,
+        didMount?: boolean,
     ) => {
         let prevState: TableState<T>;
 
@@ -426,8 +427,10 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 return MuiTable.getNextState(newValues, prevState);
             },
             () => {
-                callback?.(this.state, prevState);
-                this.props.onStateChange?.(this.state, prevState);
+                if (!didMount) {
+                    callback?.(this.state, prevState);
+                    this.props.onStateChange?.(this.state, prevState);
+                }
             },
         );
     };
