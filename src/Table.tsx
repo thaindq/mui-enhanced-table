@@ -215,7 +215,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             return index;
         }).map((column) => ({
             ...column,
-            display: init?.hiddenColumns?.includes(column.id) ? false : column.display,
+            display: init?.hiddenColumns === undefined ? column.display : !init.hiddenColumns.includes(column.id),
         }));
 
         return {
