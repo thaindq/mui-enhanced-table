@@ -1,16 +1,20 @@
-module.exports = {
+import type { StorybookConfig } from '@storybook/react-vite';
+
+const config: StorybookConfig = {
     addons: [
         '@storybook/addon-docs',
         '@storybook/addon-essentials',
         '@storybook/addon-storysource',
-        '@storybook/addon-mdx-gfm',
     ],
+
     stories: ['../stories/**/*.stories.@(j|t)sx'],
-    framework: {
-        name: '@storybook/react-webpack5',
-        options: {},
-    },
+    framework: '@storybook/react-vite',
     docs: {
         autodocs: true,
     },
+    typescript: {
+        reactDocgen: 'react-docgen-typescript'
+    }
 };
+
+export default config;

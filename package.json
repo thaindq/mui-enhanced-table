@@ -1,24 +1,28 @@
 {
   "name": "mui-enhanced-table",
-  "version": "0.4.2",
+  "version": "0.4.4",
   "description": "",
-  "main": "./dist/index.js",
-  "module": "./dist/index.esm.js",
-  "umd:main": "./dist/index.umd.js",
-  "exports": {
-    "require": "./dist/index.js",
-    "import": "./dist/index.modern.js"
-  },
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "targets": {
+    "main": {
+      "optimize": true
+    },
+    "module": {
+      "optimize": true
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean",
-    "build": "microbundle --jsx React.createElement --jsxFragment React.Fragment",
+    "build": "parcel build",
     "start": "npm run storybook",
-    "clean": "rimraf ./dist && mkdir dist",
+    "clean": "rimraf dist && mkdir dist",
     "lint": "eslint {src,tests,stories}/**/*.{ts,tsx} --fix",
     "format": "prettier --write {src,stories,tests}/**/*.{ts,tsx}",
     "storybook": "storybook dev -p 6006",
@@ -35,7 +39,7 @@
   },
   "homepage": "https://github.com/thaindq/mui-enhanced-table#readme",
   "dependencies": {
-    "classnames": "^2.3.2",
+    "clsx": "^2.1.1",
     "lodash": "^4.17.21",
     "react-beautiful-dnd": "^13.1.1"
   },
@@ -48,42 +52,37 @@
     "react-dom": "^17.0.2 || ^18.2.0"
   },
   "devDependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@babel/preset-env": "7.23.6",
-    "@babel/preset-react": "7.23.3",
-    "@babel/preset-typescript": "7.23.3",
-    "@faker-js/faker": "8.3.1",
-    "@mui/icons-material": "^5.15.0",
-    "@mui/material": "^5.15.0",
-    "@storybook/addon-docs": "7.6.4",
-    "@storybook/addon-essentials": "7.6.4",
-    "@storybook/addon-mdx-gfm": "7.6.4",
-    "@storybook/addon-storysource": "^7.6.4",
-    "@storybook/addons": "^7.6.4",
-    "@storybook/react": "7.6.4",
-    "@storybook/react-webpack5": "7.6.4",
-    "@types/classnames": "^2.3.1",
-    "@types/lodash": "^4.14.202",
-    "@types/react": "^18.2.43",
-    "@types/react-beautiful-dnd": "^13.1.7",
-    "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
-    "eslint": "^8.55.0",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@faker-js/faker": "9.0.3",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/material": "^5.16.7",
+    "@parcel/packager-ts": "2.12.0",
+    "@parcel/transformer-typescript-types": "2.12.0",
+    "@storybook/addon-docs": "8.3.5",
+    "@storybook/addon-essentials": "8.3.5",
+    "@storybook/addon-storysource": "^8.3.5",
+    "@storybook/react": "8.3.5",
+    "@storybook/react-vite": "^8.3.5",
+    "@types/lodash": "^4.17.10",
+    "@types/react": "^18.3.11",
+    "@types/react-beautiful-dnd": "^13.1.8",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "html-webpack-plugin": "5.5.4",
+    "eslint-plugin-prettier": "^5.2.1",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
-    "microbundle": "^0.15.1",
-    "prettier": "^3.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "rimraf": "^5.0.5",
-    "storybook": "7.6.4",
+    "parcel": "2.12.0",
+    "prettier": "^3.3.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rimraf": "^6.0.1",
+    "storybook": "8.3.5",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.6.3"
   },
   "husky": {
     "hooks": {

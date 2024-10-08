@@ -12,7 +12,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import cx from 'classnames';
+import clsx from 'clsx';
 import { get, isArray, isFunction, isString } from 'lodash';
 import React from 'react';
 import {
@@ -275,7 +275,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
 
         return (
             <Root
-                className={cx(className, muiTableBodyClasses.root)}
+                className={clsx(className, muiTableBodyClasses.root)}
                 // sx={{
                 //     display: hasMessage ? undefined : 'table-footer-group',
                 // }}
@@ -323,7 +323,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                             expanded = expandedRowIds.includes(row.id),
                         } = (onRowStatus && onRowStatus(row.id, row.data, rowIndex)) || {};
 
-                        const rowClassName = cx(
+                        const rowClassName = clsx(
                             muiTableBodyClasses.row,
                             {
                                 [muiTableBodyClasses.rowNoHeader]: !showHeader || stickyHeader,
@@ -333,7 +333,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                             className,
                         );
 
-                        const cellClassName = cx(muiTableBodyClasses.cell, {
+                        const cellClassName = clsx(muiTableBodyClasses.cell, {
                             [muiTableBodyClasses.cellDisabled]: disabled,
                             [muiTableBodyClasses.cellHighlighted]: selected || highlighted,
                             [muiTableBodyClasses.cellLastRow]: rowIndex === displayData.length - 1,
@@ -356,7 +356,9 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                     }}
                                 >
                                     {expandable && (
-                                        <TableCell className={cx(cellClassName, muiTableBodyClasses.cellExpandButton)}>
+                                        <TableCell
+                                            className={clsx(cellClassName, muiTableBodyClasses.cellExpandButton)}
+                                        >
                                             <IconButton
                                                 onClick={(event) =>
                                                     +event.stopPropagation() ||
@@ -376,7 +378,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
 
                                     {selectable && (
                                         <TableCell
-                                            className={cx(cellClassName, muiTableBodyClasses.cellSelectionControl)}
+                                            className={clsx(cellClassName, muiTableBodyClasses.cellSelectionControl)}
                                         >
                                             {(multiSelect && (
                                                 <Checkbox
@@ -432,7 +434,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                         return (
                                             <TableCell
                                                 key={column.id}
-                                                className={cx(cellClassName, className, {
+                                                className={clsx(cellClassName, className, {
                                                     [muiTableBodyClasses.cellNoWrap]: noWrap,
                                                 })}
                                                 align={column.align}
@@ -460,7 +462,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                     {((isArray(actions) && actions.length > 0) || actions) && (
                                         <TableCell
                                             align="right"
-                                            className={cx(
+                                            className={clsx(
                                                 cellClassName,
                                                 muiTableBodyClasses.cellRowActions,
                                                 muiTableBodyClasses.cellNoWrap,

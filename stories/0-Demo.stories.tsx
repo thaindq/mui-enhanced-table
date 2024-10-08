@@ -1,5 +1,5 @@
-import { Typography } from '@material-ui/core';
-import faker from 'faker';
+import { Typography } from '@mui/material';
+import { faker } from '@faker-js/faker';
 import React from 'react';
 import MuiTable, { TableColumn } from '../src';
 
@@ -7,10 +7,10 @@ const data = Array(100)
     .fill(null)
     .map(() => {
         return {
-            firstName: faker.name.firstName(),
-            lastName: faker.name.lastName(),
-            age: faker.random.number({ min: 10, max: 100 }),
-            country: faker.address.country(),
+            firstName: faker.person.firstName(),
+            lastName: faker.person.lastName(),
+            age: faker.number.int({ min: 10, max: 100 }),
+            country: faker.location.country(),
         };
     });
 
@@ -56,7 +56,6 @@ export const SimpleTable: React.VFC = () => (
             columnOrders: ['age', 'country', 'lastName'],
         }}
         components={{
-            customsBottom: [() => <Typography>Test</Typography>],
         }}
         onRowClick={(id) => console.log(id)}
         onDataExport={(data) => console.log(data)}

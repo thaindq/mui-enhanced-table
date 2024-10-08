@@ -1,6 +1,6 @@
 import { GetApp, Refresh, ViewColumn } from '@mui/icons-material';
 import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography, Box } from '@mui/material';
-import cx from 'classnames';
+import clsx from 'clsx';
 import { isFunction } from 'lodash';
 import React from 'react';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
@@ -111,7 +111,7 @@ export class TableToolbar extends React.Component<TableToolbarProps, State> {
         return (
             <Root>
                 <Toolbar
-                    className={cx(muiTableToolbarClasses.toolbar, {
+                    className={clsx(muiTableToolbarClasses.toolbar, {
                         // [classes.highlight]: selectionCount > 0,
                     })}
                 >

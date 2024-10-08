@@ -1,5 +1,5 @@
 import { Checkbox, SortDirection, styled, TableCell, TableHead, TableRow, TableSortLabel } from '@mui/material';
-import cx from 'classnames';
+import clsx from 'clsx';
 import React from 'react';
 import { TableColumn, TableColumnId, TableOptions } from '../types';
 import { generateNamesObject } from '../utils';
@@ -64,7 +64,7 @@ class MuiTableHead extends React.Component<TableHeadProps> {
         const { noWrap, sortable, selectable, expandable, allCapsHeader, multiSelect } = options;
 
         return (
-            <Root className={cx(className, muiTableHeadClasses.root)}>
+            <Root className={clsx(className, muiTableHeadClasses.root)}>
                 <TableRow className={muiTableHeadClasses.row}>
                     {expandable && <TableCell className={muiTableHeadClasses.cell} />}
 
@@ -80,11 +80,11 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                         </TableCell>
                     )}
 
-                    {columns.map((column, index) => (
+                    {columns.map((column) => (
                         <TableCell
                             key={column.id}
                             sx={column.headStyle}
-                            className={cx(muiTableHeadClasses.cell, {
+                            className={clsx(muiTableHeadClasses.cell, {
                                 [muiTableHeadClasses.allCaps]: allCapsHeader,
                                 [muiTableHeadClasses.cellNoWrap]: noWrap,
                             })}
@@ -105,7 +105,7 @@ class MuiTableHead extends React.Component<TableHeadProps> {
                     ))}
 
                     {hasRowActions && (
-                        <TableCell className={cx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)} />
+                        <TableCell className={clsx(muiTableHeadClasses.cell, muiTableHeadClasses.cellRowActions)} />
                     )}
                 </TableRow>
             </Root>
