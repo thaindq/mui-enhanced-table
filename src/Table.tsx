@@ -1,5 +1,5 @@
 import { Grid, Paper, SortDirection, styled, Table, TablePagination, Box } from '@mui/material';
-import cx from 'classnames';
+import clsx from 'clsx';
 import {
     debounce,
     find,
@@ -27,6 +27,7 @@ import { SearchHighlightedFormatter } from './formatters/SearchHighlightedFormat
 import {
     SearchMatcher,
     SearchMatchers,
+    TableColumn,
     TableColumnId,
     TableOptions,
     TableProps,
@@ -115,9 +116,9 @@ const Root = styled(Paper, {
 
 const DEFAULT_STATE: TableState = {
     columns: [],
-    originalColumns: [],
+    rawColumns: [],
     data: [],
-    originalData: [],
+    rawData: [],
     status: 'idle',
     isLoading: false,
     isError: false,
@@ -159,53 +160,20 @@ const DEFAULT_STATE: TableState = {
         skeletonRows: 3,
         exportable: false,
     },
+    rawOptions: {},
 };
 
 export const MuiTableContext = React.createContext<TableState>(DEFAULT_STATE);
 
 export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>, TableState<T>> {
     static getInitialState = (props: TableProps): TableState => {
-        const { data: rawData, dataId, columns: rawColumns, init, options, dependencies } = props;
+        const { data: rawData, dataId, columns: rawColumns, init, options: rawOptions, dependencies } = props;
 
-        const mergedOptions = mergeOverwriteArray({ ...DEFAULT_STATE.options }, options);
+        const options = mergeOverwriteArray({ ...DEFAULT_STATE.options }, rawOptions);
 
-        const seenColumnIds: string[] = [];
         const data = isFunction(rawData) ? [] : MuiTable.mapDataToTableRow(rawData, dataId);
-        const originalColumns = rawColumns.map((column) => {
-            const {
-                id,
-                name = '',
-                display = true,
-                sortable = true,
-                filterable = true,
-                searchable = true,
-                formatter = SearchHighlightedFormatter.getInstance(),
-                ...rest
-            } = column;
 
-            if (id === undefined) {
-                throw new Error(`Columns must have \`id\`:\n${JSON.stringify(column, null, 4)}`);
-            }
-
-            if (seenColumnIds.includes(id)) {
-                throw new Error(`Column's \`id\` must be unique. Duplicated id: ${id}`);
-            } else {
-                seenColumnIds.push(id);
-            }
-
-            return {
-                id,
-                name,
-                display,
-                sortable,
-                filterable,
-                searchable,
-                formatter,
-                ...rest,
-            };
-        });
-
-        const columns = sortBy(originalColumns, (column) => {
+        const columns = sortBy(MuiTable.prepareTableColumns(rawColumns), (column) => {
             const index = init?.columnOrders?.indexOf(column.id) ?? -1;
 
             if (index === -1) {
@@ -222,12 +190,13 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             ...DEFAULT_STATE,
             ...init,
             dependencies,
-            options: mergedOptions,
-            originalData: props.data,
+            options,
+            rawOptions,
             data,
+            rawData,
             displayData: data,
             columns,
-            originalColumns,
+            rawColumns,
         };
     };
 
@@ -249,7 +218,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         let currentPage = mergedState.currentPage;
         let displayData = mergedState.displayData;
 
-        if (!isFunction(newValues.originalData) && !isFunction(prevState.originalData)) {
+        if (!isFunction(newValues.rawData) && !isFunction(prevState.rawData)) {
             if (hasNewData || hasNewSearchText || hasNewFilteredData) {
                 displayData = data;
                 const filteredIds = intersection(
@@ -326,20 +295,24 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             searchMatchers,
             displayData,
             currentPage,
-            itemCount: !isFunction(mergedState.originalData) ? displayData.length : mergedState.itemCount,
+            itemCount: !isFunction(mergedState.rawData) ? displayData.length : mergedState.itemCount,
         };
     };
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
-        if (!isEqual(prevState.dependencies, nextProps.dependencies)) {
+        if (
+            !isEqual(prevState.dependencies, nextProps.dependencies) ||
+            !isEqual(prevState.rawColumns, nextProps.columns) ||
+            !isEqual(prevState.rawOptions, nextProps.options)
+        ) {
             return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState);
-        } else if (prevState && prevState.originalData !== nextProps.data) {
+        } else if (prevState && prevState.rawData !== nextProps.data) {
             return MuiTable.getNextState(
                 {
                     data: isFunction(nextProps.data)
                         ? []
                         : MuiTable.mapDataToTableRow(nextProps.data, nextProps.dataId),
-                    originalData: nextProps.data,
+                    rawData: nextProps.data,
                 },
                 prevState,
             );
@@ -353,6 +326,43 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             return {
                 id: isFunction(dataId) ? dataId(item) : String(dataId ? get(item, dataId, index) : index),
                 data: item,
+            };
+        });
+    };
+
+    static prepareTableColumns = <T extends {}>(columns: readonly TableColumn<T>[]): TableColumn<T>[] => {
+        const seenColumnIds: string[] = [];
+        return columns.map((column) => {
+            const {
+                id,
+                name = '',
+                display = true,
+                sortable = true,
+                filterable = true,
+                searchable = true,
+                formatter = SearchHighlightedFormatter.getInstance(),
+                ...rest
+            } = column;
+
+            if (id === undefined) {
+                throw new Error(`Columns must have \`id\`:\n${JSON.stringify(column, null, 4)}`);
+            }
+
+            if (seenColumnIds.includes(id)) {
+                throw new Error(`Column's \`id\` must be unique. Duplicated id: ${id}`);
+            } else {
+                seenColumnIds.push(id);
+            }
+
+            return {
+                id,
+                name,
+                display,
+                sortable,
+                filterable,
+                searchable,
+                formatter,
+                ...rest,
             };
         });
     };
@@ -378,7 +388,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             (currState) => {
                 prevState = currState;
 
-                if (isFunction(this.state.originalData)) {
+                if (isFunction(this.state.rawData)) {
                     if (
                         forceFetchData ||
                         (newValues.currentPage !== undefined &&
@@ -395,7 +405,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                         newValues.isLoading = true;
                         newValues.isError = false;
                         this.state
-                            .originalData({
+                            .rawData({
                                 pageNumber: newValues.currentPage ?? currState.currentPage,
                                 pageSize: newValues.rowsPerPage ?? currState.rowsPerPage,
                                 searchText: newValues.searchText ?? currState.searchText,
@@ -436,7 +446,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
     };
 
     private shouldFetchData() {
-        return isFunction(this.state.originalData);
+        return isFunction(this.state.rawData);
     }
 
     toggleColumn = (columnId: TableColumnId, display?: boolean) => {
@@ -610,7 +620,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
 
     resetColumns = () => {
         this.updateTableState({
-            columns: this.state.originalColumns,
+            columns: MuiTable.prepareTableColumns(this.state.rawColumns),
         });
     };
 
@@ -753,7 +763,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                 <Root
                     showBorder={showBorder}
                     elevation={showBorder ? 0 : elevation}
-                    className={cx(muiTableClasses.root, className, {
+                    className={clsx(muiTableClasses.root, className, {
                         [muiTableClasses.border]: showBorder,
                     })}
                 >
@@ -781,7 +791,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
                             <Grid
                                 item
                                 xs={12}
-                                className={cx(muiTableClasses.customComponentsContainer, {
+                                className={clsx(muiTableClasses.customComponentsContainer, {
                                     [muiTableClasses.noTitle]: !title && showToolbar,
                                 })}
                             >

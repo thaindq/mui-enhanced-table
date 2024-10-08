@@ -160,9 +160,9 @@ export interface TableProps<T = any> {
 
 export interface TableState<T = any> {
     columns: readonly TableColumn<T>[];
-    originalColumns: readonly TableColumn<T>[];
+    rawColumns: readonly TableColumn<T>[];
     data: readonly TableRow<T>[];
-    originalData: TableProps<T>['data'];
+    rawData: TableProps<T>['data'];
     status: TableStatus;
     isLoading: boolean;
     isError: boolean;
@@ -179,6 +179,7 @@ export interface TableState<T = any> {
     searchText: string;
     searchMatchers: SearchMatchers | null;
     options: Required<TableOptions>;
+    rawOptions?: TableOptions;
     dependencies?: any[];
 }
 
