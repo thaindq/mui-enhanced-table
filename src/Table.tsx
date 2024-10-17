@@ -165,9 +165,10 @@ const DEFAULT_STATE: TableState = {
 
 export const MuiTableContext = React.createContext<TableState>(DEFAULT_STATE);
 
-export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>, TableState<T>> {
+export class MuiTable<T extends object = any> extends React.Component<TableProps<T>, TableState<T>> {
     static getInitialState = (props: TableProps): TableState => {
-        const { data: rawData, dataId, columns: rawColumns, init, options: rawOptions, dependencies } = props;
+        const { data: rawData, dataId, columns: rawColumns, options: rawOptions, dependencies, init } = props;
+        const { hiddenColumns } = init || {};
 
         const options = mergeOverwriteArray({ ...DEFAULT_STATE.options }, rawOptions);
 
@@ -183,7 +184,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
             return index;
         }).map((column) => ({
             ...column,
-            display: init?.hiddenColumns === undefined ? column.display : !init.hiddenColumns.includes(column.id),
+            display: !hiddenColumns?.length ? column.display : !hiddenColumns.includes(column.id),
         }));
 
         return {
@@ -321,7 +322,10 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         return null;
     };
 
-    static mapDataToTableRow = <T extends {}>(data: readonly T[], dataId?: TableProps<T>['dataId']): TableRow<T>[] => {
+    static mapDataToTableRow = <T extends object>(
+        data: readonly T[],
+        dataId?: TableProps<T>['dataId'],
+    ): TableRow<T>[] => {
         return data.map((item, index) => {
             return {
                 id: isFunction(dataId) ? dataId(item) : String(dataId ? get(item, dataId, index) : index),
@@ -330,7 +334,7 @@ export class MuiTable<T extends {} = any> extends React.Component<TableProps<T>,
         });
     };
 
-    static prepareTableColumns = <T extends {}>(columns: readonly TableColumn<T>[]): TableColumn<T>[] => {
+    static prepareTableColumns = <T extends object>(columns: readonly TableColumn<T>[]): TableColumn<T>[] => {
         const seenColumnIds: string[] = [];
         return columns.map((column) => {
             const {
