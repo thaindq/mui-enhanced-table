@@ -464,9 +464,12 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                 display: display === undefined ? !columns[index].display : display,
             };
 
-            this.updateTableState({
-                columns,
-            });
+            this.updateTableState(
+                {
+                    columns,
+                },
+                () => this.props.onColumnsToggle?.(columns.map((column) => column.id)),
+            );
         }
     };
 
@@ -623,9 +626,12 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
     };
 
     resetColumns = () => {
-        this.updateTableState({
-            columns: MuiTable.prepareTableColumns(this.state.rawColumns),
-        });
+        this.updateTableState(
+            {
+                columns: MuiTable.prepareTableColumns(this.state.rawColumns),
+            },
+            () => this.props.onColumnsReset?.(),
+        );
     };
 
     scrollToRow = (rowId: string) => {

@@ -184,7 +184,7 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
         const { selectedRowIds, onRowSelect, onToggleRowSelection } = this.props;
 
         onToggleRowSelection(rowId);
-        onRowSelect && onRowSelect(rowId, rowData, rowIndex, !selectedRowIds.includes(rowId));
+        onRowSelect?.(rowId, rowData, rowIndex, !selectedRowIds.includes(rowId));
     };
 
     handleRowExpand = (rowId: TableRowId, rowData: T, rowIndex: number) => {
@@ -350,9 +350,12 @@ class MuiTableBody<T = any> extends React.Component<TableBodyProps<T>> {
                                     selected={selected}
                                     hover={highlightRow}
                                     onClick={(event: any) => {
-                                        +event.stopPropagation() ||
-                                            disabled ||
-                                            this.handleRowClick(row.id, row.data, rowIndex);
+                                        if (disabled) {
+                                            return;
+                                        }
+
+                                        event.stopPropagation();
+                                        this.handleRowClick(row.id, row.data, rowIndex);
                                     }}
                                 >
                                     {expandable && (

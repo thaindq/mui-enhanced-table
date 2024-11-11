@@ -153,6 +153,8 @@ export interface TableProps<T = any> {
         columnIndex: number,
     ) => TableCellStatus;
     onDataExport?: (content: string[][]) => void;
+    onColumnsReset?: VoidFunction;
+    onColumnsToggle?: (columns: TableColumnId[]) => void;
     onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
     onNoDataMessage?: (data: readonly TableRow<T>[]) => ReactNode;
     onErrorMessage?: (data: readonly TableRow<T>[]) => ReactNode;
