@@ -1,6 +1,6 @@
 {
   "name": "mui-enhanced-table",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "",
   "source": "src/index.ts",
   "main": "dist/index.js",
@@ -18,12 +18,13 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "husky",
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean",
     "build": "parcel build",
     "start": "npm run storybook",
     "clean": "rimraf dist && mkdir dist",
-    "lint": "eslint {src,tests,stories}/**/*.{ts,tsx} --fix",
+    "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint {src,tests,stories}/**/*.{ts,tsx} --fix",
     "format": "prettier --write {src,stories,tests}/**/*.{ts,tsx}",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
@@ -44,50 +45,51 @@
     "react-beautiful-dnd": "^13.1.1"
   },
   "peerDependencies": {
-    "@emotion/react": "^11.10.6",
-    "@emotion/styled": "^11.10.6",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.11.16",
-    "react": "^17.0.2 || ^18.2.0",
-    "react-dom": "^17.0.2 || ^18.2.0"
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^5.16.0 || ^6.3.0",
+    "@mui/material": "^5.16.0 || ^6.3.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
-    "@faker-js/faker": "9.0.3",
-    "@mui/icons-material": "^5.16.7",
-    "@mui/material": "^5.16.7",
-    "@parcel/packager-ts": "2.12.0",
-    "@parcel/transformer-typescript-types": "2.12.0",
-    "@storybook/addon-docs": "8.3.5",
-    "@storybook/addon-essentials": "8.3.5",
-    "@storybook/addon-storysource": "^8.3.5",
-    "@storybook/react": "8.3.5",
-    "@storybook/react-vite": "^8.3.5",
-    "@types/lodash": "^4.17.10",
-    "@types/react": "^18.3.11",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@faker-js/faker": "9.3.0",
+    "@mui/icons-material": "^6.3.1",
+    "@mui/material": "^6.3.1",
+    "@parcel/packager-ts": "2.13.3",
+    "@parcel/transformer-typescript-types": "2.13.3",
+    "@storybook/addon-docs": "8.4.7",
+    "@storybook/addon-essentials": "8.4.7",
+    "@storybook/addon-storysource": "^8.4.7",
+    "@storybook/react": "8.4.7",
+    "@storybook/react-vite": "^8.4.7",
+    "@types/lodash": "^4.17.14",
+    "@types/react": "^19.0.3",
     "@types/react-beautiful-dnd": "^13.1.8",
-    "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.8.1",
-    "@typescript-eslint/parser": "^8.8.1",
-    "eslint": "^8.57.1",
+    "@types/react-dom": "^19.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "cross-env": "7.0.3",
+    "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "husky": "^4.3.8",
-    "lint-staged": "^10.5.4",
-    "parcel": "2.12.0",
-    "prettier": "^3.3.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "parcel": "2.13.3",
+    "prettier": "^3.4.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "rimraf": "^6.0.1",
-    "storybook": "8.3.5",
+    "storybook": "8.4.7",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "npm run lint"
+  "overrides": {
+    "react-beautiful-dnd": {
+      "react": "^18.0.0 || ^19.0.0",
+      "react-dom": "^18.0.0 || ^19.0.0"
     }
   },
   "lint-staged": {
