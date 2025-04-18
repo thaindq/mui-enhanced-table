@@ -1,5 +1,14 @@
 import { DragHandle } from '@mui/icons-material';
-import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, styled, Box } from '@mui/material';
+import {
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    FormGroup,
+    styled,
+    Box,
+    formControlClasses,
+} from '@mui/material';
 import React from 'react';
 import {
     DragDropContext,
@@ -12,52 +21,17 @@ import {
 import { TableColumn, TableColumnId, TableTranslations } from '../types';
 import { generateNamesObject } from '../utils';
 
-export const muiTableViewColumnsClasses = generateNamesObject(
-    ['root', 'title', 'formGroup', 'formControl', 'checkbox', 'checkboxRoot', 'checked', 'dragHandle', 'resetButton'],
-    'MuiTableViewColumns',
-);
-
 const Root = styled(Box)(({ theme }) => ({
-    [`& .${muiTableViewColumnsClasses.root}`]: {
-        padding: '8px 16px 16px 24px',
-        fontFamily: 'Roboto',
+    [`& .${formControlClasses.root}`]: {
+        padding: theme.spacing(2, 2, 2, 3),
     },
-    [`& .${muiTableViewColumnsClasses.title}`]: {
-        marginLeft: '-7px',
-        fontSize: '14px',
-        // color: "#424242",
-        textAlign: 'left',
-        fontWeight: 500,
-    },
-    [`& .${muiTableViewColumnsClasses.formGroup}`]: {
-        marginTop: 8,
-    },
-    [`& .${muiTableViewColumnsClasses.formControl}`]: {
-        // height: 36
-    },
-    [`& .${muiTableViewColumnsClasses.checkbox}`]: {
-        // width: "32px",
-        // height: "32px",
-    },
-    [`& .${muiTableViewColumnsClasses.checkboxRoot}`]: {
-        // "&$checked": {
-        //     color: "#027cb5",
-        // },
-    },
-    [`& .${muiTableViewColumnsClasses.checked}`]: {},
-    // [`& .${muiTableViewColumnsClasses.label}`]: {
-    //     fontSize: "15px",
-    //     marginLeft: "8px",
-    //     color: "#4a4a4a",
-    // },
     [`& .${muiTableViewColumnsClasses.dragHandle}`]: {
         display: 'inline-block',
-        color: theme.palette.text.primary,
         verticalAlign: 'middle',
-        marginRight: 8,
+        marginRight: theme.spacing(1),
     },
     [`& .${muiTableViewColumnsClasses.resetButton}`]: {
-        marginTop: 8,
+        marginTop: theme.spacing(1),
     },
 }));
 
@@ -69,84 +43,76 @@ interface TableViewColumnProps {
     onColumnsReset: () => void;
 }
 
-export class TableViewColumns extends React.Component<TableViewColumnProps> {
-    renderCheckbox = (column: TableColumn) => {
-        const { onColumnToggle } = this.props;
-
-        return (
-            <Checkbox
-                className={muiTableViewColumnsClasses.checkbox}
-                value={column.name}
-                checked={column.display}
-                onChange={() => onColumnToggle(column.id)}
-                classes={{
-                    root: muiTableViewColumnsClasses.checkboxRoot,
-                    checked: muiTableViewColumnsClasses.checked,
-                }}
-            />
-        );
-    };
-
-    render() {
-        const { translations, columns, onColumnDrag, onColumnsReset } = this.props;
-
-        return (
-            <DragDropContext onDragEnd={onColumnDrag}>
-                <Droppable droppableId="droppable" direction="vertical">
-                    {(provided: DroppableProvided) => (
-                        <Root ref={provided.innerRef} {...provided.droppableProps}>
-                            <FormControl component={'fieldset'} className={muiTableViewColumnsClasses.root}>
-                                <FormGroup className={muiTableViewColumnsClasses.formGroup}>
-                                    {columns.map((column, index) => {
-                                        return (
-                                            <Draggable key={column.id} draggableId={column.id} index={index}>
-                                                {(provided) => (
+export const TableViewColumns: React.FunctionComponent<TableViewColumnProps> = ({
+    translations,
+    columns,
+    onColumnDrag,
+    onColumnsReset,
+    onColumnToggle,
+}) => {
+    return (
+        <DragDropContext onDragEnd={onColumnDrag}>
+            <Droppable droppableId="droppable" direction="vertical">
+                {(provided: DroppableProvided) => (
+                    <Root ref={provided.innerRef} {...provided.droppableProps}>
+                        <FormControl component={'fieldset'}>
+                            <FormGroup>
+                                {columns.map((column, index) => {
+                                    return (
+                                        <Draggable key={column.id} draggableId={column.id} index={index}>
+                                            {(provided) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    style={{
+                                                        ...provided.draggableProps.style,
+                                                    }}
+                                                >
                                                     <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        style={{
-                                                            ...provided.draggableProps.style,
-                                                        }}
+                                                        className={muiTableViewColumnsClasses.dragHandle}
+                                                        {...provided.dragHandleProps}
                                                     >
-                                                        <div
-                                                            className={muiTableViewColumnsClasses.dragHandle}
-                                                            {...provided.dragHandleProps}
-                                                        >
-                                                            <DragHandle
-                                                                className={muiTableViewColumnsClasses.dragHandle}
-                                                            />
-                                                        </div>
-
-                                                        <FormControlLabel
-                                                            key={column.id}
-                                                            label={column.name || <i>Untitled</i>}
-                                                            control={this.renderCheckbox(column)}
-                                                            classes={{
-                                                                root: muiTableViewColumnsClasses.formControl,
-                                                                // label: classes.label,
-                                                            }}
-                                                        />
+                                                        <DragHandle className={muiTableViewColumnsClasses.dragHandle} />
                                                     </div>
-                                                )}
-                                            </Draggable>
-                                        );
-                                    })}
 
-                                    {provided.placeholder}
+                                                    <FormControlLabel
+                                                        key={column.id}
+                                                        label={
+                                                            column.name || <i>{translations?.untitled ?? 'Untitled'}</i>
+                                                        }
+                                                        control={
+                                                            <Checkbox
+                                                                value={column.name}
+                                                                checked={column.display}
+                                                                onChange={() => onColumnToggle(column.id)}
+                                                            />
+                                                        }
+                                                    />
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    );
+                                })}
 
-                                    <Button
-                                        color="primary"
-                                        className={muiTableViewColumnsClasses.resetButton}
-                                        onClick={onColumnsReset}
-                                    >
-                                        {translations?.resetDefault ?? 'Reset to default'}
-                                    </Button>
-                                </FormGroup>
-                            </FormControl>
-                        </Root>
-                    )}
-                </Droppable>
-            </DragDropContext>
-        );
-    }
-}
+                                {provided.placeholder}
+
+                                <Button
+                                    color="error"
+                                    className={muiTableViewColumnsClasses.resetButton}
+                                    onClick={onColumnsReset}
+                                >
+                                    {translations?.resetDefault ?? 'Reset to default'}
+                                </Button>
+                            </FormGroup>
+                        </FormControl>
+                    </Root>
+                )}
+            </Droppable>
+        </DragDropContext>
+    );
+};
+
+export const muiTableViewColumnsClasses = generateNamesObject(
+    ['container', 'dragHandle', 'resetButton'],
+    TableViewColumns.name,
+);

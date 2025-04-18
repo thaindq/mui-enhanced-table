@@ -1,6 +1,7 @@
+import { toString } from 'lodash';
 import React from 'react';
-import { BaseFormatter } from './BaseFormatter';
 import { FormatterProps } from '../types';
+import { BaseFormatter } from './BaseFormatter';
 
 export class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
     static instance: SearchHighlightedFormatter;
@@ -22,9 +23,9 @@ export class SearchHighlightedFormatter<T = any> extends BaseFormatter<T> {
         this.backgroundColor = backgroundColor;
     }
 
-    format({ value, item, matcher }: FormatterProps<T>) {
+    format({ value, matcher }: FormatterProps<T>) {
         if (!matcher) {
-            return this.getValueString(value, item);
+            return toString(value);
         }
 
         const { pre, post, match } = matcher;

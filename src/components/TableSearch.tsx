@@ -1,84 +1,93 @@
 import { Clear, Search } from '@mui/icons-material';
-import { IconButton, InputAdornment, TextField, TextFieldProps, styled } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import {
+    alpha,
+    Box,
+    IconButton,
+    InputAdornment,
+    inputBaseClasses,
+    OutlinedInput,
+    outlinedInputClasses,
+    styled,
+} from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { useUpdateEffect } from '@react-hookz/web';
 import { TableRow } from '../types';
 import { generateNamesObject } from '../utils';
-
-export const muiTableSearchClasses = generateNamesObject(['textField', 'clearSearchButton'], 'MuiTableSearch');
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-    flexShrink: 0,
-    color: theme.palette.text.secondary,
-    width: '100%',
-    maxWidth: 600,
-    [`& .${muiTableSearchClasses.clearSearchButton}`]: {
-        width: 20,
-        height: 20,
-        fontSize: '16px',
-        '& > span': {
-            position: 'absolute',
-        },
-    },
-}));
 
 export interface TableSearchProps<T = any> {
     displayData: readonly TableRow<T>[];
     onChange: (value: string) => void;
-    TextFieldProps?: Partial<TextFieldProps>;
 }
 
-export function useFirstMountState(): boolean {
-    const isFirst = useRef(true);
+const Container = styled(Box)(({ theme }) => ({
+    width: '100%',
+    borderRadius: theme.shape.borderRadius,
+    transition: 'all ease 0.5s',
+    backgroundColor: alpha(theme.palette.action.hover, 0.02),
+    '&:hover': {
+        backgroundColor: theme.palette.action.hover,
+    },
+    [`& .${tableSearchClasses.input}`]: {
+        color: 'inherit',
+        [`& .${outlinedInputClasses.notchedOutline}`]: {
+            borderWidth: 0,
+            // borderColor: theme.palette.action.hover
+        },
+        [`& .${inputBaseClasses.input}`]: {
+            // padding: theme.spacing(1.5),
+        },
+    },
+}));
 
-    if (isFirst.current) {
-        isFirst.current = false;
-
-        return true;
-    }
-
-    return isFirst.current;
-}
-
-const useUpdateEffect: typeof useEffect = (effect, deps) => {
-    const isFirstMount = useFirstMountState();
-
-    useEffect(() => {
-        if (!isFirstMount) {
-            return effect();
-        }
-    }, deps);
-};
-
-export const TableSearch = <T = any,>({ onChange, TextFieldProps }: TableSearchProps<T>): React.ReactElement => {
+export const TableSearch = <T = any,>({ onChange }: TableSearchProps<T>): React.ReactElement => {
     const [searchText, setSearchText] = useState('');
 
     useUpdateEffect(() => {
         onChange(searchText);
     }, [searchText]);
 
+    const inputRef = useRef<HTMLInputElement>(null);
+
     return (
-        <StyledTextField
-            className={muiTableSearchClasses.textField}
-            value={searchText}
-            onChange={(event) => {
-                setSearchText(event.target.value);
-            }}
-            variant="standard"
-            {...TextFieldProps}
-            InputProps={{
-                startAdornment: <InputAdornment position="start">{<Search />}</InputAdornment>,
-                endAdornment: !searchText ? null : (
-                    <InputAdornment position="end">
+        <Container className={tableSearchClasses.root}>
+            <OutlinedInput
+                fullWidth
+                placeholder={'Search...'}
+                className={tableSearchClasses.input}
+                value={searchText}
+                onChange={(event) => {
+                    setSearchText(event.target.value);
+                }}
+                inputProps={{
+                    ref: inputRef,
+                }}
+                startAdornment={
+                    <InputAdornment position="start" style={{ color: 'inherit' }}>
+                        <Search color="inherit" />
+                    </InputAdornment>
+                }
+                endAdornment={
+                    <InputAdornment
+                        position="end"
+                        style={{ display: searchText ? undefined : 'none', color: 'inherit' }}
+                    >
                         <IconButton
-                            className={muiTableSearchClasses.clearSearchButton}
-                            onClick={() => setSearchText('')}
+                            color="inherit"
+                            size="small"
+                            onClick={() => {
+                                setSearchText('');
+                                if (inputRef.current) {
+                                    inputRef.current.focus();
+                                }
+                            }}
                         >
-                            <Clear fontSize="inherit" />
+                            <Clear fontSize="small" />
                         </IconButton>
                     </InputAdornment>
-                ),
-                ...TextFieldProps?.InputProps,
-            }}
-        />
+                }
+            />
+        </Container>
     );
 };
+
+export const tableSearchClasses = generateNamesObject(['root', 'input'], TableSearch.name);

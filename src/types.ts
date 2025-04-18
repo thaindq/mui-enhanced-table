@@ -1,6 +1,15 @@
+import { SetRequired } from 'type-fest';
 import { SortDirection, TableCellProps, TablePaginationProps, TextFieldProps } from '@mui/material';
-import { CSSProperties, ReactNode } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import { TableSearchProps, TableToolbarProps } from './components';
+
+export type Paths<T> = T extends object
+    ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K]>}`}` }[keyof T]
+    : never;
+
+export type Leaves<T> = T extends object
+    ? { [K in keyof T]: `${Exclude<K, symbol>}${Leaves<T[K]> extends never ? '' : `.${Leaves<T[K]>}`}` }[keyof T]
+    : never;
 
 export type TableRowId = string;
 export type TableColumnId = string;
@@ -20,27 +29,26 @@ export interface TableRowStatus {
     expanded?: boolean;
 }
 
+export interface TableCellStatus {
+    style?: CSSProperties;
+    className?: string;
+}
+
 export type TableStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected';
 
-export interface TableColumn<T = any> extends Pick<TableCellProps, 'align'> {
+export interface TableColumn<T = any, V = any> extends Pick<TableCellProps, 'align'> {
     id: TableColumnId;
     name: string;
-    defaultValue?: any;
     display?: boolean;
     sortable?: boolean;
-    sortBy?: (value: any) => number | string;
     filterable?: boolean;
     searchable?: boolean;
     dateTime?: boolean;
     headStyle?: CSSProperties;
     bodyStyle?: CSSProperties;
-    formatter?: Formatter<T> | ((props: FormatterProps<T>) => ReactNode);
-    getValue?: (item: T) => string | number;
-}
-
-export interface TableCellStatus {
-    style?: CSSProperties;
-    className?: string;
+    formatter?: Formatter<T, V> | React.FunctionComponent<FormatterProps<T, V>>;
+    getValue?: (item: T) => V;
+    getSortValue?: (value: V) => number | string;
 }
 
 export interface TableIcons {
@@ -54,6 +62,7 @@ export interface TableIcons {
         lastPage?: ReactNode;
     };
     toolbar?: {
+        search?: ReactNode;
         refresh?: ReactNode;
         export?: ReactNode;
         columns?: ReactNode;
@@ -77,7 +86,6 @@ export interface TableOptions {
     showToolbar?: boolean;
     showHeader?: boolean;
     showPagination?: boolean;
-    respectDataStatus?: boolean;
     stickyHeader?: boolean;
     allCapsHeader?: boolean;
     noWrap?: boolean;
@@ -111,7 +119,7 @@ export interface TableProps<T = any> {
           }) => React.ReactElement);
     className?: string;
     title?: string;
-    data: readonly T[] | ((query: DataQuery) => Promise<PaginatedData<T>>);
+    data: readonly T[] | PaginatedData<T> | ((query: DataQuery) => Promise<PaginatedData<T>>);
     dataId?: string | ((data: T) => string);
     columns: readonly TableColumn<T>[];
     status?: TableStatus;
@@ -124,6 +132,7 @@ export interface TableProps<T = any> {
     translations?: TableTranslations;
     defaultComponentProps?: DefaultTableComponentProps;
     icons?: TableIcons;
+    onDataQuery?: (query: DataQuery) => void;
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
     onRowSelect?: (rowId: TableRowId, rowData: T, rowIndex: number, selected: boolean) => void;
     onRowExpand?: (rowId: TableRowId, rowData: T, rowIndex: number, expanded: boolean) => void;
@@ -161,7 +170,7 @@ export interface TableProps<T = any> {
 }
 
 export interface TableState<T = any> {
-    columns: readonly TableColumn<T>[];
+    columns: readonly SetRequired<TableColumn<T>, 'getValue'>[];
     rawColumns: readonly TableColumn<T>[];
     data: readonly TableRow<T>[];
     rawData: TableProps<T>['data'];
@@ -205,9 +214,11 @@ export interface TableAction {
 }
 
 export interface TableComponents<T = any> {
-    search?: React.ComponentType<Omit<TableSearchProps<T>, 'TextFieldProps'>>;
+    search?: React.ComponentType<TableSearchProps<T>>;
     toolbar?: React.ComponentType<TableToolbarProps>;
+    pagination?: React.ComponentType<TablePaginationProps>;
     actions?: TableAction[] | (() => React.ReactElement);
+    selectActions?: TableAction[] | (() => React.ReactElement);
     rowExpand?: React.ComponentType<{
         id: TableRowId;
         data: T;
@@ -219,10 +230,19 @@ export interface TableComponents<T = any> {
 }
 
 export interface TableTranslations {
+    search?: string;
     refresh?: string;
     export?: string;
     columns?: string;
+    selected?: string;
     resetDefault?: string;
+    untitled?: string;
+    firstPage?: string;
+    lastPage?: string;
+    nextPage?: string;
+    previousPage?: string;
+    expand?: string;
+    collapse?: string;
 }
 
 export interface DefaultTableComponentProps {
@@ -242,13 +262,12 @@ export interface SearchMatchers {
     };
 }
 
-export interface Formatter<T = any> {
-    format(props: FormatterProps<T>): ReactNode;
-    getValueString(value: any, item: T): string;
+export interface Formatter<T = any, V = any> {
+    format: React.FunctionComponent<FormatterProps<T, V>>;
 }
 
-export type FormatterProps<T = any> = {
-    value: any;
+export type FormatterProps<T = any, V = any> = {
+    value: V;
     matcher?: SearchMatcher | null;
     selected?: boolean;
     expanded?: boolean;

@@ -1,9 +1,10 @@
-import { GetApp, Refresh, ViewColumn } from '@mui/icons-material';
-import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography, Box } from '@mui/material';
+import { GetApp, Refresh, Search, ViewColumn } from '@mui/icons-material';
+import { alpha, Box, Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography } from '@mui/material';
 import clsx from 'clsx';
 import { isFunction } from 'lodash';
-import React from 'react';
+import React, { useRef } from 'react';
 import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import { useToggle } from '@react-hookz/web';
 import {
     TableAction,
     TableColumn,
@@ -16,36 +17,23 @@ import {
 import { generateNamesObject } from '../utils';
 import { TableViewColumns } from './TableViewColumns';
 
-export const muiTableToolbarClasses = generateNamesObject(
-    ['toolbar', 'highlight', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
-    'MuiTableToolbar',
-);
-
-const Root = styled(Box)(({ theme }) => ({
-    [`& .${muiTableToolbarClasses.toolbar}`]: {
-        paddingLeft: 16,
-        paddingRight: 16,
-        // flexBasis: 64,
-        flexShrink: 0,
+const Root = styled(Toolbar)(({ theme }) => ({
+    [`&.${muiTableToolbarClasses.toolbar}`]: {
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
     },
-    [`& .${muiTableToolbarClasses.highlight}`]: {
-        color: theme.palette.text.primary,
-        backgroundColor: theme.palette.secondary.dark,
+    [`&.${muiTableToolbarClasses.hasSelections}`]: {
+        backgroundColor: alpha(theme.palette.action.active, theme.palette.action.activatedOpacity),
     },
     [`& .${muiTableToolbarClasses.spacer}`]: {
         flex: '1 1 100%',
     },
-    [`& .${muiTableToolbarClasses.actions}`]: {
-        color: theme.palette.text.secondary,
-        display: 'inline-flex',
-    },
-    [`& .${muiTableToolbarClasses.title}`]: {
+    [`& .${muiTableToolbarClasses.title}, .${muiTableToolbarClasses.actions}`]: {
         flex: '0 0 auto',
     },
-    [`& .${muiTableToolbarClasses.viewColumnsContainer}`]: {},
 }));
 
-export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actions'> {
+export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actions' | 'selectActions'> {
     title?: string;
     columns: readonly TableColumn<T>[];
     selectionCount: number;
@@ -59,157 +47,143 @@ export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actio
     onDataRefresh?: () => void;
 }
 
-interface State {
-    showViewColumns: boolean;
-}
-
 export const Action = React.forwardRef<HTMLButtonElement, TableAction>(
     ({ className, name, callback, disabled, icon }, ref) => {
         return (
             <Tooltip title={name}>
-                <div>
-                    <IconButton onClick={callback} disabled={disabled} ref={ref}>
-                        {icon ? icon : <Icon className={className} />}
-                    </IconButton>
-                </div>
+                <IconButton onClick={callback} disabled={disabled} ref={ref}>
+                    {icon ? icon : <Icon className={className} />}
+                </IconButton>
             </Tooltip>
         );
     },
 );
 
-export class TableToolbar extends React.Component<TableToolbarProps, State> {
-    state: State = {
-        showViewColumns: false,
+export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
+    title,
+    columns,
+    actions,
+    selectActions,
+    options,
+    icons,
+    translations,
+    onColumnToggle,
+    onColumnDrag,
+    onColumnsReset,
+    onDataExport,
+    onDataRefresh,
+    selectionCount,
+}) => {
+    const [showViewColumns, toggleViewColumns] = useToggle(false);
+    const viewColumnsButtonRef = useRef<HTMLButtonElement>(null);
+    const { exportable, showTitle, showActions } = options;
+    const hasSelections = selectionCount > 0;
+
+    const renderAction = ({ name, icon, callback, className }: TableAction, index: number) => {
+        return <Action key={index} className={className} name={name} icon={icon} callback={callback} />;
     };
 
-    viewColumnsButtonRef = React.createRef<HTMLButtonElement>();
-
-    toggleViewColumns = () => {
-        this.setState((prevState) => ({
-            showViewColumns: !prevState.showViewColumns,
-        }));
-    };
-
-    render() {
-        const {
-            title,
-            columns,
-            actions,
-            options,
-            icons,
-            translations,
-            onColumnToggle,
-            onColumnDrag,
-            onColumnsReset,
-            onDataExport,
-            onDataRefresh,
-        } = this.props;
-
-        const { showViewColumns } = this.state;
-        const { exportable, showTitle, showActions } = options;
-
-        return (
-            <Root>
-                <Toolbar
-                    className={clsx(muiTableToolbarClasses.toolbar, {
-                        // [classes.highlight]: selectionCount > 0,
-                    })}
-                >
-                    {showTitle && (
-                        <Box className={muiTableToolbarClasses.title}>
-                            {/* {selectionCount > 0 ? (
-                                <Typography color="inherit" variant="subtitle1">
-                                    {selectionCount} selected
-                                </Typography>
-                            ) : ( */}
-                            <Typography variant="h6">{title}</Typography>
-                            {/* )} */}
-                        </Box>
+    return (
+        <Root
+            className={clsx(muiTableToolbarClasses.toolbar, {
+                [muiTableToolbarClasses.hasSelections]: selectionCount > 0,
+            })}
+        >
+            {showTitle && (
+                <Box className={muiTableToolbarClasses.title}>
+                    {hasSelections ? (
+                        <Typography color="inherit" variant="subtitle1">
+                            {selectionCount}&nbsp;{translations?.selected ?? 'selected'}
+                        </Typography>
+                    ) : (
+                        <Typography variant="h6">{title}</Typography>
                     )}
+                </Box>
+            )}
 
-                    <Box className={muiTableToolbarClasses.spacer} />
+            <Box className={muiTableToolbarClasses.spacer} />
 
-                    {showActions && (
-                        <Box className={muiTableToolbarClasses.actions}>
-                            {/* {selectionCount > 0 ? (
-                                this.renderAction({
-                                    name: 'Delete',
-                                    icon: <Delete/>,                            
-                                })
-                            ) : ( */}
-                            <>
-                                {actions &&
-                                    (isFunction(actions)
-                                        ? actions()
-                                        : actions.map(({ name, icon, callback, className }, index) => {
-                                              return (
-                                                  <Action
-                                                      key={index}
-                                                      className={className}
-                                                      name={name}
-                                                      icon={icon}
-                                                      callback={callback}
-                                                  />
-                                              );
-                                          }))}
+            {showActions && (
+                <Box className={muiTableToolbarClasses.actions}>
+                    {hasSelections ? (
+                        isFunction(selectActions) ? (
+                            selectActions()
+                        ) : (
+                            selectActions?.map(renderAction)
+                        )
+                    ) : (
+                        <>
+                            {isFunction(actions) ? actions() : actions?.map(renderAction)}
 
-                                {onDataRefresh && (
-                                    <Action
-                                        name={translations?.refresh ?? 'Refresh'}
-                                        icon={icons?.toolbar?.refresh || <Refresh />}
-                                        callback={onDataRefresh}
-                                    />
-                                )}
-
-                                {exportable && (
-                                    <Action
-                                        name={translations?.export ?? 'Export'}
-                                        icon={icons?.toolbar?.export || <GetApp />}
-                                        callback={onDataExport}
-                                    />
-                                )}
-
+                            {/* {searchable && (
                                 <Action
-                                    name={translations?.columns ?? 'Columns'}
-                                    icon={icons?.toolbar?.columns || <ViewColumn />}
-                                    callback={this.toggleViewColumns}
-                                    ref={this.viewColumnsButtonRef}
+                                    name={translations?.search ?? 'Search'}
+                                    icon={icons?.toolbar?.search || <Search />}
+                                    callback={() => {
+                                        // Implement search functionality
+                                    }}
                                 />
-                            </>
-                            {/* )} */}
-                        </Box>
-                    )}
-                </Toolbar>
+                            )} */}
 
-                <Popover
-                    disablePortal
-                    open={!!showViewColumns}
-                    anchorEl={this.viewColumnsButtonRef.current}
-                    onClose={this.toggleViewColumns}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                    }}
-                    PaperProps={{
+                            {onDataRefresh && (
+                                <Action
+                                    name={translations?.refresh ?? 'Refresh'}
+                                    icon={icons?.toolbar?.refresh || <Refresh />}
+                                    callback={onDataRefresh}
+                                />
+                            )}
+
+                            {exportable && (
+                                <Action
+                                    name={translations?.export ?? 'Export'}
+                                    icon={icons?.toolbar?.export || <GetApp />}
+                                    callback={onDataExport}
+                                />
+                            )}
+
+                            <Action
+                                name={translations?.columns ?? 'Columns'}
+                                icon={icons?.toolbar?.columns || <ViewColumn />}
+                                callback={() => toggleViewColumns()}
+                                ref={viewColumnsButtonRef}
+                            />
+                        </>
+                    )}
+                </Box>
+            )}
+
+            <Popover
+                disablePortal
+                open={!!showViewColumns}
+                anchorEl={viewColumnsButtonRef.current}
+                onClose={() => toggleViewColumns()}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+                slotProps={{
+                    paper: {
                         className: muiTableToolbarClasses.viewColumnsContainer,
-                        // style: {
-                        //     transform: viewColumnsAnchor ? 'none !important' : '', // https://github.com/atlassian/react-beautiful-dnd/issues/1329
-                        // },
-                    }}
-                >
-                    <TableViewColumns
-                        translations={translations}
-                        columns={columns}
-                        onColumnToggle={onColumnToggle}
-                        onColumnDrag={onColumnDrag}
-                        onColumnsReset={onColumnsReset}
-                    />
-                </Popover>
-            </Root>
-        );
-    }
-}
+                    },
+                }}
+            >
+                <TableViewColumns
+                    translations={translations}
+                    columns={columns}
+                    onColumnToggle={onColumnToggle}
+                    onColumnDrag={onColumnDrag}
+                    onColumnsReset={onColumnsReset}
+                />
+            </Popover>
+        </Root>
+    );
+};
+
+export const muiTableToolbarClasses = generateNamesObject(
+    ['toolbar', 'hasSelections', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
+    MuiTableToolbar.name,
+);

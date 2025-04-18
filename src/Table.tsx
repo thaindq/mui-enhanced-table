@@ -1,4 +1,15 @@
-import { Grid, Paper, SortDirection, styled, Table, TablePagination, Box } from '@mui/material';
+import {
+    alpha,
+    Box,
+    CircularProgress,
+    Grid,
+    Paper,
+    SortDirection,
+    styled,
+    Table,
+    TablePagination,
+    Toolbar,
+} from '@mui/material';
 import clsx from 'clsx';
 import {
     debounce,
@@ -10,7 +21,6 @@ import {
     isBoolean,
     isEqual,
     isFunction,
-    isString,
     orderBy,
     sortBy,
     toString,
@@ -18,11 +28,12 @@ import {
 } from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import { SetRequired } from 'type-fest';
 import { TableBody } from './components/TableBody';
 import { TableHead } from './components/TableHead';
 import { TablePaginationActions } from './components/TablePaginationActions';
 import { TableSearch } from './components/TableSearch';
-import { TableToolbar } from './components/TableToolbar';
+import { MuiTableToolbar } from './components/TableToolbar';
 import { SearchHighlightedFormatter } from './formatters/SearchHighlightedFormatter';
 import {
     SearchMatcher,
@@ -35,82 +46,47 @@ import {
     TableRowId,
     TableState,
 } from './types';
-import { generateNamesObject, getMatcher, mergeOverwriteArray, reorder, toggleArrayItem } from './utils';
+import {
+    generateNamesObject,
+    getMatcher,
+    isPaginatedData,
+    mergeOverwriteArray,
+    reorder,
+    toggleArrayItem,
+} from './utils';
 
 export const muiTableClasses = generateNamesObject(
     [
         'root',
-        'container',
         'border',
+        'container',
         'table',
-        'topContainer',
+        'componentsContainer',
         'bottomContainer',
-        'searchContainer',
-        'paginationContainer',
-        'loader',
         'customComponentsContainer',
         'noTitle',
     ],
     'MuiTable',
 );
 
-const extraProps = generateNamesObject('showBorder');
-
-const Root = styled(Paper, {
-    shouldForwardProp: (prop) => extraProps[prop as keyof typeof extraProps] === undefined,
-})<{
-    [extraProps.showBorder]?: boolean;
-}>(({ theme, showBorder }) => ({
+const Root = styled(Paper)(({ theme }) => ({
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    border: showBorder ? `1px solid rgb(110, 110, 110)` : undefined,
+    [`&.${muiTableClasses.border}`]: {
+        border: `1px solid ${theme.palette.action.active}`,
+    },
     [`& .${muiTableClasses.container}`]: {
         overflowX: 'auto',
         position: 'relative',
         flexGrow: 1,
-        // height: '100%'
     },
-    [`& .${muiTableClasses.table}`]: {
-        position: 'relative',
-        display: 'table',
-        // height: 'calc(100% - 1px)',
-    },
-    [`& .${muiTableClasses.topContainer}`]: {
-        display: 'flex',
-    },
-    [`& .${muiTableClasses.searchContainer}`]: {
-        paddingLeft: 16,
-    },
-    [`& .${muiTableClasses.paginationContainer}`]: {
-        paddingRight: 16,
-        display: 'flex',
-        flexShrink: 0,
-        '& > *:last-child': {
-            flexGrow: 2,
-        },
-    },
-    [`& .${muiTableClasses.loader}`]: {
-        top: 0,
-        left: 0,
-        zIndex: 1000,
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: theme.palette.action.disabledBackground,
-        '& ~ *': {
-            opacity: 0.25,
-        },
-    },
-    [`& .${muiTableClasses.customComponentsContainer}`]: {
-        paddingLeft: 16,
-        paddingRight: 16,
+    [`& .${muiTableClasses.componentsContainer}`]: {
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
     },
     [`& .${muiTableClasses.noTitle}`]: {
-        marginTop: -48,
+        marginTop: `-${theme.spacing(6)}`,
     },
 }));
 
@@ -150,14 +126,13 @@ const DEFAULT_STATE: TableState = {
         showActions: true,
         showToolbar: true,
         showHeader: true,
-        respectDataStatus: true,
         stickyHeader: false,
         allCapsHeader: true,
         highlightRow: true,
         highlightColumn: false,
         alternativeRowColor: true,
         elevation: 1,
-        skeletonRows: 3,
+        skeletonRows: 5,
         exportable: false,
     },
     rawOptions: {},
@@ -167,12 +142,13 @@ export const MuiTableContext = React.createContext<TableState>(DEFAULT_STATE);
 
 export class MuiTable<T extends object = any> extends React.Component<TableProps<T>, TableState<T>> {
     static getInitialState = (props: TableProps): TableState => {
+        console.log('get initial state');
         const { data: rawData, dataId, columns: rawColumns, options: rawOptions, dependencies, init } = props;
         const { hiddenColumns } = init || {};
 
         const options = mergeOverwriteArray({ ...DEFAULT_STATE.options }, rawOptions);
 
-        const data = isFunction(rawData) ? [] : MuiTable.mapDataToTableRow(rawData, dataId);
+        const data = MuiTable.mapDataToTableRow(rawData, dataId);
 
         const columns = sortBy(MuiTable.prepareTableColumns(rawColumns), (column) => {
             const index = init?.columnOrders?.indexOf(column.id) ?? -1;
@@ -201,7 +177,12 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         };
     };
 
-    static getNextState = (newValues: Partial<TableState>, prevState: TableState): TableState => {
+    static getNextState = (
+        newValues: Partial<TableState>,
+        nextProps: TableProps,
+        prevState: TableState,
+    ): TableState => {
+        console.log('get next state');
         const mergedState = {
             ...prevState,
             ...newValues,
@@ -210,85 +191,106 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         const { data, columns, filteredRowIds, searchText, sortBy, sortDirection, rowsPerPage, options } = mergedState;
 
         const hasNewData = newValues.data !== undefined;
+        const hasNewPage = newValues.currentPage !== undefined;
+        const hasNewRowsPerPage = newValues.rowsPerPage !== undefined;
         const hasNewSearchText = newValues.searchText !== undefined;
-        const hasNewFilteredData = newValues.filteredRowIds !== undefined;
         const hasNewSortBy = newValues.sortBy !== undefined;
         const hasNewSortDirection = newValues.sortDirection !== undefined;
+        const hasNewFilteredData = newValues.filteredRowIds !== undefined;
 
         let searchMatchers: SearchMatchers | null = prevState.searchText ? prevState.searchMatchers : null;
         let currentPage = mergedState.currentPage;
         let displayData = mergedState.displayData;
 
-        if (!isFunction(newValues.rawData) && !isFunction(prevState.rawData)) {
-            if (hasNewData || hasNewSearchText || hasNewFilteredData) {
-                displayData = data;
-                const filteredIds = intersection(
-                    displayData.map((row) => row.id),
-                    ...(Object.values(filteredRowIds).filter((item) => !!item) as TableRowId[][]),
-                );
-                displayData = displayData.filter((row) => filteredIds.includes(row.id));
+        if (!isFunction(nextProps.data)) {
+            displayData = data;
 
-                searchMatchers = {};
-                const searchColumns = columns.filter((column) => column.searchable);
+            if (isPaginatedData(nextProps.data)) {
+                const hasNewQuery =
+                    hasNewPage ||
+                    hasNewRowsPerPage ||
+                    hasNewSearchText ||
+                    hasNewSortBy ||
+                    hasNewSortDirection ||
+                    hasNewFilteredData;
 
-                if (searchText) {
-                    displayData = displayData.filter((row) => {
-                        let match = false;
-                        const matchers: {
-                            [columnId: string]: SearchMatcher;
-                        } = {};
-
-                        searchColumns.forEach((column) => {
-                            const value = column.getValue?.(row.data) ?? get(row.data, column.id);
-                            const valueString =
-                                column.formatter && !isFunction(column.formatter)
-                                    ? column.formatter.getValueString(value, row.data)
-                                    : toString(value);
-                            const matcher = getMatcher(valueString, searchText);
-
-                            if (matcher) {
-                                match = true;
-                                matchers[column.id] = matcher;
-                            }
-                        });
-
-                        if (match) {
-                            if (!searchMatchers) {
-                                searchMatchers = {};
-                            }
-
-                            searchMatchers[row.id] = matchers;
-                        }
-
-                        return match;
+                if (hasNewQuery) {
+                    nextProps.onDataQuery?.({
+                        pageNumber: hasNewSearchText ? 0 : mergedState.currentPage,
+                        pageSize: mergedState.rowsPerPage,
+                        searchText: mergedState.searchText,
+                        sortBy: mergedState.sortBy,
+                        sortDirection: mergedState.sortDirection,
+                        filters: mergedState.filterData,
                     });
                 }
+            } else {
+                if (hasNewData || hasNewSearchText || hasNewFilteredData) {
+                    const filteredIds = intersection(
+                        displayData.map((row) => row.id),
+                        ...(Object.values(filteredRowIds).filter((item) => !!item) as TableRowId[][]),
+                    );
+                    displayData = displayData.filter((row) => filteredIds.includes(row.id));
+
+                    searchMatchers = {};
+                    const searchColumns = columns.filter((column) => column.searchable);
+
+                    if (searchText) {
+                        displayData = displayData.filter((row) => {
+                            let match = false;
+                            const matchers: {
+                                [columnId: string]: SearchMatcher;
+                            } = {};
+
+                            searchColumns.forEach((column) => {
+                                const value = column.getValue(row.data);
+                                const valueString = toString(value);
+                                const matcher = getMatcher(valueString, searchText);
+
+                                if (matcher) {
+                                    match = true;
+                                    matchers[column.id] = matcher;
+                                }
+                            });
+
+                            if (match) {
+                                if (!searchMatchers) {
+                                    searchMatchers = {};
+                                }
+
+                                searchMatchers[row.id] = matchers;
+                            }
+
+                            return match;
+                        });
+                    }
+                }
+
+                if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
+                    const sortColumn = find(columns, (column) => column.id === sortBy);
+                    displayData = orderBy(
+                        displayData,
+                        (row) => {
+                            let value = sortColumn?.getValue(row.data);
+
+                            if (sortColumn?.dateTime) {
+                                return Date.parse(value);
+                            }
+
+                            if (sortColumn?.getSortValue) {
+                                value = sortColumn.getSortValue(value);
+                            }
+
+                            return value;
+                        },
+                        sortDirection,
+                    );
+                }
+
+                currentPage = options.showPagination
+                    ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
+                    : 0;
             }
-
-            if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
-                const sortColumn = find(columns, (column) => column.id === sortBy);
-                displayData = orderBy(
-                    displayData,
-                    (row) => {
-                        let value = sortColumn?.getValue?.(row.data) ?? get(row.data, sortBy);
-
-                        if (sortColumn?.dateTime) {
-                            return Date.parse(value);
-                        }
-
-                        if (sortColumn?.sortBy) {
-                            value = sortColumn.sortBy(value);
-                        }
-
-                        return value;
-                    },
-                    sortDirection,
-                );
-            }
-
-            currentPage = options.showPagination
-                ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
-                : 0;
         }
 
         return {
@@ -296,25 +298,29 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             searchMatchers,
             displayData,
             currentPage,
-            itemCount: !isFunction(mergedState.rawData) ? displayData.length : mergedState.itemCount,
+            itemCount: isPaginatedData(mergedState.rawData)
+                ? mergedState.rawData.itemCount
+                : isFunction(mergedState.rawData)
+                  ? mergedState.itemCount
+                  : displayData.length,
         };
     };
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
+        console.log('derived state from props');
         if (
             !isEqual(prevState.dependencies, nextProps.dependencies) ||
             !isEqual(prevState.rawColumns, nextProps.columns) ||
             !isEqual(prevState.rawOptions, nextProps.options)
         ) {
-            return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState);
+            return MuiTable.getNextState(MuiTable.getInitialState(nextProps), nextProps, prevState);
         } else if (prevState && prevState.rawData !== nextProps.data) {
             return MuiTable.getNextState(
                 {
-                    data: isFunction(nextProps.data)
-                        ? []
-                        : MuiTable.mapDataToTableRow(nextProps.data, nextProps.dataId),
+                    data: MuiTable.mapDataToTableRow(nextProps.data, nextProps.dataId),
                     rawData: nextProps.data,
                 },
+                nextProps,
                 prevState,
             );
         }
@@ -323,10 +329,11 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
     };
 
     static mapDataToTableRow = <T extends object>(
-        data: readonly T[],
+        data: TableProps<T>['data'],
         dataId?: TableProps<T>['dataId'],
     ): TableRow<T>[] => {
-        return data.map((item, index) => {
+        const finalData = isFunction(data) ? [] : isPaginatedData(data) ? data.items : data;
+        return finalData.map((item, index) => {
             return {
                 id: isFunction(dataId) ? dataId(item) : String(dataId ? get(item, dataId, index) : index),
                 data: item,
@@ -334,7 +341,9 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         });
     };
 
-    static prepareTableColumns = <T extends object>(columns: readonly TableColumn<T>[]): TableColumn<T>[] => {
+    static prepareTableColumns = <T extends object>(
+        columns: readonly TableColumn<T>[],
+    ): SetRequired<TableColumn<T>, 'getValue'>[] => {
         const seenColumnIds: string[] = [];
         return columns.map((column) => {
             const {
@@ -344,6 +353,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                 sortable = true,
                 filterable = true,
                 searchable = true,
+                getValue = (item: T) => get(item, column.id),
                 formatter = SearchHighlightedFormatter.getInstance(),
                 ...rest
             } = column;
@@ -365,6 +375,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                 sortable,
                 filterable,
                 searchable,
+                getValue,
                 formatter,
                 ...rest,
             };
@@ -377,7 +388,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
     componentDidMount = () => {
         this.tableId = `table-${Math.random().toString(36).slice(2, 8)}`;
-        this.updateTableState(MuiTable.getInitialState(this.props), undefined, true, true);
+        this.updateTableState(MuiTable.getInitialState(this.props) as TableState<T>, undefined, true, true);
     };
 
     updateTableState = (
@@ -386,6 +397,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         forceFetchData?: boolean,
         didMount?: boolean,
     ) => {
+        console.log('update table state');
         let prevState: TableState<T>;
 
         this.setState(
@@ -410,7 +422,10 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                         newValues.isError = false;
                         this.state
                             .rawData({
-                                pageNumber: newValues.currentPage ?? currState.currentPage,
+                                pageNumber:
+                                    newValues.searchText !== undefined
+                                        ? 0
+                                        : (newValues.currentPage ?? currState.currentPage),
                                 pageSize: newValues.rowsPerPage ?? currState.rowsPerPage,
                                 searchText: newValues.searchText ?? currState.searchText,
                                 sortBy: newValues.sortBy ?? currState.sortBy,
@@ -438,7 +453,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                     }
                 }
 
-                return MuiTable.getNextState(newValues, prevState);
+                return MuiTable.getNextState(newValues, this.props, prevState);
             },
             () => {
                 if (!didMount) {
@@ -449,7 +464,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         );
     };
 
-    private shouldFetchData() {
+    private isServerData() {
         return isFunction(this.state.rawData);
     }
 
@@ -645,8 +660,19 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
     };
 
     refreshData = () => {
-        if (this.shouldFetchData()) {
+        const { rawData, currentPage, rowsPerPage, searchText, sortBy, sortDirection, filterData } = this.state;
+
+        if (this.isServerData()) {
             this.updateTableState({}, undefined, true);
+        } else if (isPaginatedData(rawData)) {
+            this.props.onDataQuery?.({
+                pageNumber: currentPage,
+                pageSize: rowsPerPage,
+                searchText,
+                sortBy,
+                sortDirection,
+                filters: filterData,
+            });
         }
     };
 
@@ -690,20 +716,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         const columnNames = displayColumns.map((column) => column.name);
         const data = displayData.map((item) =>
             displayColumns.map((column) => {
-                let value: string = column.getValue?.(item.data) ?? get(item.data, column.id);
-
-                if (value === undefined && column.formatter) {
-                    if (isFunction(column.formatter)) {
-                        const formattedValue = column.formatter({ value, item: item.data });
-                        if (isString(formattedValue)) {
-                            value = formattedValue;
-                        }
-                    } else {
-                        value = column.formatter.getValueString(value, item.data);
-                    }
-                }
-
-                return value;
+                const value: string = column.getValue(item.data);
+                return toString(value);
             }),
         );
 
@@ -731,6 +745,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
         const {
             data,
+            rawData,
             displayData,
             itemCount,
             columns,
@@ -755,113 +770,110 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             searchable,
         } = options as Required<TableOptions>;
 
-        const { rowExpand, rowActions, actions } = components || {};
+        const { rowExpand, rowActions, actions, selectActions } = components || {};
 
         const SearchComponent = components?.search || TableSearch;
-        const ToolbarComponent = components?.toolbar || TableToolbar;
+        const ToolbarComponent = components?.toolbar || MuiTableToolbar;
+        const PaginationComponent = components?.pagination || TablePagination;
+
         const displayColumns = columns.filter((column) => column.display || !column.name);
         const currentPageData =
-            this.shouldFetchData() || !showPagination
+            this.isServerData() || !showPagination || isPaginatedData(rawData)
                 ? displayData
                 : displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage);
-        const status = this.shouldFetchData() ? this.state.status : this.props.status;
-        const isLoading = this.shouldFetchData() ? this.state.isLoading : this.props.isLoading;
-        const isError = this.shouldFetchData() ? this.state.isError : this.props.isError;
+        const status = this.isServerData() ? this.state.status : this.props.status;
+        const isLoading = this.isServerData() ? this.state.isLoading : this.props.isLoading;
+        const isError = this.isServerData() ? this.state.isError : this.props.isError;
 
         return (
             <MuiTableContext.Provider value={this.state}>
                 <Root
-                    showBorder={showBorder}
                     elevation={showBorder ? 0 : elevation}
                     className={clsx(muiTableClasses.root, className, {
                         [muiTableClasses.border]: showBorder,
                     })}
                 >
-                    <Grid container className={muiTableClasses.topContainer}>
-                        {showToolbar && (
-                            <Grid item xs={12}>
-                                <ToolbarComponent
-                                    title={title}
-                                    columns={columns}
-                                    options={options}
-                                    translations={translations}
-                                    selectionCount={selectedRowIds.length}
-                                    actions={actions}
-                                    icons={icons}
-                                    onColumnToggle={this.toggleColumn}
-                                    onColumnDrag={this.reorderColumns}
-                                    onColumnsReset={this.resetColumns}
-                                    onDataExport={this.exportData}
-                                    onDataRefresh={this.shouldFetchData() ? this.refreshData : undefined}
-                                />
-                            </Grid>
-                        )}
+                    {showToolbar && (
+                        <ToolbarComponent
+                            title={title}
+                            columns={columns}
+                            options={options}
+                            translations={translations}
+                            selectionCount={selectedRowIds.length}
+                            actions={actions}
+                            selectActions={selectActions}
+                            icons={icons}
+                            onColumnToggle={this.toggleColumn}
+                            onColumnDrag={this.reorderColumns}
+                            onColumnsReset={this.resetColumns}
+                            onDataExport={this.exportData}
+                            onDataRefresh={this.refreshData}
+                        />
+                    )}
 
-                        {children && (
-                            <Grid
-                                item
-                                xs={12}
-                                className={clsx(muiTableClasses.customComponentsContainer, {
-                                    [muiTableClasses.noTitle]: !title && showToolbar,
-                                })}
-                            >
-                                {isFunction(children)
-                                    ? children({
-                                          data,
-                                          displayData,
-                                          onFilterUpdate: (filterId, matchedRowIds, filterData) => {
-                                              if (
-                                                  this.shouldFetchData() &&
-                                                  isEqual(this.state.filterData[filterId], filterData)
-                                              ) {
-                                                  return;
-                                              }
+                    <Toolbar disableGutters>
+                        <Grid container className={muiTableClasses.componentsContainer} width={'100%'}>
+                            {children && (
+                                <Grid
+                                    xs={12}
+                                    className={clsx(muiTableClasses.customComponentsContainer, {
+                                        [muiTableClasses.noTitle]: !title && showToolbar,
+                                    })}
+                                >
+                                    {isFunction(children)
+                                        ? children({
+                                              data,
+                                              displayData,
+                                              onFilterUpdate: (filterId, matchedRowIds, filterData) => {
+                                                  if (
+                                                      this.isServerData() &&
+                                                      isEqual(this.state.filterData[filterId], filterData)
+                                                  ) {
+                                                      return;
+                                                  }
 
-                                              this.updateFilter(
-                                                  filterId,
-                                                  this.shouldFetchData() ? [] : matchedRowIds,
-                                                  filterData,
-                                              );
-                                          },
-                                      })
-                                    : children}
-                            </Grid>
-                        )}
-
-                        <Grid item xs={6} className={muiTableClasses.searchContainer}>
-                            {searchable && (
-                                <SearchComponent
-                                    displayData={displayData}
-                                    onChange={this.changeSearch}
-                                    TextFieldProps={defaultComponentProps?.SearchProps}
-                                />
+                                                  this.updateFilter(
+                                                      filterId,
+                                                      this.isServerData() ? [] : matchedRowIds,
+                                                      filterData,
+                                                  );
+                                              },
+                                          })
+                                        : children}
+                                </Grid>
                             )}
-                        </Grid>
 
-                        <Grid item xs={6} className={muiTableClasses.paginationContainer}>
-                            {showPagination && (
-                                <TablePagination
-                                    component="div"
-                                    ActionsComponent={(props) => (
-                                        <TablePaginationActions
-                                            {...props}
-                                            icons={icons}
-                                            disabled={status === 'pending'}
-                                        />
-                                    )}
-                                    {...defaultComponentProps?.TablePaginationProps}
-                                    count={itemCount}
-                                    rowsPerPage={rowsPerPage}
-                                    rowsPerPageOptions={rowsPerPageOptions}
-                                    page={currentPage}
-                                    onPageChange={(event, page) => this.changePage(page)}
-                                    onRowsPerPageChange={(event) =>
-                                        this.changeRowsPerPage(parseInt(event.target.value))
-                                    }
-                                />
-                            )}
+                            <Grid xs={12} md={5} xl={4}>
+                                {searchable && (
+                                    <SearchComponent displayData={displayData} onChange={this.changeSearch} />
+                                )}
+                            </Grid>
+
+                            <Grid xs={12} md={7} xl={8}>
+                                {showPagination && (
+                                    <PaginationComponent
+                                        component="div"
+                                        ActionsComponent={(props) => (
+                                            <TablePaginationActions
+                                                {...props}
+                                                icons={icons}
+                                                disabled={status === 'pending'}
+                                            />
+                                        )}
+                                        {...defaultComponentProps?.TablePaginationProps}
+                                        count={itemCount}
+                                        rowsPerPage={rowsPerPage}
+                                        rowsPerPageOptions={rowsPerPageOptions}
+                                        page={currentPage}
+                                        onPageChange={(event, page) => this.changePage(page)}
+                                        onRowsPerPageChange={(event) =>
+                                            this.changeRowsPerPage(parseInt(event.target.value))
+                                        }
+                                    />
+                                )}
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </Toolbar>
 
                     <DragDropContext onDragEnd={this.reorderColumns}>
                         <Droppable droppableId="droppable" direction="horizontal">
@@ -872,7 +884,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                     ref={provided.innerRef}
                                     {...provided.droppableProps}
                                 >
-                                    <Table size="small" className={muiTableClasses.table} stickyHeader={stickyHeader}>
+                                    <Table className={muiTableClasses.table} stickyHeader={stickyHeader}>
                                         {showHeader && (
                                             <TableHead
                                                 columns={displayColumns}
@@ -891,12 +903,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                             columns={displayColumns}
                                             data={data}
                                             displayData={currentPageData}
-                                            options={{
-                                                ...options,
-                                                respectDataStatus: this.shouldFetchData()
-                                                    ? true
-                                                    : options.respectDataStatus,
-                                            }}
+                                            options={options}
                                             status={status}
                                             isLoading={isLoading}
                                             isError={isError}
@@ -906,6 +913,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                             expandedRowIds={expandedRowIds}
                                             rowActions={rowActions}
                                             rowExpand={rowExpand}
+                                            translations={translations}
                                             onToggleRowSelection={this.toggleRowSelection}
                                             onToggleRowExpansion={this.toggleRowExpansion}
                                             onRowClick={onRowClick}

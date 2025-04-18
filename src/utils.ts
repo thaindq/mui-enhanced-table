@@ -1,5 +1,5 @@
-import { isArray, isString, mergeWith, union, xor } from 'lodash';
-import { SearchMatcher } from './types';
+import { isArray, isNumber, isString, mergeWith, union, xor } from 'lodash';
+import { PaginatedData, SearchMatcher } from './types';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {
     if (!input || !query) {
@@ -31,8 +31,8 @@ export function toggleArrayItem<T = any>(array: T[], values: T[], forceValue?: b
     return forceValue === undefined
         ? xor(array, values)
         : forceValue
-        ? union(array, values)
-        : array.filter((item) => !values.includes(item));
+          ? union(array, values)
+          : array.filter((item) => !values.includes(item));
 }
 
 export function mergeOverwriteArray(obj: any, src: any) {
@@ -41,6 +41,10 @@ export function mergeOverwriteArray(obj: any, src: any) {
             return srcValue;
         }
     });
+}
+
+export function isPaginatedData<T = any>(data: any): data is PaginatedData<T> {
+    return isArray(data.items) && isNumber(data.itemCount);
 }
 
 type FieldNames<Names extends string, Prefix extends string = ''> = {
@@ -64,8 +68,11 @@ export function generateNamesObject<Names extends string, Prefix extends string 
         names = args;
     }
 
-    return names.reduce((result, name) => {
-        result[name] = (prefix ? `${prefix}-${name}` : `${name}`) as any;
-        return result;
-    }, {} as FieldNames<Names, Prefix>);
+    return names.reduce(
+        (result, name) => {
+            result[name] = (prefix ? `${prefix}-${name}` : `${name}`) as any;
+            return result;
+        },
+        {} as FieldNames<Names, Prefix>,
+    );
 }
