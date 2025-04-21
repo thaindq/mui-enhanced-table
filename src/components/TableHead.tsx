@@ -68,7 +68,7 @@ const MuiTableHead: React.FunctionComponent<TableHeadProps> = ({
                 {columns.map((column) => (
                     <TableCell
                         key={column.id}
-                        sx={column.headStyle}
+                        style={column.headStyle}
                         className={clsx(muiTableHeadClasses.cell, {
                             [muiTableHeadClasses.allCaps]: allCapsHeader,
                             [muiTableHeadClasses.cellNoWrap]: noWrap,

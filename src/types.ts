@@ -34,8 +34,6 @@ export interface TableCellStatus {
     className?: string;
 }
 
-export type TableStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected';
-
 export interface TableColumn<T = any, V = any> extends Pick<TableCellProps, 'align'> {
     id: TableColumnId;
     name: string;
@@ -104,9 +102,10 @@ export interface DataQuery {
     filters: Record<string, any[]>;
 }
 
-export interface PaginatedData<T = any> {
+export interface BackendData<T = any> {
     items: T[];
     itemCount: number;
+    currentPage: number;
 }
 
 export interface TableProps<T = any> {
@@ -119,10 +118,9 @@ export interface TableProps<T = any> {
           }) => React.ReactElement);
     className?: string;
     title?: string;
-    data: readonly T[] | PaginatedData<T> | ((query: DataQuery) => Promise<PaginatedData<T>>);
+    data: readonly T[] | BackendData<T> | ((query: DataQuery) => Promise<BackendData<T>>);
     dataId?: string | ((data: T) => string);
     columns: readonly TableColumn<T>[];
-    status?: TableStatus;
     isLoading?: boolean;
     isError?: boolean;
     options?: TableOptions;
@@ -174,7 +172,6 @@ export interface TableState<T = any> {
     rawColumns: readonly TableColumn<T>[];
     data: readonly TableRow<T>[];
     rawData: TableProps<T>['data'];
-    status: TableStatus;
     isLoading: boolean;
     isError: boolean;
     itemCount: number;

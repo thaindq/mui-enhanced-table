@@ -36,6 +36,7 @@ import { TableSearch } from './components/TableSearch';
 import { MuiTableToolbar } from './components/TableToolbar';
 import { SearchHighlightedFormatter } from './formatters/SearchHighlightedFormatter';
 import {
+    DataQuery,
     SearchMatcher,
     SearchMatchers,
     TableColumn,
@@ -49,7 +50,8 @@ import {
 import {
     generateNamesObject,
     getMatcher,
-    isPaginatedData,
+    isBackendData,
+    isLocalData,
     mergeOverwriteArray,
     reorder,
     toggleArrayItem,
@@ -95,7 +97,6 @@ const DEFAULT_STATE: TableState = {
     rawColumns: [],
     data: [],
     rawData: [],
-    status: 'idle',
     isLoading: false,
     isError: false,
     itemCount: 0,
@@ -142,7 +143,6 @@ export const MuiTableContext = React.createContext<TableState>(DEFAULT_STATE);
 
 export class MuiTable<T extends object = any> extends React.Component<TableProps<T>, TableState<T>> {
     static getInitialState = (props: TableProps): TableState => {
-        console.log('get initial state');
         const { data: rawData, dataId, columns: rawColumns, options: rawOptions, dependencies, init } = props;
         const { hiddenColumns } = init || {};
 
@@ -178,151 +178,152 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
     };
 
     static getNextState = (
-        newValues: Partial<TableState>,
-        nextProps: TableProps,
+        newStateValues: Partial<TableState>,
         prevState: TableState,
-    ): TableState => {
-        console.log('get next state');
+    ): {
+        nextState: TableState;
+        nextQuery?: DataQuery;
+    } => {
         const mergedState = {
             ...prevState,
-            ...newValues,
+            ...newStateValues,
         };
 
-        const { data, columns, filteredRowIds, searchText, sortBy, sortDirection, rowsPerPage, options } = mergedState;
+        const { columns, filteredRowIds, searchText, sortBy, sortDirection, rowsPerPage, options } = mergedState;
 
-        const hasNewData = newValues.data !== undefined;
-        const hasNewPage = newValues.currentPage !== undefined;
-        const hasNewRowsPerPage = newValues.rowsPerPage !== undefined;
-        const hasNewSearchText = newValues.searchText !== undefined;
-        const hasNewSortBy = newValues.sortBy !== undefined;
-        const hasNewSortDirection = newValues.sortDirection !== undefined;
-        const hasNewFilteredData = newValues.filteredRowIds !== undefined;
+        const hasNewData = newStateValues.data !== undefined;
+        const hasNewPage = newStateValues.currentPage !== undefined;
+        const hasNewRowsPerPage = newStateValues.rowsPerPage !== undefined;
+        const hasNewSearchText = newStateValues.searchText !== undefined;
+        const hasNewSortBy = newStateValues.sortBy !== undefined;
+        const hasNewSortDirection = newStateValues.sortDirection !== undefined;
+        const hasNewFilteredData = newStateValues.filteredRowIds !== undefined;
+
+        const hasNewQuery =
+            hasNewPage ||
+            hasNewRowsPerPage ||
+            hasNewSearchText ||
+            hasNewSortBy ||
+            hasNewSortDirection ||
+            hasNewFilteredData;
 
         let searchMatchers: SearchMatchers | null = prevState.searchText ? prevState.searchMatchers : null;
-        let currentPage = mergedState.currentPage;
-        let displayData = mergedState.displayData;
+        let displayData = mergedState.data;
+        let currentPage = isBackendData(mergedState.rawData)
+            ? mergedState.rawData.currentPage
+            : mergedState.currentPage;
 
-        if (!isFunction(nextProps.data)) {
-            displayData = data;
+        if (isLocalData(mergedState.rawData)) {
+            if (hasNewData || hasNewSearchText || hasNewFilteredData) {
+                const filteredIds = intersection(
+                    displayData.map((row) => row.id),
+                    ...(Object.values(filteredRowIds).filter((item) => !!item) as TableRowId[][]),
+                );
+                displayData = displayData.filter((row) => filteredIds.includes(row.id));
 
-            if (isPaginatedData(nextProps.data)) {
-                const hasNewQuery =
-                    hasNewPage ||
-                    hasNewRowsPerPage ||
-                    hasNewSearchText ||
-                    hasNewSortBy ||
-                    hasNewSortDirection ||
-                    hasNewFilteredData;
+                searchMatchers = {};
+                const searchColumns = columns.filter((column) => column.searchable);
 
-                if (hasNewQuery) {
-                    nextProps.onDataQuery?.({
-                        pageNumber: hasNewSearchText ? 0 : mergedState.currentPage,
-                        pageSize: mergedState.rowsPerPage,
-                        searchText: mergedState.searchText,
-                        sortBy: mergedState.sortBy,
-                        sortDirection: mergedState.sortDirection,
-                        filters: mergedState.filterData,
+                if (searchText) {
+                    displayData = displayData.filter((row) => {
+                        let match = false;
+                        const matchers: {
+                            [columnId: string]: SearchMatcher;
+                        } = {};
+
+                        searchColumns.forEach((column) => {
+                            const value = column.getValue(row.data);
+                            const valueString = toString(value);
+                            const matcher = getMatcher(valueString, searchText);
+
+                            if (matcher) {
+                                match = true;
+                                matchers[column.id] = matcher;
+                            }
+                        });
+
+                        if (match) {
+                            if (!searchMatchers) {
+                                searchMatchers = {};
+                            }
+
+                            searchMatchers[row.id] = matchers;
+                        }
+
+                        return match;
                     });
                 }
-            } else {
-                if (hasNewData || hasNewSearchText || hasNewFilteredData) {
-                    const filteredIds = intersection(
-                        displayData.map((row) => row.id),
-                        ...(Object.values(filteredRowIds).filter((item) => !!item) as TableRowId[][]),
-                    );
-                    displayData = displayData.filter((row) => filteredIds.includes(row.id));
-
-                    searchMatchers = {};
-                    const searchColumns = columns.filter((column) => column.searchable);
-
-                    if (searchText) {
-                        displayData = displayData.filter((row) => {
-                            let match = false;
-                            const matchers: {
-                                [columnId: string]: SearchMatcher;
-                            } = {};
-
-                            searchColumns.forEach((column) => {
-                                const value = column.getValue(row.data);
-                                const valueString = toString(value);
-                                const matcher = getMatcher(valueString, searchText);
-
-                                if (matcher) {
-                                    match = true;
-                                    matchers[column.id] = matcher;
-                                }
-                            });
-
-                            if (match) {
-                                if (!searchMatchers) {
-                                    searchMatchers = {};
-                                }
-
-                                searchMatchers[row.id] = matchers;
-                            }
-
-                            return match;
-                        });
-                    }
-                }
-
-                if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
-                    const sortColumn = find(columns, (column) => column.id === sortBy);
-                    displayData = orderBy(
-                        displayData,
-                        (row) => {
-                            let value = sortColumn?.getValue(row.data);
-
-                            if (sortColumn?.dateTime) {
-                                return Date.parse(value);
-                            }
-
-                            if (sortColumn?.getSortValue) {
-                                value = sortColumn.getSortValue(value);
-                            }
-
-                            return value;
-                        },
-                        sortDirection,
-                    );
-                }
-
-                currentPage = options.showPagination
-                    ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
-                    : 0;
             }
+
+            if ((displayData !== prevState.displayData || hasNewSortBy || hasNewSortDirection) && sortDirection) {
+                const sortColumn = find(columns, (column) => column.id === sortBy);
+                displayData = orderBy(
+                    displayData,
+                    (row) => {
+                        let value = sortColumn?.getValue(row.data);
+
+                        if (sortColumn?.dateTime) {
+                            return Date.parse(value);
+                        }
+
+                        if (sortColumn?.getSortValue) {
+                            value = sortColumn.getSortValue(value);
+                        }
+
+                        return value;
+                    },
+                    sortDirection,
+                );
+            }
+
+            currentPage = options.showPagination
+                ? Math.min(currentPage, Math.floor(displayData.length / rowsPerPage))
+                : 0;
         }
 
-        return {
+        const nextState = {
             ...mergedState,
             searchMatchers,
             displayData,
             currentPage,
-            itemCount: isPaginatedData(mergedState.rawData)
+            itemCount: isBackendData(mergedState.rawData)
                 ? mergedState.rawData.itemCount
-                : isFunction(mergedState.rawData)
-                  ? mergedState.itemCount
-                  : displayData.length,
+                : isLocalData(mergedState.rawData)
+                  ? displayData.length
+                  : mergedState.itemCount,
+        };
+
+        return {
+            nextState,
+            nextQuery:
+                hasNewQuery && !isLocalData(mergedState.rawData)
+                    ? {
+                          pageNumber: mergedState.currentPage,
+                          pageSize: mergedState.rowsPerPage,
+                          searchText: mergedState.searchText,
+                          sortBy: mergedState.sortBy,
+                          sortDirection: mergedState.sortDirection,
+                          filters: mergedState.filterData,
+                      }
+                    : undefined,
         };
     };
 
     static getDerivedStateFromProps: GetDerivedStateFromProps<TableProps, TableState> = (nextProps, prevState) => {
-        console.log('derived state from props');
         if (
             !isEqual(prevState.dependencies, nextProps.dependencies) ||
             !isEqual(prevState.rawColumns, nextProps.columns) ||
             !isEqual(prevState.rawOptions, nextProps.options)
         ) {
-            return MuiTable.getNextState(MuiTable.getInitialState(nextProps), nextProps, prevState);
+            return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState).nextState;
         } else if (prevState && prevState.rawData !== nextProps.data) {
             return MuiTable.getNextState(
                 {
                     data: MuiTable.mapDataToTableRow(nextProps.data, nextProps.dataId),
                     rawData: nextProps.data,
                 },
-                nextProps,
                 prevState,
-            );
+            ).nextState;
         }
 
         return null;
@@ -332,7 +333,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         data: TableProps<T>['data'],
         dataId?: TableProps<T>['dataId'],
     ): TableRow<T>[] => {
-        const finalData = isFunction(data) ? [] : isPaginatedData(data) ? data.items : data;
+        const finalData = isLocalData(data) ? data : isBackendData(data) ? data.items : [];
         return finalData.map((item, index) => {
             return {
                 id: isFunction(dataId) ? dataId(item) : String(dataId ? get(item, dataId, index) : index),
@@ -388,85 +389,36 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
     componentDidMount = () => {
         this.tableId = `table-${Math.random().toString(36).slice(2, 8)}`;
-        this.updateTableState(MuiTable.getInitialState(this.props) as TableState<T>, undefined, true, true);
+        this.updateTableState(MuiTable.getInitialState(this.props) as TableState<T>, undefined, true);
     };
 
     updateTableState = (
         newValues: Partial<TableState<T>>,
         callback?: (newState: TableState<T>, prevState: TableState<T>) => void,
-        forceFetchData?: boolean,
         didMount?: boolean,
     ) => {
-        console.log('update table state');
-        let prevState: TableState<T>;
+        let prevStateForCallback: TableState<T>;
+        let nextQueryForCallback: DataQuery | undefined;
 
         this.setState(
-            (currState) => {
-                prevState = currState;
-
-                if (isFunction(this.state.rawData)) {
-                    if (
-                        forceFetchData ||
-                        (newValues.currentPage !== undefined &&
-                            !isEqual(newValues.currentPage, currState.currentPage)) ||
-                        (newValues.rowsPerPage !== undefined &&
-                            !isEqual(newValues.rowsPerPage, currState.rowsPerPage)) ||
-                        (newValues.searchText !== undefined && !isEqual(newValues.searchText, currState.searchText)) ||
-                        (newValues.sortBy !== undefined && !isEqual(newValues.sortBy, currState.sortBy)) ||
-                        (newValues.sortDirection !== undefined &&
-                            !isEqual(newValues.sortDirection, currState.sortDirection)) ||
-                        (newValues.filterData !== undefined && !isEqual(newValues.filterData, currState.filterData))
-                    ) {
-                        newValues.status = 'pending';
-                        newValues.isLoading = true;
-                        newValues.isError = false;
-                        this.state
-                            .rawData({
-                                pageNumber:
-                                    newValues.searchText !== undefined
-                                        ? 0
-                                        : (newValues.currentPage ?? currState.currentPage),
-                                pageSize: newValues.rowsPerPage ?? currState.rowsPerPage,
-                                searchText: newValues.searchText ?? currState.searchText,
-                                sortBy: newValues.sortBy ?? currState.sortBy,
-                                sortDirection: newValues.sortDirection ?? currState.sortDirection,
-                                filters: newValues.filterData ?? currState.filterData,
-                            })
-                            .then(({ items, itemCount }) => {
-                                const data = MuiTable.mapDataToTableRow(items);
-                                this.setState({
-                                    status: 'fulfilled',
-                                    isLoading: false,
-                                    isError: false,
-                                    data,
-                                    displayData: data,
-                                    itemCount,
-                                });
-                            })
-                            .catch(() => {
-                                this.setState({
-                                    status: 'rejected',
-                                    isLoading: false,
-                                    isError: true,
-                                });
-                            });
-                    }
-                }
-
-                return MuiTable.getNextState(newValues, this.props, prevState);
+            (prevState) => {
+                const { nextState, nextQuery } = MuiTable.getNextState(newValues, prevState);
+                prevStateForCallback = prevState;
+                nextQueryForCallback = nextQuery;
+                return nextState;
             },
             () => {
                 if (!didMount) {
-                    callback?.(this.state, prevState);
-                    this.props.onStateChange?.(this.state, prevState);
+                    callback?.(this.state, prevStateForCallback);
+                    this.props.onStateChange?.(this.state, prevStateForCallback);
+                }
+
+                if (nextQueryForCallback) {
+                    this.fetchData(nextQueryForCallback);
                 }
             },
         );
     };
-
-    private isServerData() {
-        return isFunction(this.state.rawData);
-    }
 
     toggleColumn = (columnId: TableColumnId, display?: boolean) => {
         const index = findIndex(this.state.columns, (column) => column.id === columnId);
@@ -659,20 +611,45 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         }
     };
 
-    refreshData = () => {
+    fetchData = (newQuery?: DataQuery) => {
         const { rawData, currentPage, rowsPerPage, searchText, sortBy, sortDirection, filterData } = this.state;
+        const query = newQuery ?? {
+            pageNumber: currentPage,
+            pageSize: rowsPerPage,
+            searchText,
+            sortBy,
+            sortDirection,
+            filters: filterData,
+        };
 
-        if (this.isServerData()) {
-            this.updateTableState({}, undefined, true);
-        } else if (isPaginatedData(rawData)) {
-            this.props.onDataQuery?.({
-                pageNumber: currentPage,
-                pageSize: rowsPerPage,
-                searchText,
-                sortBy,
-                sortDirection,
-                filters: filterData,
+        if (isLocalData(rawData)) {
+            return;
+        } else if (isBackendData(rawData)) {
+            this.props.onDataQuery?.(query);
+        } else {
+            this.setState({
+                isLoading: true,
+                isError: false,
             });
+
+            (rawData as Exclude<typeof rawData, readonly any[]>)(query)
+                .then(({ items, itemCount, currentPage }) => {
+                    const data = MuiTable.mapDataToTableRow(items);
+                    this.setState({
+                        isLoading: false,
+                        isError: false,
+                        data,
+                        displayData: data,
+                        itemCount,
+                        currentPage,
+                    });
+                })
+                .catch(() => {
+                    this.setState({
+                        isLoading: false,
+                        isError: true,
+                    });
+                });
         }
     };
 
@@ -757,6 +734,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             rowsPerPage,
             searchMatchers,
             options,
+            isLoading,
+            isError,
         } = this.state;
 
         const {
@@ -778,12 +757,9 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
         const displayColumns = columns.filter((column) => column.display || !column.name);
         const currentPageData =
-            this.isServerData() || !showPagination || isPaginatedData(rawData)
-                ? displayData
-                : displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage);
-        const status = this.isServerData() ? this.state.status : this.props.status;
-        const isLoading = this.isServerData() ? this.state.isLoading : this.props.isLoading;
-        const isError = this.isServerData() ? this.state.isError : this.props.isError;
+            isLocalData(rawData) && showPagination
+                ? displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage)
+                : displayData;
 
         return (
             <MuiTableContext.Provider value={this.state}>
@@ -807,7 +783,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                             onColumnDrag={this.reorderColumns}
                             onColumnsReset={this.resetColumns}
                             onDataExport={this.exportData}
-                            onDataRefresh={this.refreshData}
+                            onDataRefresh={() => this.fetchData()}
                         />
                     )}
 
@@ -824,20 +800,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                         ? children({
                                               data,
                                               displayData,
-                                              onFilterUpdate: (filterId, matchedRowIds, filterData) => {
-                                                  if (
-                                                      this.isServerData() &&
-                                                      isEqual(this.state.filterData[filterId], filterData)
-                                                  ) {
-                                                      return;
-                                                  }
-
-                                                  this.updateFilter(
-                                                      filterId,
-                                                      this.isServerData() ? [] : matchedRowIds,
-                                                      filterData,
-                                                  );
-                                              },
+                                              onFilterUpdate: this.updateFilter,
                                           })
                                         : children}
                                 </Grid>
@@ -854,11 +817,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                     <PaginationComponent
                                         component="div"
                                         ActionsComponent={(props) => (
-                                            <TablePaginationActions
-                                                {...props}
-                                                icons={icons}
-                                                disabled={status === 'pending'}
-                                            />
+                                            <TablePaginationActions {...props} icons={icons} disabled={isLoading} />
                                         )}
                                         {...defaultComponentProps?.TablePaginationProps}
                                         count={itemCount}
@@ -904,7 +863,6 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                             data={data}
                                             displayData={currentPageData}
                                             options={options}
-                                            status={status}
                                             isLoading={isLoading}
                                             isError={isError}
                                             searchMatchers={searchMatchers}

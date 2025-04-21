@@ -32,7 +32,6 @@ import {
     TableProps,
     TableRow,
     TableRowId,
-    TableStatus,
     TableTranslations,
 } from '../types';
 import { generateNamesObject } from '../utils';
@@ -41,25 +40,15 @@ const Root = styled(TableBody)(({ theme }) => ({
     position: 'relative',
     [`& .${muiTableBodyClasses.row}`]: {
         transition: 'all ease .2s',
+        '&:hover': {
+            backgroundColor: `${theme.palette.action.hover} !important`,
+        },
     },
     [`& .${muiTableBodyClasses.rowClickable}`]: {
         cursor: 'pointer',
     },
     [`& .${muiTableBodyClasses.rowAlternativeColor}`]: {
-        '&:hover': {
-            backgroundColor: `${theme.palette.action.hover} !important`,
-        },
-        '&:nth-of-type(odd)': {
-            backgroundColor: alpha(theme.palette.action.hover, 0.02),
-        },
-        [`&.${muiTableBodyClasses.rowNoHeader}`]: {
-            '&:nth-of-type(odd)': {
-                backgroundColor: 'inherit',
-            },
-            '&:nth-of-type(even)': {
-                backgroundColor: alpha(theme.palette.action.hover, 0.02),
-            },
-        },
+        backgroundColor: alpha(theme.palette.action.hover, 0.02),
     },
     [`& .${muiTableBodyClasses.rowDisabled}`]: {
         cursor: 'not-allowed',
@@ -121,6 +110,8 @@ const Root = styled(TableBody)(({ theme }) => ({
         display: 'flex',
         left: 0,
         right: 0,
+        padding: 0,
+        border: 'none',
         alignItems: 'center',
         justifyContent: 'center',
         width: `calc(100vw - ${theme.spacing(4)})`,
@@ -146,7 +137,6 @@ interface TableBodyProps<T>
     displayData: readonly TableRow<T>[];
     options: Required<TableOptions>;
     icons?: TableIcons;
-    status?: TableStatus;
     isLoading?: boolean;
     isError?: boolean;
     rowCount?: number;
@@ -166,9 +156,8 @@ const MuiTableBody = <T = any,>({
     searchMatchers,
     options,
     icons,
-    status,
-    isLoading: isLoadingProp,
-    isError: isErrorProp,
+    isLoading: isPending,
+    isError,
     selectedRowIds,
     expandedRowIds,
     rowActions,
@@ -198,8 +187,6 @@ const MuiTableBody = <T = any,>({
         skeletonRows,
     } = options;
 
-    const isPending = status === 'pending' || isLoadingProp;
-    const isError = status === 'rejected' || isErrorProp;
     const isLoading = isPending && !displayData.length;
     const isFetching = isPending && displayData.length > 0;
     const isNoData = !isLoading && !isFetching && !isError && !displayData.length;
@@ -229,32 +216,30 @@ const MuiTableBody = <T = any,>({
     return (
         <Root className={clsx(className, muiTableBodyClasses.root)}>
             {shouldShowOverlay && (
-                <Box
+                <MuiTableRow
                     className={muiTableBodyClasses.overlay}
-                    sx={{ backgroundColor: isFetching ? undefined : 'inherit !important' }}
+                    style={{
+                        backgroundColor: isFetching ? undefined : 'inherit',
+                    }}
                 >
-                    <Box className={muiTableBodyClasses.overlayContent}>
+                    <TableCell className={muiTableBodyClasses.overlayContent}>
                         {isFetching && <CircularProgress size="2rem" />}
                         {isError && (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
                         {isNoData && (onNoDataMessage?.(data) || <Typography>No data</Typography>)}
-                    </Box>
-                </Box>
+                    </TableCell>
+                </MuiTableRow>
             )}
 
             {(!displayData.length && (
                 <>
-                    <MuiTableRow sx={{ height: theme.spacing(10) }}>
+                    <MuiTableRow style={{ height: theme.spacing(10) }}>
                         {isLoading &&
                             Array.from({ length: totalColumns }).map((item, index) => (
                                 <TableCell key={index}>
                                     {Array(skeletonRows)
                                         .fill(0)
                                         .map((_, index) => (
-                                            <Skeleton
-                                                key={index}
-                                                animation="wave"
-                                                className={muiTableBodyClasses.skeleton}
-                                            />
+                                            <Skeleton key={index} animation="wave" />
                                         ))}
                                 </TableCell>
                             ))}
@@ -272,12 +257,16 @@ const MuiTableBody = <T = any,>({
                         expanded = expandedRowIds.includes(row.id),
                     } = onRowStatus?.(row.id, row.data, rowIndex) || {};
 
+                    const isEvenRow = rowIndex % 2 === 0;
                     const rowClasses = clsx(
                         muiTableBodyClasses.row,
                         {
-                            [muiTableBodyClasses.rowNoHeader]: !showHeader || stickyHeader,
                             [muiTableBodyClasses.rowClickable]: !!onRowClick || selectable || expandable,
-                            [muiTableBodyClasses.rowAlternativeColor]: alternativeRowColor,
+                            [muiTableBodyClasses.rowAlternativeColor]: alternativeRowColor
+                                ? showHeader
+                                    ? isEvenRow
+                                    : !isEvenRow
+                                : false,
                             [muiTableBodyClasses.rowSelected]: selected || highlighted,
                             [muiTableBodyClasses.rowDisabled]: disabled,
                         },
@@ -292,7 +281,7 @@ const MuiTableBody = <T = any,>({
                         <>
                             <MuiTableRow
                                 data-row-id={row.id}
-                                sx={style}
+                                style={style}
                                 className={rowClasses}
                                 selected={selected}
                                 hover={highlightRow}
@@ -377,14 +366,18 @@ const MuiTableBody = <T = any,>({
                                     return (
                                         <TableCell
                                             key={column.id}
-                                            className={clsx(cellClasses, className, {
-                                                [muiTableBodyClasses.cellNoWrap]: noWrap,
-                                            })}
+                                            className={clsx(
+                                                cellClasses,
+                                                {
+                                                    [muiTableBodyClasses.cellNoWrap]: noWrap,
+                                                },
+                                                className,
+                                            )}
                                             align={column.align}
                                             onClick={() => {
                                                 onCellClick?.(row.id, column.id, row.data, rowIndex, cellIndex);
                                             }}
-                                            sx={{
+                                            style={{
                                                 ...style,
                                                 ...column.bodyStyle,
                                             }}
@@ -475,7 +468,6 @@ export const muiTableBodyClasses = generateNamesObject(
     [
         'root',
         'row',
-        'rowNoHeader',
         'rowAlternativeColor',
         'rowClickable',
         'rowDisabled',
@@ -487,7 +479,6 @@ export const muiTableBodyClasses = generateNamesObject(
         'cellNoWrap',
         'cellSelectionControl',
         'message',
-        'skeleton',
         'overlay',
         'overlayContent',
     ],

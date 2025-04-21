@@ -1,5 +1,5 @@
 import { isArray, isNumber, isString, mergeWith, union, xor } from 'lodash';
-import { PaginatedData, SearchMatcher } from './types';
+import { BackendData, SearchMatcher } from './types';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {
     if (!input || !query) {
@@ -43,8 +43,12 @@ export function mergeOverwriteArray(obj: any, src: any) {
     });
 }
 
-export function isPaginatedData<T = any>(data: any): data is PaginatedData<T> {
-    return isArray(data.items) && isNumber(data.itemCount);
+export function isLocalData<T = any>(data: any): data is T[] {
+    return isArray(data);
+}
+
+export function isBackendData<T = any>(data: any): data is BackendData<T> {
+    return isArray(data.items) && isNumber(data.itemCount) && isNumber(data.currentPage);
 }
 
 type FieldNames<Names extends string, Prefix extends string = ''> = {
