@@ -8,7 +8,7 @@ import {
     Droppable,
     DroppableProvided,
     ResponderProvided,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { TableColumn, TableColumnId, TableTranslations } from '../types';
 import { generateNamesObject } from '../utils';
 

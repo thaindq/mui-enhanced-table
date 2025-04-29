@@ -3,7 +3,7 @@ import { Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography, Box } 
 import clsx from 'clsx';
 import { isFunction } from 'lodash';
 import React from 'react';
-import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import { DropResult, ResponderProvided } from '@hello-pangea/dnd';
 import {
     TableAction,
     TableColumn,

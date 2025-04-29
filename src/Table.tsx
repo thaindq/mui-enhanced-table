@@ -17,7 +17,7 @@ import {
     union,
 } from 'lodash';
 import React, { GetDerivedStateFromProps } from 'react';
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { TableBody } from './components/TableBody';
 import { TableHead } from './components/TableHead';
 import { TablePaginationActions } from './components/TablePaginationActions';
