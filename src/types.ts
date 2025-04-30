@@ -1,13 +1,19 @@
 import { SetRequired } from 'type-fest';
-import { SortDirection, TableCellProps, TablePaginationProps, TextFieldProps } from '@mui/material';
+import {
+    SortDirection,
+    TableCellProps,
+    TablePaginationProps,
+    TextFieldProps,
+    TableProps as MuiTableProps,
+} from '@mui/material';
 import React, { CSSProperties, ReactNode } from 'react';
 import { TableSearchProps, TableToolbarProps } from './components';
 
-export type Paths<T> = T extends object
+type Paths<T> = T extends object
     ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K]>}`}` }[keyof T]
     : never;
 
-export type Leaves<T> = T extends object
+type Leaves<T> = T extends object
     ? { [K in keyof T]: `${Exclude<K, symbol>}${Leaves<T[K]> extends never ? '' : `.${Leaves<T[K]>}`}` }[keyof T]
     : never;
 
@@ -68,6 +74,7 @@ export interface TableIcons {
 }
 
 export interface TableOptions {
+    size?: MuiTableProps['size'];
     sortable?: boolean;
     elevation?: number;
     filterable?: boolean;
@@ -83,12 +90,12 @@ export interface TableOptions {
     showActions?: boolean;
     showToolbar?: boolean;
     showHeader?: boolean;
-    showPagination?: boolean;
+    showPagination?: boolean | 'top' | 'bottom';
     stickyHeader?: boolean;
     allCapsHeader?: boolean;
     noWrap?: boolean;
+    loader?: 'skeleton' | 'overlay' | 'dynamic';
     highlightRow?: boolean;
-    highlightColumn?: boolean;
     alternativeRowColor?: boolean;
     skeletonRows?: number;
 }
@@ -105,7 +112,6 @@ export interface DataQuery {
 export interface BackendData<T = any> {
     items: T[];
     itemCount: number;
-    currentPage: number;
 }
 
 export interface TableProps<T = any> {
@@ -189,6 +195,7 @@ export interface TableState<T = any> {
     options: Required<TableOptions>;
     rawOptions?: TableOptions;
     dependencies?: any[];
+    staleData: boolean;
 }
 
 export type TableInitData<T = any> = Partial<

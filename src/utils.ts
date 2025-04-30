@@ -48,7 +48,7 @@ export function isLocalData<T = any>(data: any): data is T[] {
 }
 
 export function isBackendData<T = any>(data: any): data is BackendData<T> {
-    return isArray(data.items) && isNumber(data.itemCount) && isNumber(data.currentPage);
+    return isArray(data.items) && isNumber(data.itemCount);
 }
 
 type FieldNames<Names extends string, Prefix extends string = ''> = {

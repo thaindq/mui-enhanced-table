@@ -8,6 +8,7 @@ import {
     styled,
     Box,
     formControlClasses,
+    Paper,
 } from '@mui/material';
 import React from 'react';
 import {
@@ -17,11 +18,11 @@ import {
     Droppable,
     DroppableProvided,
     ResponderProvided,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { TableColumn, TableColumnId, TableTranslations } from '../types';
 import { generateNamesObject } from '../utils';
 
-const Root = styled(Box)(({ theme }) => ({
+const Root = styled(Paper)(({ theme }) => ({
     [`& .${formControlClasses.root}`]: {
         padding: theme.spacing(2, 2, 2, 3),
     },
@@ -52,7 +53,7 @@ export const TableViewColumns: React.FunctionComponent<TableViewColumnProps> = (
 }) => {
     return (
         <DragDropContext onDragEnd={onColumnDrag}>
-            <Droppable droppableId="droppable" direction="vertical">
+            <Droppable droppableId={TableViewColumns.name} direction="vertical">
                 {(provided: DroppableProvided) => (
                     <Root ref={provided.innerRef} {...provided.droppableProps}>
                         <FormControl component={'fieldset'}>

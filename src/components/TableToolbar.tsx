@@ -3,7 +3,7 @@ import { alpha, Box, Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typogr
 import clsx from 'clsx';
 import { isFunction } from 'lodash';
 import React, { useRef } from 'react';
-import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import { DropResult, ResponderProvided } from '@hello-pangea/dnd';
 import { useToggle } from '@react-hookz/web';
 import {
     TableAction,
@@ -19,11 +19,11 @@ import { TableViewColumns } from './TableViewColumns';
 
 const Root = styled(Toolbar)(({ theme }) => ({
     [`&.${muiTableToolbarClasses.toolbar}`]: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
+        padding: 0,
     },
-    [`&.${muiTableToolbarClasses.hasSelections}`]: {
+    [`&.${muiTableToolbarClasses.selectActionsContainer}`]: {
         backgroundColor: alpha(theme.palette.action.active, theme.palette.action.activatedOpacity),
+        padding: theme.spacing(0, 2),
     },
     [`& .${muiTableToolbarClasses.spacer}`]: {
         flex: '1 1 100%',
@@ -86,36 +86,33 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
     return (
         <Root
             className={clsx(muiTableToolbarClasses.toolbar, {
-                [muiTableToolbarClasses.hasSelections]: selectionCount > 0,
+                [muiTableToolbarClasses.selectActionsContainer]: selectionCount > 0,
             })}
         >
-            {showTitle && (
-                <Box className={muiTableToolbarClasses.title}>
-                    {hasSelections ? (
-                        <Typography color="inherit" variant="subtitle1">
-                            {selectionCount}&nbsp;{translations?.selected ?? 'selected'}
-                        </Typography>
-                    ) : (
-                        <Typography variant="h6">{title}</Typography>
-                    )}
-                </Box>
-            )}
+            <Box className={muiTableToolbarClasses.title}>
+                {hasSelections ? (
+                    <Typography color="inherit" variant="subtitle1">
+                        {selectionCount}&nbsp;{translations?.selected ?? 'selected'}
+                    </Typography>
+                ) : showTitle ? (
+                    <Typography variant="h6">{title}</Typography>
+                ) : null}
+            </Box>
 
             <Box className={muiTableToolbarClasses.spacer} />
 
-            {showActions && (
-                <Box className={muiTableToolbarClasses.actions}>
-                    {hasSelections ? (
-                        isFunction(selectActions) ? (
-                            selectActions()
-                        ) : (
-                            selectActions?.map(renderAction)
-                        )
+            <Box className={muiTableToolbarClasses.actions}>
+                {hasSelections ? (
+                    isFunction(selectActions) ? (
+                        selectActions()
                     ) : (
-                        <>
-                            {isFunction(actions) ? actions() : actions?.map(renderAction)}
+                        selectActions?.map(renderAction)
+                    )
+                ) : showActions ? (
+                    <>
+                        {isFunction(actions) ? actions() : actions?.map(renderAction)}
 
-                            {/* {searchable && (
+                        {/* {searchable && (
                                 <Action
                                     name={translations?.search ?? 'Search'}
                                     icon={icons?.toolbar?.search || <Search />}
@@ -125,32 +122,31 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
                                 />
                             )} */}
 
-                            {onDataRefresh && (
-                                <Action
-                                    name={translations?.refresh ?? 'Refresh'}
-                                    icon={icons?.toolbar?.refresh || <Refresh />}
-                                    callback={onDataRefresh}
-                                />
-                            )}
-
-                            {exportable && (
-                                <Action
-                                    name={translations?.export ?? 'Export'}
-                                    icon={icons?.toolbar?.export || <GetApp />}
-                                    callback={onDataExport}
-                                />
-                            )}
-
+                        {onDataRefresh && (
                             <Action
-                                name={translations?.columns ?? 'Columns'}
-                                icon={icons?.toolbar?.columns || <ViewColumn />}
-                                callback={() => toggleViewColumns()}
-                                ref={viewColumnsButtonRef}
+                                name={translations?.refresh ?? 'Refresh'}
+                                icon={icons?.toolbar?.refresh || <Refresh />}
+                                callback={onDataRefresh}
                             />
-                        </>
-                    )}
-                </Box>
-            )}
+                        )}
+
+                        {exportable && (
+                            <Action
+                                name={translations?.export ?? 'Export'}
+                                icon={icons?.toolbar?.export || <GetApp />}
+                                callback={onDataExport}
+                            />
+                        )}
+
+                        <Action
+                            name={translations?.columns ?? 'Columns'}
+                            icon={icons?.toolbar?.columns || <ViewColumn />}
+                            callback={() => toggleViewColumns()}
+                            ref={viewColumnsButtonRef}
+                        />
+                    </>
+                ) : null}
+            </Box>
 
             <Popover
                 disablePortal
@@ -184,6 +180,6 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
 };
 
 export const muiTableToolbarClasses = generateNamesObject(
-    ['toolbar', 'hasSelections', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
+    ['toolbar', 'selectActionsContainer', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
     MuiTableToolbar.name,
 );

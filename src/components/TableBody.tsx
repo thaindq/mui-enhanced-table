@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import clsx from 'clsx';
 import { isArray, isFunction, isString } from 'lodash';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SetRequired } from 'type-fest';
 import {
     FormatterProps,
@@ -35,11 +35,14 @@ import {
     TableTranslations,
 } from '../types';
 import { generateNamesObject } from '../utils';
+import { useMeasure } from '@react-hookz/web';
 
 const Root = styled(TableBody)(({ theme }) => ({
     position: 'relative',
     [`& .${muiTableBodyClasses.row}`]: {
         transition: 'all ease .2s',
+    },
+    [`& .${muiTableBodyClasses.rowHighlight}`]: {
         '&:hover': {
             backgroundColor: `${theme.palette.action.hover} !important`,
         },
@@ -57,7 +60,6 @@ const Root = styled(TableBody)(({ theme }) => ({
             backgroundColor: `${theme.palette.action.disabledBackground} !important`,
         },
     },
-
     [`& .${muiTableBodyClasses.rowSelected}`]: {
         backgroundColor: `${theme.palette.action.selected} !important`,
         '&:hover': {
@@ -114,7 +116,6 @@ const Root = styled(TableBody)(({ theme }) => ({
         border: 'none',
         alignItems: 'center',
         justifyContent: 'center',
-        width: `calc(100vw - ${theme.spacing(4)})`,
     },
 }));
 
@@ -137,13 +138,15 @@ interface TableBodyProps<T>
     displayData: readonly TableRow<T>[];
     options: Required<TableOptions>;
     icons?: TableIcons;
-    isLoading?: boolean;
-    isError?: boolean;
+    isLoading: boolean;
+    isFetching: boolean;
+    isError: boolean;
     rowCount?: number;
     selectedRowIds: TableRowId[];
     expandedRowIds: TableRowId[];
     searchMatchers?: SearchMatchers | null;
     translations?: TableTranslations;
+    tableContainerRef: React.RefObject<HTMLDivElement | null>;
     onToggleRowSelection: (rowId: TableRowId) => void;
     onToggleRowExpansion: (rowId: TableRowId) => void;
 }
@@ -156,7 +159,8 @@ const MuiTableBody = <T = any,>({
     searchMatchers,
     options,
     icons,
-    isLoading: isPending,
+    isLoading,
+    isFetching,
     isError,
     selectedRowIds,
     expandedRowIds,
@@ -173,6 +177,7 @@ const MuiTableBody = <T = any,>({
     onToggleRowSelection,
     onNoDataMessage,
     onErrorMessage,
+    tableContainerRef,
 }: TableBodyProps<T>) => {
     const theme = useTheme();
     const {
@@ -183,15 +188,25 @@ const MuiTableBody = <T = any,>({
         highlightRow,
         alternativeRowColor,
         showHeader,
-        stickyHeader,
         skeletonRows,
+        loader,
     } = options;
 
-    const isLoading = isPending && !displayData.length;
-    const isFetching = isPending && displayData.length > 0;
     const isNoData = !isLoading && !isFetching && !isError && !displayData.length;
-    const shouldShowOverlay = !isLoading && (isFetching || isError || isNoData);
-    const totalColumns = columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions ? 1 : 0);
+    const shouldShowSkeleton = (isLoading || isFetching) && loader === 'skeleton';
+    const shouldShowOverlay =
+        loader === 'dynamic'
+            ? !isLoading && (isFetching || isError || isNoData)
+            : loader === 'overlay'
+              ? isLoading || isFetching || isError || isNoData
+              : isError || isNoData;
+    const hasRowActions = isArray(rowActions) ? rowActions.length > 0 : !!rowActions;
+    const totalColumns = columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (hasRowActions ? 1 : 0);
+    const [tableContainerMeasure, tableContainerMeasureRef] = useMeasure(true);
+
+    useEffect(() => {
+        tableContainerMeasureRef.current = tableContainerRef.current;
+    }, [tableContainerRef]);
 
     const handleRowSelect = (rowId: TableRowId, rowData: T, rowIndex: number) => {
         onToggleRowSelection(rowId);
@@ -213,6 +228,8 @@ const MuiTableBody = <T = any,>({
         }
     };
 
+    const skeleton = <Skeleton animation="wave" variant="text" sx={{ mt: 0.5, mb: 0.5 }} />;
+
     return (
         <Root className={clsx(className, muiTableBodyClasses.root)}>
             {shouldShowOverlay && (
@@ -222,7 +239,10 @@ const MuiTableBody = <T = any,>({
                         backgroundColor: isFetching ? undefined : 'inherit',
                     }}
                 >
-                    <TableCell className={muiTableBodyClasses.overlayContent}>
+                    <TableCell
+                        className={muiTableBodyClasses.overlayContent}
+                        style={{ width: tableContainerMeasure?.width }}
+                    >
                         {isFetching && <CircularProgress size="2rem" />}
                         {isError && (onErrorMessage?.(data) || <Typography>Error loading data</Typography>)}
                         {isNoData && (onNoDataMessage?.(data) || <Typography>No data</Typography>)}
@@ -234,13 +254,11 @@ const MuiTableBody = <T = any,>({
                 <>
                     <MuiTableRow style={{ height: theme.spacing(10) }}>
                         {isLoading &&
-                            Array.from({ length: totalColumns }).map((item, index) => (
-                                <TableCell key={index}>
-                                    {Array(skeletonRows)
-                                        .fill(0)
-                                        .map((_, index) => (
-                                            <Skeleton key={index} animation="wave" />
-                                        ))}
+                            Array.from(Array(totalColumns), (_, index) => (
+                                <TableCell key={index} size="medium">
+                                    {Array.from(Array(skeletonRows), (_, index) => (
+                                        <React.Fragment key={index}>{skeleton}</React.Fragment>
+                                    ))}
                                 </TableCell>
                             ))}
                     </MuiTableRow>
@@ -261,13 +279,15 @@ const MuiTableBody = <T = any,>({
                     const rowClasses = clsx(
                         muiTableBodyClasses.row,
                         {
-                            [muiTableBodyClasses.rowClickable]: !!onRowClick || selectable || expandable,
+                            [muiTableBodyClasses.rowHighlight]: highlightRow,
+                            [muiTableBodyClasses.rowClickable]:
+                                !shouldShowSkeleton && (!!onRowClick || selectable || expandable),
                             [muiTableBodyClasses.rowAlternativeColor]: alternativeRowColor
                                 ? showHeader
                                     ? isEvenRow
                                     : !isEvenRow
                                 : false,
-                            [muiTableBodyClasses.rowSelected]: selected || highlighted,
+                            [muiTableBodyClasses.rowSelected]: !shouldShowSkeleton && (selected || highlighted),
                             [muiTableBodyClasses.rowDisabled]: disabled,
                         },
                         className,
@@ -284,9 +304,8 @@ const MuiTableBody = <T = any,>({
                                 style={style}
                                 className={rowClasses}
                                 selected={selected}
-                                hover={highlightRow}
                                 onClick={(event: any) => {
-                                    if (disabled) {
+                                    if (disabled || shouldShowSkeleton) {
                                         return;
                                     }
 
@@ -296,30 +315,36 @@ const MuiTableBody = <T = any,>({
                             >
                                 {expandable && (
                                     <TableCell className={clsx(cellClasses, muiTableBodyClasses.cellExpandButton)}>
-                                        <Tooltip
-                                            title={
-                                                expanded
-                                                    ? (translations?.collapse ?? 'Collapse')
-                                                    : (translations?.expand ?? 'Expand')
-                                            }
-                                        >
-                                            <IconButton
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    handleRowExpand(row.id, row.data, rowIndex);
-                                                }}
+                                        {shouldShowSkeleton ? (
+                                            skeleton
+                                        ) : (
+                                            <Tooltip
+                                                title={
+                                                    expanded
+                                                        ? (translations?.collapse ?? 'Collapse')
+                                                        : (translations?.expand ?? 'Expand')
+                                                }
                                             >
-                                                {expanded
-                                                    ? icons?.rowCollapse || <ExpandLess />
-                                                    : icons?.rowExpand || <ExpandMore />}
-                                            </IconButton>
-                                        </Tooltip>
+                                                <IconButton
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        handleRowExpand(row.id, row.data, rowIndex);
+                                                    }}
+                                                >
+                                                    {expanded
+                                                        ? icons?.rowCollapse || <ExpandLess />
+                                                        : icons?.rowExpand || <ExpandMore />}
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
                                     </TableCell>
                                 )}
 
                                 {selectable && (
                                     <TableCell className={clsx(cellClasses, muiTableBodyClasses.cellSelectionControl)}>
-                                        {multiSelect ? (
+                                        {shouldShowSkeleton ? (
+                                            skeleton
+                                        ) : multiSelect ? (
                                             <Checkbox
                                                 checked={selected}
                                                 disabled={disabled}
@@ -360,6 +385,10 @@ const MuiTableBody = <T = any,>({
                                         formattedValue = <FormatterComponent {...formatterProps} />;
                                     }
 
+                                    if (shouldShowSkeleton) {
+                                        formattedValue = skeleton;
+                                    }
+
                                     const { style, className } =
                                         onCellStatus?.(row.id, column.id, row.data, rowIndex, cellIndex) || {};
 
@@ -396,45 +425,49 @@ const MuiTableBody = <T = any,>({
                                             muiTableBodyClasses.cellNoWrap,
                                         )}
                                     >
-                                        {isArray(actions)
-                                            ? actions.map(
-                                                  (
-                                                      {
-                                                          name,
-                                                          icon,
-                                                          button,
-                                                          callback,
-                                                          disabled,
-                                                          className,
-                                                      }: TableAction,
-                                                      index: number,
-                                                  ) => {
-                                                      if (button) {
-                                                          return <React.Fragment key={index}>{button}</React.Fragment>;
-                                                      }
+                                        {shouldShowSkeleton
+                                            ? skeleton
+                                            : isArray(actions)
+                                              ? actions.map(
+                                                    (
+                                                        {
+                                                            name,
+                                                            icon,
+                                                            button,
+                                                            callback,
+                                                            disabled,
+                                                            className,
+                                                        }: TableAction,
+                                                        index: number,
+                                                    ) => {
+                                                        if (button) {
+                                                            return (
+                                                                <React.Fragment key={index}>{button}</React.Fragment>
+                                                            );
+                                                        }
 
-                                                      return (
-                                                          <Tooltip key={index} title={name}>
-                                                              <IconButton
-                                                                  className={className}
-                                                                  onClick={(event) => {
-                                                                      event.stopPropagation();
-                                                                      callback(event);
-                                                                  }}
-                                                                  disabled={disabled}
-                                                              >
-                                                                  {isString(icon) ? <Icon className={icon} /> : icon}
-                                                              </IconButton>
-                                                          </Tooltip>
-                                                      );
-                                                  },
-                                              )
-                                            : actions}
+                                                        return (
+                                                            <Tooltip key={index} title={name}>
+                                                                <IconButton
+                                                                    className={className}
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        callback(event);
+                                                                    }}
+                                                                    disabled={disabled}
+                                                                >
+                                                                    {isString(icon) ? <Icon className={icon} /> : icon}
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        );
+                                                    },
+                                                )
+                                              : actions}
                                     </TableCell>
                                 )}
                             </MuiTableRow>
 
-                            {expanded && RowExpandComponent && (
+                            {expanded && !shouldShowSkeleton && RowExpandComponent && (
                                 <MuiTableRow
                                     className={clsx(
                                         rowClasses,
@@ -468,6 +501,7 @@ export const muiTableBodyClasses = generateNamesObject(
     [
         'root',
         'row',
+        'rowHighlight',
         'rowAlternativeColor',
         'rowClickable',
         'rowDisabled',

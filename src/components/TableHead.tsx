@@ -26,10 +26,11 @@ interface TableHeadProps {
     columns: TableColumn[];
     options: TableOptions;
     selectionCount?: number;
-    rowCount?: number;
+    displayCount?: number;
     sortBy?: TableColumnId;
     sortDirection?: SortDirection;
     hasRowActions?: boolean;
+    isPending: boolean;
     onToggleSelectAll: () => void;
     onSortData: (columnId: TableColumnId, direction?: SortDirection) => void;
 }
@@ -39,10 +40,11 @@ const MuiTableHead: React.FunctionComponent<TableHeadProps> = ({
     columns,
     options,
     selectionCount,
-    rowCount,
+    displayCount,
     sortBy,
     sortDirection,
     hasRowActions,
+    isPending,
     onToggleSelectAll,
     onSortData,
 }) => {
@@ -55,10 +57,11 @@ const MuiTableHead: React.FunctionComponent<TableHeadProps> = ({
 
                 {selectable && (
                     <TableCell className={muiTableHeadClasses.cell}>
-                        {multiSelect && selectionCount !== undefined && rowCount !== undefined && (
+                        {multiSelect && selectionCount !== undefined && displayCount !== undefined && (
                             <Checkbox
-                                indeterminate={selectionCount > 0 && selectionCount < rowCount}
-                                checked={selectionCount > 0 && selectionCount === rowCount}
+                                disabled={isPending}
+                                indeterminate={selectionCount > 0 && selectionCount < displayCount}
+                                checked={selectionCount > 0 && selectionCount === displayCount}
                                 onClick={() => onToggleSelectAll()}
                             />
                         )}

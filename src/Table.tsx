@@ -1,15 +1,15 @@
 import {
-    alpha,
     Box,
-    CircularProgress,
     Grid,
     Paper,
     SortDirection,
     styled,
     Table,
     TablePagination,
+    TablePaginationProps,
     Toolbar,
 } from '@mui/material';
+import { withTheme } from '@mui/material/styles';
 import clsx from 'clsx';
 import {
     debounce,
@@ -26,14 +26,14 @@ import {
     toString,
     union,
 } from 'lodash';
-import React, { GetDerivedStateFromProps } from 'react';
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import React, { GetDerivedStateFromProps, useMemo } from 'react';
+import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { SetRequired } from 'type-fest';
 import { TableBody } from './components/TableBody';
 import { TableHead } from './components/TableHead';
 import { TablePaginationActions } from './components/TablePaginationActions';
 import { TableSearch } from './components/TableSearch';
-import { MuiTableToolbar } from './components/TableToolbar';
+import { MuiTableToolbar, muiTableToolbarClasses } from './components/TableToolbar';
 import { SearchHighlightedFormatter } from './formatters/SearchHighlightedFormatter';
 import {
     DataQuery,
@@ -57,38 +57,28 @@ import {
     toggleArrayItem,
 } from './utils';
 
-export const muiTableClasses = generateNamesObject(
-    [
-        'root',
-        'border',
-        'container',
-        'table',
-        'componentsContainer',
-        'bottomContainer',
-        'customComponentsContainer',
-        'noTitle',
-    ],
-    'MuiTable',
-);
-
 const Root = styled(Paper)(({ theme }) => ({
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    [`&.${muiTableClasses.border}`]: {
-        border: `1px solid ${theme.palette.action.active}`,
-    },
     [`& .${muiTableClasses.container}`]: {
         overflowX: 'auto',
         position: 'relative',
         flexGrow: 1,
     },
-    [`& .${muiTableClasses.componentsContainer}`]: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
+    [`&.${muiTableClasses.border}`]: {
+        border: `1px solid ${theme.palette.action.active}`,
+        [`& .${muiTableToolbarClasses.toolbar}, .${muiTableClasses.componentsContainer}`]: {
+            paddingLeft: theme.spacing(2),
+            paddingRight: theme.spacing(2),
+        },
     },
-    [`& .${muiTableClasses.noTitle}`]: {
-        marginTop: `-${theme.spacing(6)}`,
+    [`& .${muiTableClasses.componentsContainer}`]: {
+        minHeight: 0,
+        marginTop: theme.spacing(2),
+    },
+    [`& .${muiTableClasses.customComponentsContainer}`]: {
+        marginBottom: theme.spacing(2),
     },
 }));
 
@@ -111,7 +101,9 @@ const DEFAULT_STATE: TableState = {
     rowsPerPage: 10,
     searchText: '',
     searchMatchers: null,
+    staleData: true,
     options: {
+        size: 'medium',
         noWrap: false,
         sortable: true,
         filterable: true,
@@ -120,7 +112,7 @@ const DEFAULT_STATE: TableState = {
         multiSelect: true,
         multiExpand: true,
         searchable: true,
-        showPagination: true,
+        showPagination: 'top',
         rowsPerPageOptions: [10, 20, 40],
         showBorder: false,
         showTitle: true,
@@ -130,13 +122,12 @@ const DEFAULT_STATE: TableState = {
         stickyHeader: false,
         allCapsHeader: true,
         highlightRow: true,
-        highlightColumn: false,
         alternativeRowColor: true,
         elevation: 1,
-        skeletonRows: 5,
+        loader: 'dynamic',
+        skeletonRows: 4,
         exportable: false,
     },
-    rawOptions: {},
 };
 
 export const MuiTableContext = React.createContext<TableState>(DEFAULT_STATE);
@@ -174,16 +165,11 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             displayData: data,
             columns,
             rawColumns,
+            staleData: true,
         };
     };
 
-    static getNextState = (
-        newStateValues: Partial<TableState>,
-        prevState: TableState,
-    ): {
-        nextState: TableState;
-        nextQuery?: DataQuery;
-    } => {
+    static getNextState = (newStateValues: Partial<TableState>, prevState: TableState): TableState => {
         const mergedState = {
             ...prevState,
             ...newStateValues,
@@ -208,17 +194,20 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             hasNewFilteredData;
 
         let searchMatchers: SearchMatchers | null = prevState.searchText ? prevState.searchMatchers : null;
+        let currentPage = hasNewSearchText || hasNewFilteredData ? 0 : mergedState.currentPage;
         let displayData = mergedState.data;
-        let currentPage = isBackendData(mergedState.rawData)
-            ? mergedState.rawData.currentPage
-            : mergedState.currentPage;
 
         if (isLocalData(mergedState.rawData)) {
+            displayData = mergedState.displayData;
+
             if (hasNewData || hasNewSearchText || hasNewFilteredData) {
+                displayData = mergedState.data;
+
                 const filteredIds = intersection(
                     displayData.map((row) => row.id),
                     ...(Object.values(filteredRowIds).filter((item) => !!item) as TableRowId[][]),
                 );
+
                 displayData = displayData.filter((row) => filteredIds.includes(row.id));
 
                 searchMatchers = {};
@@ -281,31 +270,17 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                 : 0;
         }
 
-        const nextState = {
+        return {
             ...mergedState,
             searchMatchers,
             displayData,
             currentPage,
+            staleData: hasNewQuery,
             itemCount: isBackendData(mergedState.rawData)
                 ? mergedState.rawData.itemCount
                 : isLocalData(mergedState.rawData)
                   ? displayData.length
                   : mergedState.itemCount,
-        };
-
-        return {
-            nextState,
-            nextQuery:
-                hasNewQuery && !isLocalData(mergedState.rawData)
-                    ? {
-                          pageNumber: mergedState.currentPage,
-                          pageSize: mergedState.rowsPerPage,
-                          searchText: mergedState.searchText,
-                          sortBy: mergedState.sortBy,
-                          sortDirection: mergedState.sortDirection,
-                          filters: mergedState.filterData,
-                      }
-                    : undefined,
         };
     };
 
@@ -315,15 +290,15 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             !isEqual(prevState.rawColumns, nextProps.columns) ||
             !isEqual(prevState.rawOptions, nextProps.options)
         ) {
-            return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState).nextState;
-        } else if (prevState && prevState.rawData !== nextProps.data) {
+            return MuiTable.getNextState(MuiTable.getInitialState(nextProps), prevState);
+        } else if (prevState.rawData !== nextProps.data) {
             return MuiTable.getNextState(
                 {
                     data: MuiTable.mapDataToTableRow(nextProps.data, nextProps.dataId),
                     rawData: nextProps.data,
                 },
                 prevState,
-            ).nextState;
+            );
         }
 
         return null;
@@ -385,11 +360,16 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
     state: TableState<T> = DEFAULT_STATE;
 
-    tableId = '';
+    private tableContainerRef = React.createRef<HTMLDivElement>();
 
     componentDidMount = () => {
-        this.tableId = `table-${Math.random().toString(36).slice(2, 8)}`;
         this.updateTableState(MuiTable.getInitialState(this.props) as TableState<T>, undefined, true);
+    };
+
+    componentDidUpdate = () => {
+        if (this.state.staleData) {
+            this.fetchData();
+        }
     };
 
     updateTableState = (
@@ -398,23 +378,16 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         didMount?: boolean,
     ) => {
         let prevStateForCallback: TableState<T>;
-        let nextQueryForCallback: DataQuery | undefined;
 
         this.setState(
             (prevState) => {
-                const { nextState, nextQuery } = MuiTable.getNextState(newValues, prevState);
                 prevStateForCallback = prevState;
-                nextQueryForCallback = nextQuery;
-                return nextState;
+                return MuiTable.getNextState(newValues, prevState);
             },
             () => {
                 if (!didMount) {
                     callback?.(this.state, prevStateForCallback);
                     this.props.onStateChange?.(this.state, prevStateForCallback);
-                }
-
-                if (nextQueryForCallback) {
-                    this.fetchData(nextQueryForCallback);
                 }
             },
         );
@@ -603,7 +576,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
     scrollToRow = (rowId: string) => {
         const rowSelector = `[data-row-id="${rowId}"]`;
-        const parent = document.querySelector(`#${this.tableId}`);
+        const parent = this.tableContainerRef.current;
         const element: HTMLElement | null = document.querySelector(rowSelector);
 
         if (parent && element) {
@@ -612,9 +585,10 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
     };
 
     fetchData = (newQuery?: DataQuery) => {
+        const { dataId, onDataQuery } = this.props;
         const { rawData, currentPage, rowsPerPage, searchText, sortBy, sortDirection, filterData } = this.state;
         const query = newQuery ?? {
-            pageNumber: currentPage,
+            pageNumber: currentPage + 1,
             pageSize: rowsPerPage,
             searchText,
             sortBy,
@@ -625,7 +599,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         if (isLocalData(rawData)) {
             return;
         } else if (isBackendData(rawData)) {
-            this.props.onDataQuery?.(query);
+            onDataQuery?.(query);
         } else {
             this.setState({
                 isLoading: true,
@@ -633,8 +607,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             });
 
             (rawData as Exclude<typeof rawData, readonly any[]>)(query)
-                .then(({ items, itemCount, currentPage }) => {
-                    const data = MuiTable.mapDataToTableRow(items);
+                .then(({ items, itemCount }) => {
+                    const data = MuiTable.mapDataToTableRow(items, dataId);
                     this.setState({
                         isLoading: false,
                         isError: false,
@@ -651,6 +625,10 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                     });
                 });
         }
+
+        this.setState({
+            staleData: false,
+        });
     };
 
     // https://stackoverflow.com/a/45411081
@@ -718,6 +696,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             onNoDataMessage,
             onErrorMessage,
             children,
+            isLoading: isLoadingProp,
+            isError: isErrorProp,
         } = this.props;
 
         const {
@@ -734,11 +714,12 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             rowsPerPage,
             searchMatchers,
             options,
-            isLoading,
-            isError,
+            isLoading: isLoadingState,
+            isError: isErrorState,
         } = this.state;
 
         const {
+            size,
             showBorder,
             showToolbar,
             showHeader,
@@ -755,19 +736,46 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         const ToolbarComponent = components?.toolbar || MuiTableToolbar;
         const PaginationComponent = components?.pagination || TablePagination;
 
+        const showTopPagination = showPagination && showPagination !== 'bottom';
+        const showBottomPagination = showPagination && showPagination !== 'top';
+        const hasRowActions = isArray(rowActions) ? rowActions.length > 0 : !!rowActions;
+        const hasBorder = showBorder || elevation > 0;
+
+        const isPending = isLoadingProp ?? isLoadingState;
+        const isLoading = isPending && !displayData.length;
+        const isFetching = isPending && displayData.length > 0;
+        const isError = isErrorProp ?? isErrorState;
+
         const displayColumns = columns.filter((column) => column.display || !column.name);
         const currentPageData =
             isLocalData(rawData) && showPagination
                 ? displayData.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage)
                 : displayData;
 
+        const pagination = (
+            <PaginationComponent
+                component="div"
+                ActionsComponent={(props) => <TablePaginationActions {...props} icons={icons} disabled={isLoading} />}
+                {...defaultComponentProps?.TablePaginationProps}
+                count={itemCount}
+                rowsPerPage={rowsPerPage}
+                rowsPerPageOptions={rowsPerPageOptions}
+                page={currentPage}
+                onPageChange={(event, page) => this.changePage(page)}
+                onRowsPerPageChange={(event) => this.changeRowsPerPage(parseInt(event.target.value))}
+            />
+        );
+
         return (
             <MuiTableContext.Provider value={this.state}>
                 <Root
                     elevation={showBorder ? 0 : elevation}
                     className={clsx(muiTableClasses.root, className, {
-                        [muiTableClasses.border]: showBorder,
+                        [muiTableClasses.border]: hasBorder,
                     })}
+                    style={{
+                        border: !showBorder && elevation ? 'none' : undefined,
+                    }}
                 >
                     {showToolbar && (
                         <ToolbarComponent
@@ -787,111 +795,112 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                         />
                     )}
 
-                    <Toolbar disableGutters>
-                        <Grid container className={muiTableClasses.componentsContainer} width={'100%'}>
-                            {children && (
-                                <Grid
-                                    xs={12}
-                                    className={clsx(muiTableClasses.customComponentsContainer, {
-                                        [muiTableClasses.noTitle]: !title && showToolbar,
-                                    })}
-                                >
-                                    {isFunction(children)
-                                        ? children({
-                                              data,
-                                              displayData,
-                                              onFilterUpdate: this.updateFilter,
-                                          })
-                                        : children}
-                                </Grid>
-                            )}
-
-                            <Grid xs={12} md={5} xl={4}>
-                                {searchable && (
-                                    <SearchComponent displayData={displayData} onChange={this.changeSearch} />
+                    {(children || searchable || showTopPagination) && (
+                        <Toolbar
+                            disableGutters
+                            className={muiTableClasses.componentsContainer}
+                            style={{ marginTop: showToolbar ? 0 : undefined }}
+                        >
+                            <Grid container>
+                                {children && (
+                                    <Grid item xs={12} className={muiTableClasses.customComponentsContainer}>
+                                        {isFunction(children)
+                                            ? children({
+                                                  data,
+                                                  displayData,
+                                                  onFilterUpdate: this.updateFilter,
+                                              })
+                                            : children}
+                                    </Grid>
                                 )}
-                            </Grid>
 
-                            <Grid xs={12} md={7} xl={8}>
-                                {showPagination && (
-                                    <PaginationComponent
-                                        component="div"
-                                        ActionsComponent={(props) => (
-                                            <TablePaginationActions {...props} icons={icons} disabled={isLoading} />
-                                        )}
-                                        {...defaultComponentProps?.TablePaginationProps}
-                                        count={itemCount}
-                                        rowsPerPage={rowsPerPage}
-                                        rowsPerPageOptions={rowsPerPageOptions}
-                                        page={currentPage}
-                                        onPageChange={(event, page) => this.changePage(page)}
-                                        onRowsPerPageChange={(event) =>
-                                            this.changeRowsPerPage(parseInt(event.target.value))
-                                        }
-                                    />
-                                )}
-                            </Grid>
-                        </Grid>
-                    </Toolbar>
-
-                    <DragDropContext onDragEnd={this.reorderColumns}>
-                        <Droppable droppableId="droppable" direction="horizontal">
-                            {(provided) => (
-                                <Box
-                                    id={this.tableId}
-                                    className={muiTableClasses.container}
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                >
-                                    <Table className={muiTableClasses.table} stickyHeader={stickyHeader}>
-                                        {showHeader && (
-                                            <TableHead
-                                                columns={displayColumns}
-                                                options={options}
-                                                selectionCount={selectedRowIds.length}
-                                                rowCount={data.length}
-                                                sortBy={sortBy}
-                                                sortDirection={sortDirection}
-                                                hasRowActions={!!rowActions}
-                                                onToggleSelectAll={this.toggleSelectAllRows}
-                                                onSortData={this.sortData}
-                                            />
-                                        )}
-
-                                        <TableBody<T>
-                                            columns={displayColumns}
-                                            data={data}
-                                            displayData={currentPageData}
-                                            options={options}
-                                            isLoading={isLoading}
-                                            isError={isError}
-                                            searchMatchers={searchMatchers}
-                                            rowCount={showPagination ? rowsPerPage : displayData.length}
-                                            selectedRowIds={selectedRowIds}
-                                            expandedRowIds={expandedRowIds}
-                                            rowActions={rowActions}
-                                            rowExpand={rowExpand}
-                                            translations={translations}
-                                            onToggleRowSelection={this.toggleRowSelection}
-                                            onToggleRowExpansion={this.toggleRowExpansion}
-                                            onRowClick={onRowClick}
-                                            onRowStatus={onRowStatus}
-                                            onRowExpand={onRowExpand}
-                                            onRowSelect={onRowSelect}
-                                            onCellClick={onCellClick}
-                                            onCellStatus={onCellStatus}
-                                            onNoDataMessage={onNoDataMessage}
-                                            onErrorMessage={onErrorMessage}
+                                <Grid item xs={12} md={5} xl={4}>
+                                    {searchable && (
+                                        <SearchComponent
+                                            displayData={displayData}
+                                            onChange={this.changeSearch}
+                                            placeholder={translations?.search}
                                         />
-                                    </Table>
-                                </Box>
+                                    )}
+                                </Grid>
+
+                                <Grid item xs={12} md={7} xl={8}>
+                                    {showTopPagination && pagination}
+                                </Grid>
+                            </Grid>
+                        </Toolbar>
+                    )}
+
+                    <Box className={muiTableClasses.container} ref={this.tableContainerRef}>
+                        <Table className={muiTableClasses.table} stickyHeader={stickyHeader} size={size}>
+                            {showHeader && (
+                                <TableHead
+                                    columns={displayColumns}
+                                    options={options}
+                                    selectionCount={selectedRowIds.length}
+                                    displayCount={itemCount}
+                                    sortBy={sortBy}
+                                    sortDirection={sortDirection}
+                                    hasRowActions={hasRowActions}
+                                    isPending={isPending}
+                                    onToggleSelectAll={this.toggleSelectAllRows}
+                                    onSortData={this.sortData}
+                                />
                             )}
-                        </Droppable>
-                    </DragDropContext>
+
+                            <TableBody<T>
+                                columns={displayColumns}
+                                data={data}
+                                displayData={currentPageData}
+                                options={options}
+                                isLoading={isLoading}
+                                isFetching={isFetching}
+                                isError={isError}
+                                searchMatchers={searchMatchers}
+                                rowCount={showPagination ? rowsPerPage : displayData.length}
+                                selectedRowIds={selectedRowIds}
+                                expandedRowIds={expandedRowIds}
+                                rowActions={rowActions}
+                                rowExpand={rowExpand}
+                                translations={translations}
+                                tableContainerRef={this.tableContainerRef}
+                                onToggleRowSelection={this.toggleRowSelection}
+                                onToggleRowExpansion={this.toggleRowExpansion}
+                                onRowClick={onRowClick}
+                                onRowStatus={onRowStatus}
+                                onRowExpand={onRowExpand}
+                                onRowSelect={onRowSelect}
+                                onCellClick={onCellClick}
+                                onCellStatus={onCellStatus}
+                                onNoDataMessage={onNoDataMessage}
+                                onErrorMessage={onErrorMessage}
+                            />
+                        </Table>
+                    </Box>
+
+                    {showBottomPagination && (
+                        <Toolbar
+                            disableGutters
+                            className={muiTableClasses.componentsContainer}
+                            style={{ marginTop: 0 }}
+                        >
+                            <Grid container>
+                                <Grid item xs={12} md={5} xl={4} />
+                                <Grid item xs={12} md={7} xl={8}>
+                                    {pagination}
+                                </Grid>
+                            </Grid>
+                        </Toolbar>
+                    )}
                 </Root>
             </MuiTableContext.Provider>
         );
     }
 }
+
+export const muiTableClasses = generateNamesObject(
+    ['root', 'border', 'container', 'table', 'componentsContainer', 'customComponentsContainer'],
+    MuiTable.name,
+);
 
 export default MuiTable;
