@@ -9,7 +9,7 @@ import {
     TableAction,
     TableColumn,
     TableColumnId,
-    TableComponents,
+    TableSlots,
     TableIcons,
     TableOptions,
     TableTranslations,
@@ -33,7 +33,7 @@ const Root = styled(Toolbar)(({ theme }) => ({
     },
 }));
 
-export interface TableToolbarProps<T = any> extends Pick<TableComponents, 'actions' | 'selectActions'> {
+export interface TableToolbarProps<T = any> extends Pick<TableSlots, 'actions' | 'selectActions'> {
     title?: string;
     columns: readonly TableColumn<T>[];
     selectionCount: number;
@@ -161,10 +161,13 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
                     vertical: 'top',
                     horizontal: 'right',
                 }}
-                slotProps={{
-                    paper: {
-                        className: muiTableToolbarClasses.viewColumnsContainer,
-                    },
+                // slotProps={{
+                //     paper: {
+                //         className: muiTableToolbarClasses.viewColumnsContainer,
+                //     },
+                // }}
+                PaperProps={{
+                    className: muiTableToolbarClasses.viewColumnsContainer,
                 }}
             >
                 <TableViewColumns

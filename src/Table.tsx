@@ -683,8 +683,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         const {
             className,
             title,
-            components,
-            defaultComponentProps,
+            slots,
+            slotProps,
             icons,
             translations,
             onRowClick,
@@ -730,11 +730,11 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             searchable,
         } = options as Required<TableOptions>;
 
-        const { rowExpand, rowActions, actions, selectActions } = components || {};
+        const { rowExpand, rowActions, actions, selectActions } = slots || {};
 
-        const SearchComponent = components?.search || TableSearch;
-        const ToolbarComponent = components?.toolbar || MuiTableToolbar;
-        const PaginationComponent = components?.pagination || TablePagination;
+        const SearchComponent = slots?.search || TableSearch;
+        const ToolbarComponent = slots?.toolbar || MuiTableToolbar;
+        const PaginationComponent = slots?.pagination || TablePagination;
 
         const showTopPagination = showPagination && showPagination !== 'bottom';
         const showBottomPagination = showPagination && showPagination !== 'top';
@@ -756,7 +756,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             <PaginationComponent
                 component="div"
                 ActionsComponent={(props) => <TablePaginationActions {...props} icons={icons} disabled={isLoading} />}
-                {...defaultComponentProps?.TablePaginationProps}
+                {...slotProps?.pagination}
+                labelDisplayedRows={translations?.pagination ?? slotProps?.pagination?.labelDisplayedRows}
                 count={itemCount}
                 rowsPerPage={rowsPerPage}
                 rowsPerPageOptions={rowsPerPageOptions}
@@ -801,7 +802,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                             className={muiTableClasses.componentsContainer}
                             style={{ marginTop: showToolbar ? 0 : undefined }}
                         >
-                            <Grid container>
+                            <Grid container flexGrow={1}>
                                 {children && (
                                     <Grid item xs={12} className={muiTableClasses.customComponentsContainer}>
                                         {isFunction(children)
@@ -817,9 +818,10 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                 <Grid item xs={12} md={5} xl={4}>
                                     {searchable && (
                                         <SearchComponent
-                                            displayData={displayData}
+                                            // @ts-expect-error: weird error
                                             onChange={this.changeSearch}
                                             placeholder={translations?.search}
+                                            {...slotProps?.search}
                                         />
                                     )}
                                 </Grid>

@@ -132,9 +132,9 @@ export interface TableProps<T = any> {
     options?: TableOptions;
     init?: TableInitData<T>;
     dependencies?: any[];
-    components?: TableComponents<T>;
+    slots?: TableSlots<T>;
     translations?: TableTranslations;
-    defaultComponentProps?: DefaultTableComponentProps;
+    slotProps?: SlotProps;
     icons?: TableIcons;
     onDataQuery?: (query: DataQuery) => void;
     onRowClick?: (rowId: TableRowId, rowData: T, rowIndex: number) => void;
@@ -217,8 +217,8 @@ export interface TableAction {
     callback: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-export interface TableComponents<T = any> {
-    search?: React.ComponentType<TableSearchProps<T>>;
+export interface TableSlots<T = any> {
+    search?: React.ComponentType<TableSearchProps>;
     toolbar?: React.ComponentType<TableToolbarProps>;
     pagination?: React.ComponentType<TablePaginationProps>;
     actions?: TableAction[] | (() => React.ReactElement);
@@ -247,11 +247,12 @@ export interface TableTranslations {
     previousPage?: string;
     expand?: string;
     collapse?: string;
+    pagination?: TablePaginationProps['labelDisplayedRows'];
 }
 
-export interface DefaultTableComponentProps {
-    SearchProps?: Partial<TextFieldProps>;
-    TablePaginationProps?: Partial<TablePaginationProps>;
+export interface SlotProps {
+    search?: Partial<TextFieldProps>;
+    pagination?: Partial<TablePaginationProps>;
 }
 
 export interface SearchMatcher {

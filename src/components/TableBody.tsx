@@ -26,7 +26,7 @@ import {
     SearchMatchers,
     TableAction,
     TableColumn,
-    TableComponents,
+    TableSlots,
     TableIcons,
     TableOptions,
     TableProps,
@@ -131,7 +131,7 @@ interface TableBodyProps<T>
             | 'onNoDataMessage'
             | 'onErrorMessage'
         >,
-        Pick<TableComponents<T>, 'rowActions' | 'rowExpand'> {
+        Pick<TableSlots<T>, 'rowActions' | 'rowExpand'> {
     className?: string;
     columns: SetRequired<TableColumn<T>, 'getValue'>[];
     data: readonly TableRow<T>[];
@@ -190,6 +190,7 @@ const MuiTableBody = <T = any,>({
         showHeader,
         skeletonRows,
         loader,
+        size,
     } = options;
 
     const isNoData = !isLoading && !isFetching && !isError && !displayData.length;
@@ -228,7 +229,9 @@ const MuiTableBody = <T = any,>({
         }
     };
 
-    const skeleton = <Skeleton animation="wave" variant="text" sx={{ mt: 0.5, mb: 0.5 }} />;
+    const skeleton = (
+        <Skeleton animation="wave" variant="text" sx={size === 'small' ? undefined : { mt: 0.5, mb: 0.5 }} />
+    );
 
     return (
         <Root className={clsx(className, muiTableBodyClasses.root)}>
