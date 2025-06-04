@@ -18,7 +18,7 @@ import {
     useTheme,
 } from '@mui/material';
 import clsx from 'clsx';
-import { isArray, isFunction, isString } from 'lodash';
+import { isArray, isFunction, isString } from 'lodash-es';
 import React, { useEffect } from 'react';
 import { SetRequired } from 'type-fest';
 import {

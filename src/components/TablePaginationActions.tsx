@@ -1,6 +1,5 @@
 import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@mui/icons-material';
-import { Box, IconButton, styled } from '@mui/material';
-import { TablePaginationActionsProps } from '@mui/material/TablePagination/TablePaginationActions';
+import { Box, IconButton, styled, TablePaginationActionsProps } from '@mui/material';
 import React, { useMemo } from 'react';
 import { TableIcons } from '../types';
 import { generateNamesObject } from '../utils';

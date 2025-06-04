@@ -1,4 +1,4 @@
-import { isArray, isNumber, isString, mergeWith, union, xor } from 'lodash';
+import { isArray, isNumber, isString, mergeWith, union, xor } from 'lodash-es';
 import { BackendData, SearchMatcher } from './types';
 
 export function getMatcher(input: string, query: string): SearchMatcher | null {

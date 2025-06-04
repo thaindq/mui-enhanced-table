@@ -1,7 +1,7 @@
 import { GetApp, Refresh, Search, ViewColumn } from '@mui/icons-material';
 import { alpha, Box, Icon, IconButton, Popover, styled, Toolbar, Tooltip, Typography } from '@mui/material';
 import clsx from 'clsx';
-import { isFunction } from 'lodash';
+import { isFunction } from 'lodash-es';
 import React, { useRef } from 'react';
 import { DropResult, ResponderProvided } from '@hello-pangea/dnd';
 import { useToggle } from '@react-hookz/web';
@@ -161,13 +161,10 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
                     vertical: 'top',
                     horizontal: 'right',
                 }}
-                // slotProps={{
-                //     paper: {
-                //         className: muiTableToolbarClasses.viewColumnsContainer,
-                //     },
-                // }}
-                PaperProps={{
-                    className: muiTableToolbarClasses.viewColumnsContainer,
+                slotProps={{
+                    paper: {
+                        className: muiTableToolbarClasses.viewColumnsContainer,
+                    },
                 }}
             >
                 <TableViewColumns

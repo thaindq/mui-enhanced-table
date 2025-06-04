@@ -25,7 +25,7 @@ import {
     sortBy,
     toString,
     union,
-} from 'lodash';
+} from 'lodash-es';
 import React, { GetDerivedStateFromProps, useMemo } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { SetRequired } from 'type-fest';
@@ -804,7 +804,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                         >
                             <Grid container flexGrow={1}>
                                 {children && (
-                                    <Grid item xs={12} className={muiTableClasses.customComponentsContainer}>
+                                    <Grid className={muiTableClasses.customComponentsContainer} size={12}>
                                         {isFunction(children)
                                             ? children({
                                                   data,
@@ -815,7 +815,13 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                     </Grid>
                                 )}
 
-                                <Grid item xs={12} md={5} xl={4}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 5,
+                                        xl: 4,
+                                    }}
+                                >
                                     {searchable && (
                                         <SearchComponent
                                             // @ts-expect-error: weird error
@@ -826,7 +832,13 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                                     )}
                                 </Grid>
 
-                                <Grid item xs={12} md={7} xl={8}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 7,
+                                        xl: 8,
+                                    }}
+                                >
                                     {showTopPagination && pagination}
                                 </Grid>
                             </Grid>
@@ -886,9 +898,21 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                             className={muiTableClasses.componentsContainer}
                             style={{ marginTop: 0 }}
                         >
-                            <Grid container>
-                                <Grid item xs={12} md={5} xl={4} />
-                                <Grid item xs={12} md={7} xl={8}>
+                            <Grid container flexGrow={1}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 5,
+                                        xl: 4,
+                                    }}
+                                />
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 7,
+                                        xl: 8,
+                                    }}
+                                >
                                     {pagination}
                                 </Grid>
                             </Grid>

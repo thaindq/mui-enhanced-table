@@ -1,4 +1,4 @@
-import { toString } from 'lodash';
+import { toString } from 'lodash-es';
 import React from 'react';
 import { FormatterProps } from '../types';
 import { BaseFormatter } from './BaseFormatter';

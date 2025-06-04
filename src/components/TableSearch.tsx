@@ -3,7 +3,7 @@ import {
     Box,
     IconButton,
     InputAdornment,
-    InputProps,
+    inputBaseClasses,
     styled,
     TextField,
     TextFieldProps,
@@ -12,7 +12,6 @@ import {
 import { useUpdateEffect } from '@react-hookz/web';
 import React, { useContext, useRef, useState } from 'react';
 import { MuiTableContext } from '../Table';
-import { TableRow } from '../types';
 import { generateNamesObject } from '../utils';
 
 export type TableSearchProps = Partial<Omit<TextFieldProps, 'onChange'>> & {
@@ -25,7 +24,9 @@ const Container = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     transition: 'all ease 0.5s',
-    borderRadius: theme.shape.borderRadius,
+    [`& .${inputBaseClasses.root}`]: {
+        borderRadius: theme.shape.borderRadius,
+    },
 }));
 
 export const TableSearch: React.FunctionComponent<TableSearchProps> = ({
@@ -44,32 +45,6 @@ export const TableSearch: React.FunctionComponent<TableSearchProps> = ({
     }, [searchText]);
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const inputProps = {
-        startAdornment: (
-            <InputAdornment position="start" style={{ color: 'inherit' }}>
-                <Search color="inherit" />
-            </InputAdornment>
-        ),
-        endAdornment: (
-            <InputAdornment position="end" style={{ display: searchText ? undefined : 'none', color: 'inherit' }}>
-                <IconButton
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                        setSearchText('');
-                        if (inputRef.current) {
-                            inputRef.current.focus();
-                        }
-                    }}
-                >
-                    <Clear fontSize="small" />
-                </IconButton>
-            </InputAdornment>
-        ),
-        ...textFieldProps.InputProps,
-        ...textFieldProps.slotProps?.input,
-        ref: inputRef,
-    };
 
     return (
         <Container className={muiTableSearchClasses.root}>
@@ -83,11 +58,38 @@ export const TableSearch: React.FunctionComponent<TableSearchProps> = ({
                 value={searchText}
                 onChange={(event) => setSearchText(event.target.value)}
                 size={size}
-                // slotProps={{
-                //     input: inputProps,
-                //     ...textFieldProps.slotProps,
-                // }}
-                InputProps={inputProps}
+                slotProps={{
+                    ...textFieldProps.slotProps,
+                    input: {
+                        ref: inputRef,
+                        disableUnderline: true,
+                        startAdornment: (
+                            <InputAdornment position="start" style={{ color: 'inherit' }}>
+                                <Search color="inherit" />
+                            </InputAdornment>
+                        ),
+                        endAdornment: (
+                            <InputAdornment
+                                position="end"
+                                style={{ display: searchText ? undefined : 'none', color: 'inherit' }}
+                            >
+                                <IconButton
+                                    color="inherit"
+                                    size="small"
+                                    onClick={() => {
+                                        setSearchText('');
+                                        if (inputRef.current) {
+                                            inputRef.current.focus();
+                                        }
+                                    }}
+                                >
+                                    <Clear fontSize="small" />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                        ...textFieldProps.slotProps?.input,
+                    },
+                }}
             />
         </Container>
     );
