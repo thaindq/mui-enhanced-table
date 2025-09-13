@@ -4,6 +4,11 @@ import React, { useMemo } from 'react';
 import { TableIcons } from '../types';
 import { generateNamesObject } from '../utils';
 
+export const muiTablePaginationActionsClasses = generateNamesObject(
+    ['root', 'firstPageButton', 'previousPageButton', 'nextPageButton', 'lastPageButton'],
+    'MuiTablePaginationActions',
+);
+
 const Root = styled(Box)(({ theme }) => ({
     marginLeft: theme.spacing(3),
     display: 'flex',
@@ -56,8 +61,3 @@ export const TablePaginationActions: React.FunctionComponent<
         </Root>
     );
 };
-
-export const muiTablePaginationActionsClasses = generateNamesObject(
-    ['root', 'firstPageButton', 'previousPageButton', 'nextPageButton', 'lastPageButton'],
-    TablePaginationActions.name,
-);

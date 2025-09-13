@@ -22,6 +22,11 @@ import {
 import { TableColumn, TableColumnId, TableTranslations } from '../types';
 import { generateNamesObject } from '../utils';
 
+export const muiTableViewColumnsClasses = generateNamesObject(
+    ['container', 'dragHandle', 'resetButton'],
+    'MuiTableViewColumns',
+);
+
 const Root = styled(Paper)(({ theme }) => ({
     [`& .${formControlClasses.root}`]: {
         padding: theme.spacing(2, 2, 2, 3),
@@ -112,8 +117,3 @@ export const TableViewColumns: React.FunctionComponent<TableViewColumnProps> = (
         </DragDropContext>
     );
 };
-
-export const muiTableViewColumnsClasses = generateNamesObject(
-    ['container', 'dragHandle', 'resetButton'],
-    TableViewColumns.name,
-);

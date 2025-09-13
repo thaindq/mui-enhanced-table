@@ -37,6 +37,28 @@ import {
 import { generateNamesObject } from '../utils';
 import { useMeasure } from '@react-hookz/web';
 
+export const muiTableBodyClasses = generateNamesObject(
+    [
+        'root',
+        'row',
+        'rowHighlight',
+        'rowAlternativeColor',
+        'rowClickable',
+        'rowDisabled',
+        'rowSelected',
+        'rowExpanded',
+        'cell',
+        'cellExpandButton',
+        'cellRowActions',
+        'cellNoWrap',
+        'cellSelectionControl',
+        'message',
+        'overlay',
+        'overlayContent',
+    ],
+    'MuiTableBody',
+);
+
 const Root = styled(TableBody)(({ theme }) => ({
     position: 'relative',
     [`& .${muiTableBodyClasses.row}`]: {
@@ -499,27 +521,5 @@ const MuiTableBody = <T = any,>({
         </Root>
     );
 };
-
-export const muiTableBodyClasses = generateNamesObject(
-    [
-        'root',
-        'row',
-        'rowHighlight',
-        'rowAlternativeColor',
-        'rowClickable',
-        'rowDisabled',
-        'rowSelected',
-        'rowExpanded',
-        'cell',
-        'cellExpandButton',
-        'cellRowActions',
-        'cellNoWrap',
-        'cellSelectionControl',
-        'message',
-        'overlay',
-        'overlayContent',
-    ],
-    MuiTableBody.name,
-);
 
 export { MuiTableBody as TableBody };

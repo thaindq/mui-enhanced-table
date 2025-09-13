@@ -57,6 +57,11 @@ import {
     toggleArrayItem,
 } from './utils';
 
+export const muiTableClasses = generateNamesObject(
+    ['root', 'border', 'container', 'table', 'componentsContainer', 'customComponentsContainer'],
+    'MuiTable',
+);
+
 const Root = styled(Paper)(({ theme }) => ({
     width: '100%',
     display: 'flex',
@@ -922,10 +927,5 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
         );
     }
 }
-
-export const muiTableClasses = generateNamesObject(
-    ['root', 'border', 'container', 'table', 'componentsContainer', 'customComponentsContainer'],
-    MuiTable.name,
-);
 
 export default MuiTable;

@@ -4,6 +4,11 @@ import React from 'react';
 import { TableColumn, TableColumnId, TableOptions } from '../types';
 import { generateNamesObject } from '../utils';
 
+export const muiTableHeadClasses = generateNamesObject(
+    ['root', 'row', 'cell', 'cellNoWrap', 'allCaps', 'cellRowActions'],
+    'MuiTableHead',
+);
+
 const Root = styled(TableHead)(({ theme }) => ({
     [`& .${muiTableHeadClasses.cellNoWrap}`]: {
         whiteSpace: 'nowrap',
@@ -100,10 +105,5 @@ const MuiTableHead: React.FunctionComponent<TableHeadProps> = ({
         </Root>
     );
 };
-
-export const muiTableHeadClasses = generateNamesObject(
-    ['root', 'row', 'cell', 'cellNoWrap', 'allCaps', 'cellRowActions'],
-    MuiTableHead.name,
-);
 
 export { MuiTableHead as TableHead };

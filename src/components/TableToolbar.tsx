@@ -17,6 +17,11 @@ import {
 import { generateNamesObject } from '../utils';
 import { TableViewColumns } from './TableViewColumns';
 
+export const muiTableToolbarClasses = generateNamesObject(
+    ['toolbar', 'selectActionsContainer', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
+    'MuiTableToolbar',
+);
+
 const Root = styled(Toolbar)(({ theme }) => ({
     [`&.${muiTableToolbarClasses.toolbar}`]: {
         padding: 0,
@@ -178,8 +183,3 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
         </Root>
     );
 };
-
-export const muiTableToolbarClasses = generateNamesObject(
-    ['toolbar', 'selectActionsContainer', 'spacer', 'actions', 'title', 'viewColumnsContainer'],
-    MuiTableToolbar.name,
-);

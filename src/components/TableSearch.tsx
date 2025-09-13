@@ -14,6 +14,8 @@ import React, { useContext, useRef, useState } from 'react';
 import { MuiTableContext } from '../Table';
 import { generateNamesObject } from '../utils';
 
+export const muiTableSearchClasses = generateNamesObject(['root', 'input'], 'MuiTableSearch');
+
 export type TableSearchProps = Partial<Omit<TextFieldProps, 'onChange'>> & {
     onChange: (value: string) => void;
 };
@@ -94,5 +96,3 @@ export const TableSearch: React.FunctionComponent<TableSearchProps> = ({
         </Container>
     );
 };
-
-export const muiTableSearchClasses = generateNamesObject(['root', 'input'], TableSearch.name);
