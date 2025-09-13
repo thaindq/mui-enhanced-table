@@ -109,6 +109,7 @@ const DEFAULT_STATE: TableState = {
         filterable: true,
         selectable: false,
         expandable: false,
+        refreshable: false,
         multiSelect: true,
         multiExpand: true,
         searchable: true,
@@ -596,9 +597,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             filters: filterData,
         };
 
-        if (isLocalData(rawData)) {
-            return;
-        } else if (isBackendData(rawData)) {
+        if (isLocalData(rawData) || isBackendData(rawData)) {
             onDataQuery?.(query);
         } else {
             this.setState({
@@ -792,7 +791,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                             onColumnDrag={this.reorderColumns}
                             onColumnsReset={this.resetColumns}
                             onDataExport={this.exportData}
-                            onDataRefresh={() => this.fetchData()}
+                            onDataRefresh={this.fetchData}
                         />
                     )}
 

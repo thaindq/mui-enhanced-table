@@ -44,7 +44,7 @@ export interface TableToolbarProps<T = any> extends Pick<TableSlots, 'actions' |
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
     onColumnsReset: () => void;
     onDataExport: () => void;
-    onDataRefresh?: () => void;
+    onDataRefresh: () => void;
 }
 
 export const Action = React.forwardRef<HTMLButtonElement, TableAction>(
@@ -76,7 +76,7 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
 }) => {
     const [showViewColumns, toggleViewColumns] = useToggle(false);
     const viewColumnsButtonRef = useRef<HTMLButtonElement>(null);
-    const { exportable, showTitle, showActions } = options;
+    const { exportable, refreshable, showTitle, showActions } = options;
     const hasSelections = selectionCount > 0;
 
     const renderAction = ({ name, icon, callback, className }: TableAction, index: number) => {
@@ -122,7 +122,7 @@ export const MuiTableToolbar: React.FunctionComponent<TableToolbarProps> = ({
                                 />
                             )} */}
 
-                        {onDataRefresh && (
+                        {refreshable && (
                             <Action
                                 name={translations?.refresh ?? 'Refresh'}
                                 icon={icons?.toolbar?.refresh || <Refresh />}

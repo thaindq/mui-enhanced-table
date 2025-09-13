@@ -84,6 +84,7 @@ export interface TableOptions {
     multiExpand?: boolean;
     searchable?: boolean;
     exportable?: boolean;
+    refreshable?: boolean;
     rowsPerPageOptions?: number[];
     showBorder?: boolean;
     showTitle?: boolean;
