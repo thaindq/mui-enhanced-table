@@ -98,6 +98,7 @@ export interface TableOptions {
     loader?: 'skeleton' | 'overlay' | 'dynamic';
     highlightRow?: boolean;
     alternativeRowColor?: boolean;
+    pollingInterval?: number;
     skeletonRows?: number;
 }
 
@@ -125,9 +126,9 @@ export interface TableProps<T = any> {
           }) => React.ReactElement);
     className?: string;
     title?: string;
-    data: readonly T[] | BackendData<T> | ((query: DataQuery) => Promise<BackendData<T>>);
+    data: T[] | BackendData<T> | ((query: DataQuery) => Promise<BackendData<T>>);
     dataId?: string | ((data: T) => string);
-    columns: readonly TableColumn<T>[];
+    columns: TableColumn<T>[];
     isLoading?: boolean;
     isError?: boolean;
     options?: TableOptions;
@@ -170,19 +171,19 @@ export interface TableProps<T = any> {
     onColumnsReset?: VoidFunction;
     onColumnsToggle?: (columns: TableColumnId[]) => void;
     onStateChange?: (newState: TableState<T>, prevState: TableState<T>) => void;
-    onNoDataMessage?: (data: readonly TableRow<T>[]) => ReactNode;
-    onErrorMessage?: (data: readonly TableRow<T>[]) => ReactNode;
+    onNoDataMessage?: (data: TableRow<T>[]) => ReactNode;
+    onErrorMessage?: (data: TableRow<T>[]) => ReactNode;
 }
 
 export interface TableState<T = any> {
-    columns: readonly SetRequired<TableColumn<T>, 'getValue'>[];
-    rawColumns: readonly TableColumn<T>[];
-    data: readonly TableRow<T>[];
+    columns: SetRequired<TableColumn<T>, 'getValue'>[];
+    rawColumns: TableColumn<T>[];
+    data: TableRow<T>[];
     rawData: TableProps<T>['data'];
     isLoading: boolean;
     isError: boolean;
     itemCount: number;
-    displayData: readonly TableRow<T>[];
+    displayData: TableRow<T>[];
     filteredRowIds: Record<string, TableRowId[] | null>;
     filterData: Record<string, any[]>;
     expandedRowIds: TableRowId[];
@@ -283,7 +284,7 @@ export type FormatterProps<T = any, V = any> = {
 export interface FilterProps<T = any> {
     name?: string;
     filterBy: TableColumnId | ((row: TableRow<T>) => TableColumnId);
-    data: readonly TableRow<T>[];
-    displayData: readonly TableRow<T>[];
+    data: TableRow<T>[];
+    displayData: TableRow<T>[];
     onFilterUpdate: (matchedRowIds: TableRowId[] | null, filterData?: any) => void;
 }

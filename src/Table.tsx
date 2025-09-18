@@ -133,6 +133,7 @@ const DEFAULT_STATE: TableState = {
         loader: 'dynamic',
         skeletonRows: 4,
         exportable: false,
+        pollingInterval: 0,
     },
 };
 
@@ -324,7 +325,7 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
     };
 
     static prepareTableColumns = <T extends object>(
-        columns: readonly TableColumn<T>[],
+        columns: TableColumn<T>[],
     ): SetRequired<TableColumn<T>, 'getValue'>[] => {
         const seenColumnIds: string[] = [];
         return columns.map((column) => {
@@ -368,13 +369,44 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
 
     private tableContainerRef = React.createRef<HTMLDivElement>();
 
+    private pollingTimer: NodeJS.Timeout | null = null;
+
     componentDidMount = () => {
         this.updateTableState(MuiTable.getInitialState(this.props) as TableState<T>, undefined, true);
+        this.setupPolling();
     };
 
-    componentDidUpdate = () => {
+    componentDidUpdate = (prevProps: TableProps<T>) => {
         if (this.state.staleData) {
             this.fetchData();
+        }
+
+        if (prevProps.options?.pollingInterval !== this.props.options?.pollingInterval) {
+            this.setupPolling();
+        }
+    };
+
+    componentWillUnmount = () => {
+        this.clearPolling();
+    };
+
+    private clearPolling = () => {
+        if (this.pollingTimer) {
+            clearInterval(this.pollingTimer);
+            this.pollingTimer = null;
+        }
+    };
+
+    private setupPolling = () => {
+        this.clearPolling();
+
+        const { options, data, onDataQuery } = this.props;
+        const pollingInterval = options?.pollingInterval;
+
+        if (pollingInterval && pollingInterval > 0 && (isFunction(data) || (isBackendData(data) && onDataQuery))) {
+            this.pollingTimer = setInterval(() => {
+                this.fetchData();
+            }, pollingInterval);
         }
     };
 
@@ -602,15 +634,13 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
             filters: filterData,
         };
 
-        if (isLocalData(rawData) || isBackendData(rawData)) {
-            onDataQuery?.(query);
-        } else {
+        if (isFunction(rawData)) {
             this.setState({
                 isLoading: true,
                 isError: false,
             });
 
-            (rawData as Exclude<typeof rawData, readonly any[]>)(query)
+            rawData(query)
                 .then(({ items, itemCount }) => {
                     const data = MuiTable.mapDataToTableRow(items, dataId);
                     this.setState({
@@ -628,6 +658,8 @@ export class MuiTable<T extends object = any> extends React.Component<TableProps
                         isError: true,
                     });
                 });
+        } else if (isBackendData(rawData)) {
+            onDataQuery?.(query);
         }
 
         this.setState({
