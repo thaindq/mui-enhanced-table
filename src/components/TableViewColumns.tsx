@@ -43,7 +43,7 @@ const Root = styled(Paper)(({ theme }) => ({
 
 interface TableViewColumnProps {
     translations?: TableTranslations;
-    columns: readonly TableColumn[];
+    columns: TableColumn[];
     onColumnToggle: (columnId: TableColumnId, display?: boolean) => void;
     onColumnDrag: (result: DropResult, provided: ResponderProvided) => void;
     onColumnsReset: () => void;

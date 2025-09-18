@@ -156,8 +156,8 @@ interface TableBodyProps<T>
         Pick<TableSlots<T>, 'rowActions' | 'rowExpand'> {
     className?: string;
     columns: SetRequired<TableColumn<T>, 'getValue'>[];
-    data: readonly TableRow<T>[];
-    displayData: readonly TableRow<T>[];
+    data: TableRow<T>[];
+    displayData: TableRow<T>[];
     options: Required<TableOptions>;
     icons?: TableIcons;
     isLoading: boolean;

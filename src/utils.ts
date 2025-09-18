@@ -19,7 +19,7 @@ export function getMatcher(input: string, query: string): SearchMatcher | null {
     return null;
 }
 
-export function reorder<T = any>(input: readonly T[], sourceIndex: number, destinationIndex: number): T[] {
+export function reorder<T = any>(input: T[], sourceIndex: number, destinationIndex: number): T[] {
     const output = [...input];
     const item = output[sourceIndex];
     output.splice(sourceIndex, 1);
@@ -56,7 +56,7 @@ type FieldNames<Names extends string, Prefix extends string = ''> = {
 };
 export function generateNamesObject<Names extends string>(name: Names, ...args: Names[]): FieldNames<Names>;
 export function generateNamesObject<Names extends string, Prefix extends string = ''>(
-    fields: readonly Names[],
+    fields: Names[],
     prefix?: Prefix,
 ): FieldNames<Names, Prefix>;
 export function generateNamesObject<Names extends string, Prefix extends string = ''>(

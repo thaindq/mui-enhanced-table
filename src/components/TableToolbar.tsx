@@ -40,7 +40,7 @@ const Root = styled(Toolbar)(({ theme }) => ({
 
 export interface TableToolbarProps<T = any> extends Pick<TableSlots, 'actions' | 'selectActions'> {
     title?: string;
-    columns: readonly TableColumn<T>[];
+    columns: TableColumn<T>[];
     selectionCount: number;
     options: TableOptions;
     icons?: TableIcons;
